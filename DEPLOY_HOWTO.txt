@@ -1,0 +1,7 @@
+Deployment patch:
+
+  bin\patch_app.py -c deploy_freerss2_freecluster_eu.json -p .
+
+HTML to MD (online)
+
+  https://codebeautify.org/html-to-markdown
