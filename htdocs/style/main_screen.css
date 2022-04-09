@@ -1,0 +1,270 @@
+﻿
+/**
+ * Personal pages (summary/read) settings
+**/
+
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidebar a {
+  padding: 1px 8px 1px 8px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidebar_l1 {
+  margin-left: 0px;
+}
+
+.sidebar_l2 {
+  margin-left: 10px;
+}
+
+.sidebar_l3 {
+  margin-left: 20px;
+}
+
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.openbtn {
+  font-size: 20px;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #444;
+}
+
+#main {
+  transition: margin-left .5s;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
+}
+
+.post-time-info {
+  position: absolute;
+  right: 1.5em;
+  bottom: 0.3em;
+  background: white;
+  padding: 5px;
+  border-radius: 3px;
+}
+
+.no-text-overflow {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.item-header {
+  margin-bottom: 0.5rem;
+}
+
+.item-header-bar {
+  padding-left: 0;
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
+  padding-right: 0;
+  margin-left: 4em;
+  width: 95%;
+}
+
+@media screen and (max-width: 450px) {
+
+.item-header-bar {
+  padding-left: 0;
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
+  padding-right: 0;
+  margin-left: 4em;
+  width: 85%;
+}
+
+
+}
+
+.item-header-buttons {
+  position: absolute;
+  left: 0.4em;
+}
+
+.item-menu-button {
+  position: absolute;
+  right: 0.5rem;
+  z-index: 4;
+}
+
+@media (max-width: 480px) {
+  .item-menu-button {
+    position: absolute;
+    right: 10px;
+    z-index: 4;
+    margin-top: 1.3em;
+  }
+}
+
+.hidden-element {
+  visibility: hidden;
+  display: none;
+}
+
+.bold-element {
+  font-weight: bold;
+}
+
+.accordion-body > * img {
+  max-width: 80vw;
+}
+
+.accordion-body > img {
+  max-width: 80vw;
+}
+
+.vertical-middle {
+  vertical-align: middle;
+}
+
+.stat-title {
+  width: 12em;
+  display: inline-block;
+  max-width: 75%;
+}
+
+.low-action-button {
+  margin-bottom: 0.3em;
+  margin-right: 0.3em;
+  min-width: 9.1em;
+}
+/* responsive, form small screens, screen-aligned buttons */
+@media (max-width: 480px) {
+  .low-action-button {
+    margin-bottom: 0.5em;
+    /* margin-right: 0.3em; */
+    min-width: 47.5%;
+  }
+}
+
+.main-screen-stat {
+  /* display: inline-flex; */
+  max-width: 50%;
+}
+
+/* responsive, form small screens, screen-aligned cards */
+@media (max-width: 480px) {
+  .main-screen-stat {
+    display: inline-flex;
+    min-width: 97%;
+  }
+}
+
+.rss-title {
+  vertical-align: middle;
+  color: black;
+  text-decoration: none;
+}
+/* responsive, form small screens, screen-aligned title */
+@media (max-width: 480px) {
+  .rss-title {
+    vertical-align: middle;
+    color: black;
+    text-decoration: none;
+    display: block;
+    min-width: 90%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Floating button with "go to top" option */
+
+#floatingBottom {
+  position: fixed;
+  bottom: 55px;
+  right: 10px;
+  z-index: 99;
+  font-size: 18px;
+  border: none;
+  outline: none;
+  background-color: #212529; /* #265a88; */
+  color: white;
+  cursor: pointer;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  transform: scaleX(1) scaleY(1);
+  opacity: 1;
+  box-shadow: 0 1px 1px 0 rgba(var(--shadow-rgb),.06),0 2px 5px 0 rgba(var(--shadow-rgb),.2);
+}
+
+#goToTopBtn {
+  display: none;
+  vertical-align: middle;
+  /*margin-left: 1.5em;
+  margin-right: 1.5em;*/
+}
+
+#floatingBottom:hover {
+  background-color: #337ab7;
+}
+
+.big-icon-button {
+  font-size: 0.87em;
+  margin-right: 0.4em;
+}
+
+.loading-big {
+  max-width: 90vw;
+}
+
+.rule_where_cond {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rule_logical_delimiter {
+  display: inline-block;
+  padding: 10px;
+}
+
+.rule-title-ro {
+  min-width: 8rem;
+  max-width: 25%;
+}
+
