@@ -30,6 +30,13 @@
     echo "Error: ".$_FILES['opmlFile']['error'];
     exit(1);
   }
-  # TODO: call app-function for parsing and import
-  echo file_get_contents($_FILES['opmlFile']['tmp_name']);
+  $opml_source = file_get_contents($_FILES['opmlFile']['tmp_name']);
+  # call app-function for parsing and import
+  list( $error, $groups_count, $feeds_count ) = $rss_app->loadOpml($opml_source);
+  if ($error) {
+    $rss_app->registerAppEvent('system', 'import_opml', 'Error', $error);
+  } else {
+    $rss_app->registerAppEvent('system', 'import_opml', 'Success', "$groups_count groups, $feeds_count feeds");
+  }
+  header("Location: /personal/"); /* Redirect browser */
 ?>
