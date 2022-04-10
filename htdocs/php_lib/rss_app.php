@@ -452,10 +452,10 @@ class RssApp {
         $opml_group = new XmlPairTag('outline text="'.$group.'"', 2);
       }
       $rss = array(
-        'text'    => $rec['text'],
-        'title'   => $rec['title'],
-        'htmlUrl' => $rec['htmlUrl'],
-        'xmlUrl'  => $rec['xmlUrl']
+        'text'    => urlencode($rec['text']),
+        'title'   => urlencode($rec['title']),
+        'htmlUrl' => urlencode($rec['htmlUrl']),
+        'xmlUrl'  => urlencode($rec['xmlUrl'])
       );
       $outline = new XmlSingleTag('outline', 3, $rss);
       $opml_group->array_push($outline->toStr());
@@ -700,7 +700,7 @@ class RssApp {
     // Update name in table
     $query1 = "UPDATE `tbl_watches` SET `title`=:name WHERE `user_id`=:user_id AND `fd_watchid`=:watch_id";
     $this->db->execQuery($query1, $bindings);
-    return "";  
+    return "";
   }
 
   /**
@@ -1354,7 +1354,7 @@ class RssApp {
            <i class="far fa-star '.$flagged_state['unflagged'].'" style="color:gray;" id="unflagged_'.$fd_postid.'" onclick="changeArticleFlaggedState(\''.$fd_postid.'\', \'on\')"></i>&nbsp;
          </span>
         </span>
-      <button class="accordion-button collapsed item-header-bar" type="button" data-bs-toggle="collapse" 
+      <button class="accordion-button collapsed item-header-bar" type="button" data-bs-toggle="collapse"
           data-bs-target="#collapse_'.$fd_postid.'" aria-expanded="false" aria-controls="collapse_'.$fd_postid.'"
           onclick="onArticleHeadingClick(event, \'heading_'.$fd_postid.'\')">
         &nbsp;
@@ -1404,8 +1404,8 @@ class RssApp {
   </div>';
     }
     echo '
-    <button id="reload_button" type="button" class="btn btn-outline-primary" onclick="window.location.reload();"> 
-      <i class="fa fa-redo-alt"></i> Reload page 
+    <button id="reload_button" type="button" class="btn btn-outline-primary" onclick="window.location.reload();">
+      <i class="fa fa-redo-alt"></i> Reload page
     </button>';
     echo '</div>';
   }
@@ -1608,21 +1608,88 @@ class RssApp {
     $error = '';
     $groups_count = 0;
     $feeds_count = 0;
+    // remove bom
+    $bom = pack('H*','EFBBBF');
+    $opml_source = preg_replace("/^$bom/", '', $opml_source);
     libxml_use_internal_errors(true);
     $opml = simplexml_load_string($opml_source);
+    $errors = array();
     if (false === $opml) {
-      $errors = array();
       foreach (libxml_get_errors() as $e) {
         $errors []= $e->message;
       }
       $error = implode("<BR>\n", $errors);
       return array($error, $groups_count, $feeds_count);
     }
-    # TODO: remove all articles and subscriptions for this user
-    # TODO: read $opml['body'] 
-    #   for each 'outline' create group
-    #      for each sub-element 'outline' create feed under group
+    # remove all articles and subscriptions for this user
+    $this->cleanSubscr();
+    # get $opml['body']
+    # for each 'outline' - get group name
+    #    for each sub-element 'outline' create feed under group
+    $body = $opml->body;
+    foreach ($body->outline as $group_outline) {
+      $group_name = $group_outline["text"];
+      $feeds = $group_outline->outline;
+      foreach ($feeds as $feed) {
+        $text = urldecode($feed['text']);
+        $title = urldecode($feed['title']);
+        $htmlUrl = urldecode($feed['htmlUrl']);
+        $xmlUrl = urldecode($feed['xmlUrl']);
+        $result = $this->insertNewFeed($group_name, $text, $title, $htmlUrl, $xmlUrl);
+        if ($result) {
+          $errors []= $result;
+        }
+        $feeds_count++;
+      }
+      $error = implode('; ', $errors);
+      $groups_count++;
+    }
     return array($error, $groups_count, $feeds_count);
+  }
+
+  /**
+   * Clean all subscriptions and articles for this user
+   * Do not touch filters (watches)
+  **/
+  public function cleanSubscr() {
+    $bindings = array(
+      'user_id'   => $this->user_id,
+    );
+    $query1 = "DELETE FROM `tbl_subscr` WHERE `user_id`=:user_id";
+    $query2 = "DELETE FROM `tbl_posts` WHERE `user_id`=:user_id";
+    // delete last page as irrelevant
+    $query3 = "DELETE FROM `tbl_settings` WHERE `user_id`=:user_id AND `param` = 'last_page'";
+    $this->db->execQuery($query1, $bindings);
+    $this->db->execQuery($query2, $bindings);
+    $this->db->execQuery($query3, $bindings);
+  }
+
+  /**
+   * Insert new feed under specified group
+   * (for import only)
+   * @param $group: feed group
+   * @param $text: feed text
+   * @param $title: feed title
+   * @param $html_url: feed HTML URL
+   * @param $xml_url: feed XML URL
+   * @return: error (if any)
+  **/
+  public function insertNewFeed($group, $text, $title, $htmlUrl, $xmlUrl) {
+    $feed_id = _digest_hex($xml_url);
+    $bindings = array(
+      'user_id'   => $this->user_id,
+      'group'     => $group,
+      'xml_url'   => $xml_url,
+      'html_url'  => $html_url,
+      'title'     => $title,
+      'text'      => $text,
+      'feed_id'   => $feed_id
+    );
+    $query = "INSERT INTO `tbl_subscr` ".
+      "(`user_id`, `group`, `fd_feedid`, `text`, `title`, `xmlUrl`, `htmlUrl`, `index_in_gr`, `download_enabled`) VALUES ".
+      "(:user_id,  :group,  :feed_id,    :text,  :title,  :xml_url, :html_url, 0, 1)";
+    $this->db->execQuery($query, $bindings);
+    return "";
   }
 
   /**

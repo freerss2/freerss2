@@ -76,20 +76,20 @@
        <?php
           if ($report_data) {
             echo '<div class="row">';
-            echo '  <div class="col">Name</div>';
-            echo '  <div class="col">Timestamp</div>';
-            echo '  <div class="col">Status</div>';
-            echo '  <div class="col">Log</div>';
+            echo '  <div class="col-3">Name</div>';
+            echo '  <div class="col-2">Timestamp</div>';
+            echo '  <div class="col-2">Status</div>';
+            echo '  <div class="col-5">Log</div>';
             echo '</div>';
 
             foreach ($report_data as $rec) {
               $ref = 'read.php?type='.$rec[1].'&id='.$rec[0];
               $timestamp = _date_to_passed_time($rec[3]);
               echo '<div class="row">';
-              echo '  <div class="col"><a href="'.$ref.'" target="_blank">'.$rec[2].'</a></div>';
-              echo '  <div class="col" >'.$timestamp.'</div>';
-              echo '  <div class="col" >'.$rec[4].'</div>';
-              echo '  <div class="col" >'.$rec[5].'</div>';
+              echo '  <div class="col-3 no-text-overflow"><a href="'.$ref.'" target="_blank">'.$rec[2].'</a></div>';
+              echo '  <div class="col-2" >'.$timestamp.'</div>';
+              echo '  <div class="col-2 no-text-overflow" >'.$rec[4].'</div>';
+              echo '  <div class="col-5" >'.$rec[5].'</div>';
               echo "</div>\n";
             }
           } else {
