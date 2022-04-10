@@ -21,7 +21,7 @@ Some terminology
 
 Term "Feed" is a short of "RSS Feed". This way we'll refer a link where news could be downloaded, and also the articles, received from it
 
-Well-organized websites are publishing such URL on their homepage. This link commonly looks like
+Well-organized websites are publishing such URL on their homepage. This link commonly looks like ![dot with radial stripes](https://www.iconsdb.com/icons/download/gray/rss-24.png "typical icon")
 
 Articles are very similar to emails: it has title, origin and body. In addition, some articles could be marked with tags. Article titles allow to get a general idea of the content. By clicking on title, one can dive into the article content, or even follow the link and open original site in separate window.
 
