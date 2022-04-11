@@ -384,6 +384,7 @@ function triggerSearch() {
 
 // start refresh process
 function refreshRss() {
+  document.title = "Free RSS (updating)";
   // show "busy" banner
   var refreshModal = new bootstrap.Modal(document.getElementById('updatingDialog'), {focus: true});
   refreshModal.show();
@@ -401,6 +402,7 @@ function refreshRss() {
 
 // complete refresh process
 function completeRefreshRss(results) {
+  document.title = "Free RSS (updated)";
   // show summary dialog with menu
   var refreshCompleteModal = new bootstrap.Modal(document.getElementById('updatedDialog'), {focus: true});
   document.getElementById('updatedDialogContent').innerHTML = results;
