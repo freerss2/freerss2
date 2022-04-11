@@ -8,6 +8,7 @@ var SEARCH_ENGINES = {
   'kinopoisk': 'http://www.kinopoisk.ru/index.php?first=no&what=&kp_query='
 }
 
+// semaphore for enabling keyboard shortucts in articles context only
 var articles_context = false;
 
 // ------------------( control nav appearance )------------------
@@ -34,11 +35,11 @@ function closeNav() {
   nav_visible = 0;
 }
 
+// ------------------( settings change callbacks )------------------
 
 // Callback for settings change
-
 function updateSettings(setting_name, setting_value) {
-  console.log("updateSettings("+setting_name+", "+setting_value+")");
+  // console.log("updateSettings("+setting_name+", "+setting_value+")");
   var url = '/api/settings/?set=' + setting_name + '&value=' + setting_value;
   httpGetAsync(url, function(buf){
     console.log(buf);
@@ -47,15 +48,12 @@ function updateSettings(setting_name, setting_value) {
 }
 
 // Callback for settings change with element ID
-
 function updateSettingsFrom(setting_name, setting_ID) {
   setting_value = document.getElementById(setting_ID).value;
   updateSettings(setting_name, setting_value);
 }
 
-
 // -------------------( Automatic refresh of main page )-------------
-
 
 function refreshMainPage(initial) {
   var interactive_opened = nav_visible;
@@ -97,6 +95,8 @@ function scrollToTop() {
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
 }
+
+// -------------------( getting next/prev view )-------------------
 
 // Go to next/previous feed
 function goToPrevFeed() {
@@ -193,6 +193,7 @@ function saveWatchName(watch_id) {
   }
 }
 
+// open dialog box prompting for feeds init (add link or upload OPML)
 function promptForInit() {
   var promptForInit = new bootstrap.Modal(document.getElementById('promptForInit'), {focus: true});
   promptForInit.show();
@@ -350,23 +351,29 @@ function triggerTitleSearch( selected_engine, enc_type ) {
 // open "search title in..." dialog
 function startTitleSearch(article_id) {
   var searchTitleDialog = document.getElementById('searchTitleDialog');
-  var searchModal = new bootstrap.Modal(searchTitleDialog, {focus: true});
+  var searchModal = new bootstrap.Modal(searchTitleDialog, {focus: false});
   search_val = document.getElementById('heading_'+article_id).children[1].children[0].textContent;
   search_input = document.getElementById('title-text-to-find');
   search_input.value = search_val;
   setArticlesContext(0);
   searchTitleDialog.addEventListener(
       'hidden.bs.modal', function (event) { setArticlesContext(1); });
+  setTimeout(function() {
+    document.getElementById('title-text-to-find').focus();
+  }, 200);
   searchModal.show();
 }
 
 // start search dialog
 function startSearch() {
   var searchDialog = document.getElementById('searchDialog');
-  var searchModal = new bootstrap.Modal(searchDialog, {focus: true});
+  var searchModal = new bootstrap.Modal(searchDialog, {focus: false});
   setArticlesContext(0);
   searchDialog.addEventListener(
       'hidden.bs.modal', function (event) { setArticlesContext(1); });
+  setTimeout(function() {
+    document.getElementById('text-to-find').focus();
+  }, 200);
   searchModal.show();
 }
 
