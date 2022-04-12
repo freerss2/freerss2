@@ -5,7 +5,7 @@ include "db_app.php";
 include "php_util.php";
 include "opml.php";
 
-$APP_VERSION = '2.0.1.6';
+$APP_VERSION = '2.0.1.6.2';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -231,8 +231,10 @@ class RssApp {
    * Read articles from speficic RSS feed source
    * @param rss_url: RSS URL address
    * @param rss_title: RSS page title (for diagnostics)
-   * @return: error message (if any) and array of article records
-   *          (link, title, date, description)
+   * @return: error message (if any),
+   *          array of article records (link, title, date, description)
+   *          feed formal title
+   *          feed site URL
   **/
   public function readRssUpdate($rss_url, $rss_title) {
 
@@ -266,8 +268,9 @@ class RssApp {
       }
       $items = array();
       $rss_title = $rss->channel->title;
-      $channel = $rss->channel ? $rss->channel->item : $rss->entry;
-      foreach ($channel as $item) {
+      $rss_link = $rss->channel->link;
+      $channel_items = $rss->channel ? $rss->channel->item : $rss->entry;
+      foreach ($channel_items as $item) {
         $link = is_array($item->link)? $item->link[0] : $item->link;
         if ($link->attributes()) {
           $link = $link->attributes()['href'];
@@ -296,10 +299,11 @@ class RssApp {
     }
     catch(Exception $e) {
       if (! $rss_title) { $rss_title = 'UNKNOWN'; }
+      if (! $rss_link) { $rss_link = ''; }
       $error = "Exception while getting RSS '$rss_title' - $e";
       error_reporting(E_ERROR | E_WARNING | E_PARSE);
     }
-    return array($error, $items, $rss_title);
+    return array($error, $items, $rss_title, $rss_link);
   } // readRssUpdate
 
   /**
@@ -1720,18 +1724,21 @@ class RssApp {
       return array("Such RSS already subscribed", null, '');
     }
 
-    // TODO: read also channel->link and store it as htmlUrl
-    list($error, $items, $new_title) = $this->readRssUpdate($xml_url, $title);
+    $text = $title;
+    list($error, $items, $new_title, $new_link) = $this->readRssUpdate($xml_url, $title);
     if ($new_title) { $title = $new_title; }
     if ($error) {
       return array($error, null, $title);
     }
 
-    $bindings['title'] = $title;
-    $bindings['group'] = $group;
+    $bindings['title']   = $title;
+    $bindings['text']    = $text;
+    $bindings['htmlUrl'] = $new_link;
+    $bindings['group']   = $group;
     $query2 = "INSERT INTO `tbl_subscr` ".
-      "(`user_id`, `fd_feedid`, `text`, `title`, `xmlUrl`, `group`, `index_in_gr`, `download_enabled`) ".
-      "VALUES (:user_id, :feed_id, :title, :title, :xml_url, :group, 0, 1)";
+      "(`user_id`, `fd_feedid`, `text`, `title`, `xmlUrl`, `htmlUrl`, `group`, `index_in_gr`, `download_enabled`) ".
+      "VALUES ".
+      "(:user_id,  :feed_id,    :text,  :title,  :xml_url, :htmlUrl,  :group,   0,             1)";
     $this->db->execQuery($query2, $bindings);
 
     $error = '';

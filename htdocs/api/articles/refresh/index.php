@@ -45,7 +45,7 @@
       $feed_id = $next_rss['fd_feedid'];
       // echo "reading RSS $feed_id ...<BR>\n";
 
-      list($error, $items, $title) = $rss_app->readRssUpdate($read_rss_url, $rss_title);
+      list($error, $items, $title, $link) = $rss_app->readRssUpdate($read_rss_url, $rss_title);
       if ($error) {
         // echo "ERROR: $error<BR>\n";
         $errors[] = $error;
