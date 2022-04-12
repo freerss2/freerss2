@@ -212,6 +212,10 @@
          <h5 class="card-title">Application version: <?php echo $APP_VERSION; ?> </h5>
        </div>
        <div class="card-body">
+         <a type="button" class="btn btn-primary mb-3" href="https://github.com/freerss2/freerss2/issues/new" target="_blank" style="min-width:18em;">
+           <i class="fas fa-bug"></i>
+           Report an issue
+         </a> <br>
          <a type="button" class="btn btn-primary mb-3" href="../help/" style="min-width:18em;">
            <i class="fas fa-book-reader"></i>
            Documentation

@@ -62,8 +62,8 @@ if ($_GET['logout']) {
 
 <main class="form-signin">
   <h1 class="h3 mb-3 fw-normal">Free RSS 2.0
-           <a href="../help" class="btn btn-dark btn-sm low-action-button">
-             <i class="far fa-question-circle"></i>&nbsp;Documentation
+           <a href="../help/#about" class="btn btn-dark btn-sm low-action-button">
+             <i class="fab fa-readme"></i>&nbsp;About
            </a>
   </h1>
 

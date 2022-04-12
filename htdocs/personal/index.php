@@ -167,8 +167,8 @@
            <a href="../login?logout=1" class="btn btn-dark btn-sm low-action-button">
              <i class="fas fa-sign-out-alt"></i> Logout
            </a>
-           <a href="../help" class="btn btn-dark btn-sm low-action-button">
-             <i class="fas fa-question"></i> Help
+           <a href="../help/#start" class="btn btn-dark btn-sm low-action-button">
+             <i class="fab fa-readme"></i> Help
            </a>
          </div>
        </div>
