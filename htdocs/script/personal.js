@@ -193,7 +193,7 @@ function saveWatchName(watch_id) {
   }
 }
 
-// open dialog box prompting for feeds init (add link or upload OPML)
+// open dialog box prompting for feeds init: [add link] or [upload OPML]
 function promptForInit() {
   var promptForInit = new bootstrap.Modal(document.getElementById('promptForInit'), {focus: true});
   promptForInit.show();
@@ -205,8 +205,7 @@ function rerunFilters() {
   var refreshModal = new bootstrap.Modal(document.getElementById('updatingDialog'), {focus: true});
   refreshModal.show();
   // run API for reapplying filters
-  var api_url = '/api/watch/rerun/';
-  httpGetAsync(api_url, function(reply){
+  httpGetAsync('/api/watch/rerun/', function(reply){
     refreshModal.hide();
     // go to homepage on completion
     if ( reply.startsWith('Error') ) {
@@ -215,12 +214,14 @@ function rerunFilters() {
       return;
     }
     console.log(reply);
-    // TODO: why we reload?
+    // TODO: why reload?
     window.location.href = '/personal/';
   });
 }
 
 // delete rule in watch
+// @param watch_id: watch where to delete rule
+// @param rule_id: rule to delete
 function deleteRule(watch_id, rule_id) {
   var curr_location = window.location.href;
   var base_url = curr_location.replace(/edit_filter\.php.*/, '');
@@ -239,6 +240,8 @@ function deleteRule(watch_id, rule_id) {
 }
 
 // add rule to current watch
+// @param watch_id: watch where to add rule
+// (rule name taken from input box)
 function addRule(watch_id) {
   var elm = document.getElementById('new_rule');
   if (! elm) { return; }
@@ -258,7 +261,9 @@ function addRule(watch_id) {
   window.location.reload();
 }
 
-// callback for rule edit begin
+// start 'rule edit' dialog
+// @param watch_id: current watch ID
+// @param rule_id: current rule ID
 function openRuleEdit(watch_id, rule_id) {
   var curr_location = window.location.href;
   var base_url = curr_location.replace(/edit_filter\.php.*/, '');
@@ -276,7 +281,10 @@ function openRuleEdit(watch_id, rule_id) {
   ruleEditModal.show();
 }
 
-// callback for rule save
+// complete 'rule edit' and save result
+// @param watch_id: current watch ID
+// @param rule_id: current rule ID
+// rule content is read from HTML elements by class names
 function saveRule(watch_id, rule_id) {
   var rule_or_groups = document.getElementsByClassName('rule-or-group');
   var rule = Array();
@@ -563,7 +571,9 @@ function changeArticleFlaggedState(article_id, change) {
   if (change === 'off'   ) { set_flagged = 'off';    set_unflagged = 'on'; }
   domElementChangeVisibility('flagged_'+article_id, set_flagged);
   domElementChangeVisibility('unflagged_'+article_id, set_unflagged);
-  // update heading title - color (TODO)
+
+  var heading_id = 'heading_'+article_id;
+  focusOnArticleById(heading_id, scroll_view=false);
   // send new state to server
   var url = '/api/articles/change_item_state/?item_id='+article_id+
     '&change_flagged='+set_flagged;
@@ -583,10 +593,12 @@ function changeArticleReadState(article_id, change) {
   domElementChangeVisibility('unread_'+article_id, set_unread);
 
   // update heading title - bold/normal state
-  var elm = document.getElementById('heading_'+article_id);
+  var heading_id = 'heading_'+article_id;
+  var elm = document.getElementById(heading_id);
   if (elm) {
     var sub_elm = elm.children[1].children[0];
     domElementChangeBoldStyle(sub_elm, change);
+    focusOnArticleById(heading_id, scroll_view=false);
   } else {
     console.log('missing: heading_'+article_id);
   }
@@ -749,9 +761,12 @@ function enable_feed(feed_id, enable_state) {
 }
 
 // Move focus to article
-function focusOnArticleById(article_id) {
+function focusOnArticleById(article_id, scroll_view=true) {
   var elm = document.getElementById(article_id).children[1];
-  elm.scrollIntoView();
+  if (! elm) { return; }
+  if (scroll_view) {
+    elm.scrollIntoView();
+  }
   elm.tabIndex = 0;
   elm.focus();
 }
