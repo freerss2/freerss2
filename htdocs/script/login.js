@@ -1,9 +1,10 @@
-/* --------------- *\
-   "Login" page
-   JavaScript code
-\* --------------- */
+/* ------------------- *\
+   JavaScript routines
+   for "Login" page
+\* ------------------- */
 
 // show error dialog
+// @param msg: message to display
 function showError(msg) {
   var errorModal = new bootstrap.Modal(document.getElementById('errorDialog'), {focus: true});
   var elm = document.getElementById('errorDialogContent');
@@ -33,10 +34,8 @@ function signIn() {
   }
   // read temp_key from buf
   var temp_key = buf.replace(/^\s+|\s+$/g, '');;
-  // console.log("got temp_key="+temp_key);
   // calculate MD5 from password, add temp_key and MD5 again
   var encripted_password = md5(temp_key+md5(password));
-  // console.log("encripted_password="+encripted_password);
   // go to stage2
   new_url = base_url +
     '../api/login/?function=second_stage&login=' + email +
@@ -44,7 +43,6 @@ function signIn() {
   var buf = httpGet(new_url);
   if(buf.startsWith('Error:')) {
       console.log(buf);
-      // window.alert(buf);
       showError(buf);
       return;
   }
@@ -56,6 +54,8 @@ function signIn() {
   }
 }
 
+// Create account - send inputs to server
+// parameters are read from DOM elements
 function createAccount() {
   var elm1 = document.getElementById('email');
   var elm2 = document.getElementById('name');
@@ -75,7 +75,6 @@ function createAccount() {
   var buf = httpGet(new_url);
   if(buf.startsWith('Error:')) {
       console.log(buf);
-      // window.alert(buf);
       showError(buf);
       return;
   }

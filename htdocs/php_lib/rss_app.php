@@ -5,7 +5,7 @@ include "db_app.php";
 include "php_util.php";
 include "opml.php";
 
-$APP_VERSION = '2.0.1.6.2';
+$APP_VERSION = '2.0.1.6.3';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 

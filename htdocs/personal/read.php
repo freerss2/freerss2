@@ -563,12 +563,12 @@ $rss_app->showItems($items);
           </div>
           <div class="modal-body">
             <input type="text" class="form-control mb-3" id="title-text-to-find" />
-            <button type="button" class="btn btn-primary" onclick="triggerTitleSearch('', 0);">In FreeRSS</button>
-            <button type="button" class="btn btn-primary" onclick="triggerTitleSearch('google', 0);">In Google</button>
-            <button type="button" class="btn btn-primary" onclick="triggerTitleSearch('kinopoisk', 2);">In KinoPoisk</button>
+            <button type="button" class="btn btn-primary" onclick="triggerTitleSearch('');">In FreeRSS</button>
+            <button type="button" class="btn btn-primary" onclick="triggerTitleSearch('google');">In Google</button>
+            <button type="button" class="btn btn-primary" onclick="triggerTitleSearch('kinopoisk');">In KinoPoisk</button>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">dismiss</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
           </div>
         </div>
       </div>

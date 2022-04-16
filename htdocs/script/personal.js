@@ -331,8 +331,9 @@ function openImportModal() {
 }
 
 // callback for article search selection
-// TODO: remove enc_type
-function triggerTitleSearch( selected_engine, enc_type ) {
+// @param selected_engine: search engine name (empty for search in articles)
+// the pattern for search is taken from DOM element by ID
+function triggerTitleSearch( selected_engine ) {
   var elm = document.getElementById('title-text-to-find');
   var tofind = elm.value; // read from dialog input
   // if nothing provided - warn and exit
