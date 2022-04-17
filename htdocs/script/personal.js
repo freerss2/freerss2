@@ -158,7 +158,7 @@ function deleteWatch(watch_id) {
   var api_url = base_url + '../api/watch/delete/?watch_id=' + watch_id;
   var reply = httpGet(api_url);
   if ( reply.startsWith('Error') ) {
-      // TODO: show it in a different way
+      // TODO: show error in a different way
       window.alert(reply);
       return;
   }
@@ -315,7 +315,7 @@ function saveRule(watch_id, rule_id) {
   var post_url = '/api/watch/rule/update/';
   reply = httpPost(post_url, JSON.stringify(result));
   if (reply.startsWith('Error')) {
-    // TODO: show it in a different way
+    // TODO: show error in a different way
     window.alert(reply);
     return;
   }
@@ -543,10 +543,14 @@ function cancelEventPropagation(event) {
  | events:
  |  > click on title => toggle article full view, force "read" = 1
  |  > click on envelope => do not change article view, toggle "read" state
+ |  > click on star => do not change article view, toggle "flagged" state
+ |                     if flagged "on" - force "read" = 0
  |  > press "arrow-right" key => make article full view, force "read" = 1
  |  > press "arrow-left" key => ensure article title-view
 \* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+// Callback for click on article heading
+// @param article_id: context article ID
 function onArticleHeadingClick(event, article_id) {
   // set "read" state to 'yes' (1) only if article became "open" (visible)
   setTimeout(function() {
@@ -559,22 +563,27 @@ function onArticleHeadingClick(event, article_id) {
   }, 400);
 }
 
+// @param article_id: context article ID
 function onReadUnreadClick(event, article_id) {
   // toggle read/unread state
   changeArticleReadState(article_id, 'toggle');
 }
 
 // Change article "flagged" state
+// @param article_id: context article ID
+// @param change: how to change article state (on/off/toggle)
 function changeArticleFlaggedState(article_id, change) {
-  // get current state
-  var is_read = domElementGetVisibility('flagged_'+article_id);
   if (change === 'on'    ) { set_flagged = 'on';     set_unflagged = 'off'; }
   if (change === 'off'   ) { set_flagged = 'off';    set_unflagged = 'on'; }
   domElementChangeVisibility('flagged_'+article_id, set_flagged);
   domElementChangeVisibility('unflagged_'+article_id, set_unflagged);
 
-  var heading_id = 'heading_'+article_id;
-  focusOnArticleById(heading_id, scroll_view=false);
+  if (set_flagged == 'off') {
+    var heading_id = 'heading_'+article_id;
+    focusOnArticleById(heading_id, scroll_view=false);
+  } else {
+    changeArticleReadStateVisual(article_id, 'off');
+  }
   // send new state to server
   var url = '/api/articles/change_item_state/?item_id='+article_id+
     '&change_flagged='+set_flagged;
@@ -582,7 +591,32 @@ function changeArticleFlaggedState(article_id, change) {
 }
 
 // Change article "read" state
+// @param article_id: context article ID
+// @param change: how to change article state (on/off/toggle)
 function changeArticleReadState(article_id, change) {
+  // get current "flagged" state
+  var is_flagged = domElementGetVisibility('flagged_'+article_id);
+  // skip update for flagged article
+  if (is_flagged) { return; }
+  var set_read = changeArticleReadStateVisual(article_id, change);
+
+  // send new state to server
+  var url = '/api/articles/change_item_state/?item_id='+article_id+
+    '&change_read='+set_read;
+  httpGetAsync(url, function(buf){
+    if ( buf.startsWith('Error') ) {
+      console.log(buf);
+      window.location.href = '/';
+    }
+    console.log(buf);
+  });
+}
+
+// Change visual representation of read/unread state for given article
+// @param article_id: context article ID
+// @param change: how to change article state (on/off/toggle)
+// @return: set_read value (0/1)
+function changeArticleReadStateVisual(article_id, change) {
   // get current state
   var is_read = domElementGetVisibility('read_'+article_id);
 
@@ -603,17 +637,7 @@ function changeArticleReadState(article_id, change) {
   } else {
     console.log('missing: heading_'+article_id);
   }
-
-  // send new state to server
-  var url = '/api/articles/change_item_state/?item_id='+article_id+
-    '&change_read='+set_read;
-  httpGetAsync(url, function(buf){ 
-    if ( buf.startsWith('Error') ) {
-      console.log(buf);
-      window.location.href = '/';
-    }
-    console.log(buf);
-  });
+  return set_read;
 }
 
 // Mark all articles on current page as read and open next page
@@ -677,6 +701,17 @@ function focusOnPreviousArticle() {
   return true;
 }
 
+// Move focus to article
+function focusOnArticleById(article_id, scroll_view=true) {
+  var elm = document.getElementById(article_id).children[1];
+  if (! elm) { return; }
+  if (scroll_view) {
+    elm.scrollIntoView();
+  }
+  elm.tabIndex = 0;
+  elm.focus();
+}
+
 function closeCurrentArticle() {
   var article_id = getActiveArticleId();
   if (! article_id) {
@@ -707,6 +742,8 @@ function changeArticleVisibility(article_id, action) {
     if (action == 'toggle') { bsCollapse.toggle(); }
   }
 }
+
+// ----------------------( feed settings )-----------------------
 
 // delete feed
 function delete_feed(feed_id) {
@@ -761,24 +798,6 @@ function enable_feed(feed_id, enable_state) {
   httpGetAsync(url, function(buf){ console.log(buf); });
 }
 
-// Move focus to article
-function focusOnArticleById(article_id, scroll_view=true) {
-  var elm = document.getElementById(article_id).children[1];
-  if (! elm) { return; }
-  if (scroll_view) {
-    elm.scrollIntoView();
-  }
-  elm.tabIndex = 0;
-  elm.focus();
-}
-
-function isVisibleDom(element_id) {
-  var elm = document.getElementById(element_id);
-  if (! elm) return false;
-  return (elm.offsetParent !== null);
-}
-
-
 function isVisibleItem(element_id) {
   var elm = document.getElementById(element_id);
   if (! elm) {
@@ -800,9 +819,8 @@ function goToPage(page_select, delta=0) {
   window.location.href = window.location.href.replace(/&page=.*/, '') + '&page=' + page_target;
 }
 
-/**
- * Set articles context on/off
-**/
+// Set articles context on/off
+// change global semaphore article_context (boolean) value
 function setArticlesContext( value=true ) {
   switch (String(value).toLowerCase()) {
       case "on":    articles_context = true;  break;
@@ -817,9 +835,7 @@ function setArticlesContext( value=true ) {
 }
 
 
-/**
- * Bind keyboard shortcuts for feeds reader screen
-**/
+// Bind keyboard shortcuts for feeds reader screen
 function bindKeysForFeeds() {
 
   window.addEventListener("keydown", function (event) {
@@ -908,3 +924,4 @@ function bindKeysForFeeds() {
   }, true);
 
 }
+

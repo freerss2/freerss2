@@ -5,7 +5,7 @@ include "db_app.php";
 include "php_util.php";
 include "opml.php";
 
-$APP_VERSION = '2.0.1.6.3';
+$APP_VERSION = '2.0.1.6.4';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -1434,7 +1434,10 @@ class RssApp {
 
   // udpdate items (articles) state by IDs
   public function updateItemsState($item_ids, $change_type, $new_value) {
-    $query = "UPDATE `tbl_posts` SET `read`=:new_read WHERE `user_id`=:user_id AND `fd_postid` IN ('".implode("','", $item_ids)."')";
+    $query = "UPDATE `tbl_posts` SET `read`=:new_read WHERE ".
+      "`user_id`=:user_id AND ".
+      "`fd_postid` IN ('".implode("','", $item_ids)."') AND ".
+      "`flagged`=0";
     $bindings = array(
         'new_read'  => $new_value,
         'user_id'   => $this->user_id
@@ -1444,6 +1447,9 @@ class RssApp {
   }
 
   // udpdate single item (article) state
+  // @param $item_id: item ID
+  // @param $change_type: name of article attribute (read/flagged)
+  // @param $new_value: attribute new value
   public function updateItemState($item_id, $change_type, $new_value) {
     $query = "UPDATE `tbl_posts` SET `$change_type`=:new_value WHERE `user_id`=:user_id AND `fd_postid`=:fd_postid";
     $bindings = array(
@@ -1453,6 +1459,9 @@ class RssApp {
     );
 
     $this->db->execQuery($query, $bindings);
+    if ($change_type == 'flagged' && $new_value) {
+      $this->updateItemState($item_id, 'read', 0);
+    }
   }
 
   /**
