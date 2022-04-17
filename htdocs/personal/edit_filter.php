@@ -80,13 +80,15 @@
 
     <div id="main">
     <nav class="navbar sticky-top navbar-dark bg-dark">
-       <button class="openbtn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
+       <button class="openbtn" onclick="history.back()" title="Go back">
+         <i class="fas fa-chevron-left"></i>
+       </button>
        <span class="navbar-brand">Free RSS filter</span>
        <div class="btn-group" role="group" aria-label="toolbar group">
-         <a class="btn btn-secondary btn-md" href="javascript:rerunFilters();">
+         <a class="btn btn-secondary btn-md" href="javascript:rerunFilters();" title="Rerun filters">
            <i class="far fa-play-circle"></i>
          </a>
-         <a class="btn btn-secondary btn-md" href="../help#WatchFilters">
+         <a class="btn btn-secondary btn-md" href="../help#WatchFilters" title="Read about watches (filters)">
            <i class="fa fa-question"></i>
          </a>
        </div>
@@ -96,11 +98,13 @@
         <span style="display:inline-block; max-width:70%; margin-right:1em;"> 
           <h3>Watches (filters)</h3>
           <div class="btn-group mb-3" style="width: 100%;">
-                <a class="btn btn-outline-secondary btn-md" href="javascript:downloadFilters();">
-                  <i class="fa fa-download"></i>
+                <a class="btn btn-outline-secondary btn-md"
+                  href="/api/watch/export/" title="Download watches as text">
+                    <i class="fa fa-download"></i>
                 </a>
-                <a class="btn btn-outline-secondary btn-md" href="javascript:uploadFilters();">
-                  <i class="fas fa-cloud-upload-alt"></i>
+                <a class="btn btn-outline-secondary btn-md"
+                  href="javascript:uploadFiltersModal();" title="Upload watches from text file">
+                    <i class="fas fa-cloud-upload-alt"></i>
                 </a>
           </div>
           
@@ -195,6 +199,30 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="upoladWatchesDialog" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form action="../api/watch/import/" method="post" enctype="multipart/form-data">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Import Watches from text file</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+             <input type="file" class="mb-3" id="watchesFile" name="watchesFile" />
+             <div class="alert alert-danger" role="alert">
+                 <i class="fas fa-exclamation-triangle"></i>&nbsp;
+                 This action could not be undone. All existing watches will be erased.
+             </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+            <button type="submit" class="btn btn-warning">Start import</button>
+          </div>
+        </div>
+        </form>
       </div>
     </div>
 

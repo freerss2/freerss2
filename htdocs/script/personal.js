@@ -330,6 +330,13 @@ function openImportModal() {
   importOpmlModal.show();
 }
 
+// Open import filters dialog
+function uploadFiltersModal() {
+  var upoladWatchesDialog = document.getElementById('upoladWatchesDialog');
+  var importWatchesModal = new bootstrap.Modal(upoladWatchesDialog, {focus: true});
+  importWatchesModal.show();
+}
+
 // callback for article search selection
 // @param selected_engine: search engine name (empty for search in articles)
 // the pattern for search is taken from DOM element by ID

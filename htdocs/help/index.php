@@ -73,6 +73,7 @@
       <p>There are two possible ways for filling-up personal list of subscriptions: import from OPML file or enter their links one-by-one.</p>
       <p>If you know what's OPML - just go to "settings" and upload your OPML file. Please be careful - this operation removes all existing feeds definitions, so it could be used for recovery, but should not repeated in regular circumstances.</p>
       <p>Now let's learn how to add single RSS subscription to FreeRSS reader. First, you've to copy the feed URL to clipboard. Then select from application menu "Add new RSS" and paste the URL in first textbox. You can add some informal title, but it's not critical: the original title will be read from RSS, and you can always rename it. The "group" selection is also optional, but it could be nice to place new RSS under right origin.</p>
+      <a name="keyboard"></a>
       <H1>Keyboard shortcuts</H1>
       <p>For making better user experience on bigger screen with large distances between control buttons, we added some keyboard shortcuts:</p>
       <table>
@@ -85,6 +86,9 @@
         <tr><td>Alt/H</td><td>Jump to service homepage</td></tr>
         <tr><td>Ctrl/Z</td><td>Mark all articles on current page as "read"</td></tr>
       </table>
+      <a name="WatchFilters"></a>
+      <H1>Watches (Filters)</H1>
+      <p>Sometime it's not enough to get a bunch of articles as a single newspaper. It's really hard to read such mix, even by passing over their titles. Much more convenient could be some classification by topics. FreeRSS2 has almost unique feature that allows you to customize your own "watches" by definition of logical rules, or "filters". The filter is a boolean sentence that describes which articles should be tagged for this watch. In addition you can define a condition for built-in "trash" watch. Articles, matching "trash" condition, will be marked as "already read" and wouldn't appear in default view.</p>
       <H1>Technical details and source code</H1>
       <p>This is a FREE Open Source project. All code (excluding hosting-specific credentials) is available online on <a href="https://github.com/freerss2/freerss2" target="_blank">GitHub</a></p>
       <p>The code is rewritten from scratch using only DB schema from Free RSS 1. Since this is online multy-user system, all tables got extra "user_id" column. Naturally, the programming language was changed from Perl to PHP, and SQL engine from SQLite3 to MySQL. In addition, for getting modern look-n-feel style, all GUI part styled with latest <a href="https://getbootstrap.com/" target="_blank">Bootstrap CSS-classes</a> and <a href="https://fontawesome.com/" target="_blank">FontAwesome</a> icons set.</p>
