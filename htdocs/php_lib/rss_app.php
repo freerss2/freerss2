@@ -4,6 +4,8 @@ include "db_conf.php";
 include "db_app.php";
 include "php_util.php";
 include "opml.php";
+require_once "Spyc.php";
+
 
 $APP_VERSION = '2.0.1.6.4';
 
@@ -429,6 +431,58 @@ class RssApp {
     return $result;
   } // getAllSubscrTree
 
+  /**
+   * Convert watches for dump
+   * @param $watches_data: array of all watch descriptors
+   * @return: list of correct formatted objects
+  **/
+  public function convertWatchesForDump($watches_data) {
+    $result = array();
+    foreach ($watches_data as $watch) {
+      if ( $this->isReservedWatch($watch['fd_watchid']) ) {
+        continue;
+      }
+      $rules = array();
+      foreach ($watch['rules'] as $rule) {
+        $rule_id = $rule['rl_id'];
+        $conditions = array();
+        foreach ($rule['where'] as $chk_text) {
+          $conditions [ ]= array('chk_text' => $chk_text);
+        }
+        $rules[$rule_id] = array(
+          'title' => $rule['title'],
+          'rl_type'  => 'text',
+          'conditions' => $conditions
+        );
+      }
+      $rec = array(
+        'fd_watchid' => $watch['fd_watchid'],
+        'title'      => $watch['title'],
+        'rules'      => $rules
+      );
+      $result []= $rec;
+    }
+    return $result;
+  }
+
+  /**
+   * Generate YAML for user's watches (filters)
+   * @return: text buffer with YAML representation
+  **/
+  public function exportWatches($format) {
+    switch($format) {
+      case "yaml":
+        $watches_data = $this->getWatchesList();
+        $watches_data = $this->convertWatchesForDump($watches_data);
+        $result = spyc_dump($watches_data);
+        break;
+      # TODO: support other formats: XML/JSON/...
+      default:
+        $result = "Error: unsupported format - $format";
+        break;
+    }
+    return $result;
+  }
 
   /**
    * Generate OPML (XML) representation of groups and their feeds
