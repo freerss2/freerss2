@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.4';
+$APP_VERSION = '2.0.1.6.5';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -109,7 +109,7 @@ class RssApp {
     $query3 = "INSERT INTO `tbl_users` ".
       "(`user_id`, `full_name`, `login_name`, `email`, `expiration_timestamp`, `password`) ".
       "VALUES ( (SELECT MAX(u.`user_id`)+1 FROM `tbl_users` as u), ".
-      " :name, :email, :email, $this->NOW + INTERVAL 24 HOUR, :checksum )";
+      "            :name,       :email,       :email, $this->NOW + INTERVAL 24 HOUR, :checksum )";
     $bindings['name'] = $name;
     $bindings['checksum'] = $checksum;
     $this->db->execQuery($query3, $bindings);
@@ -328,7 +328,8 @@ class RssApp {
     $bindings['upd_status'] = $status;
     $bindings['upd_log']    = $log;
     $query1 = "INSERT INTO `tbl_subscr_state` ".
-      "(`user_id`, `type`, `id`, `timestamp`, `upd_status`, `upd_log`) VALUES ".
+      "(`user_id`, `type`, `id`, `timestamp`, `upd_status`, `upd_log`) ".
+      "VALUES ".
       "(:user_id , :type , :id , $this->NOW, :upd_status , :upd_log )";
     $this->db->execQuery($query1, $bindings);
   }
@@ -482,6 +483,69 @@ class RssApp {
         break;
     }
     return $result;
+  }
+
+  /**
+   * Load YAML with user's watches (filters)
+   * @param $watches_source: input YAML buffer text
+   * @return: error message (if any)
+  **/
+  public function loadWatches($watches_source) {
+    $err = '';
+    # Remove existing watches and their conditions
+    $bindings = array('user_id'=>$this->user_id);
+    $query1 = "DELETE FROM `tbl_rules_text` WHERE `user_id`=:user_id";
+    $this->db->execQuery($query1, $bindings);
+    $query2 = "DELETE FROM `tbl_rules` WHERE `user_id`=:user_id";
+    $this->db->execQuery($query2, $bindings);
+    $query3 = "DELETE FROM `tbl_watches` WHERE `user_id`=:user_id";
+    $this->db->execQuery($query3, $bindings);
+    #
+    # parse input buffer
+    # [{"fd_watchid":"tag_serials","title":"Serials","rules":
+    #   {"tag_serials_3":
+    #     {"title":"By_content","rl_type":"text","conditions":
+    #        [{"chk_text":"`fd_feedid` 
+    #
+    # For each watch in top array:
+    # create watch record in `tbl_watches`
+    #   For each rule under watch.rules:
+    #   create rule record in `tbl_rules`
+    #     For each condition in rule.conditions:
+    #     create condition record in `tbl_rules_text`
+    #
+    $watches = spyc_load($watches_source);
+    foreach ($watches as $watch) {
+       $rl_action = ($watch['fd_watchid'] == 'trash') ? 'mark_read' : 'set_tag';
+       $rl_act_arg = $watch['fd_watchid'];
+       "INSERT INTO `tbl_watches`";
+       $bindings1 = array(
+         'user_id'=>$this->user_id, 'watch_id'=>$watch['fd_watchid'], 'name'=>$watch['title']);
+       $query1 = "INSERT INTO `tbl_watches` ".
+         "(`user_id`, `fd_watchid`, `title`) VALUES ".
+         "(:user_id, :watch_id, :name)";
+       $this->db->execQuery($query1, $bindings1);
+       foreach ($watch['rules'] as $rule_id => $rule) {
+         $bindings2 = array(
+           'user_id'=>$this->user_id, 'rl_id'=>$rule_id, 'title'=>$rule['title'],
+           'rl_action'=>$rl_action, 'rl_act_arg'=>$rl_act_arg);
+         $query2 = "INSERT INTO `tbl_rules` ".
+           "(`user_id`, `rl_id`, `title`, `rl_type`, `rl_action`, `rl_act_arg`) ".
+           "VALUES ".
+           "(:user_id,  :rl_id,  :title,  'text',    :rl_action,  :rl_act_arg)";
+         $this->db->execQuery($query2, $bindings2);
+         foreach ($rule['conditions'] as $condition) {
+           $query3 = "INSERT INTO `tbl_rules_text` ".
+             "(`user_id`, `rl_id`, `chk_text`) ".
+             "VALUES ".
+             "(:user_id,  :rl_id,  :chk_text)";
+           $bindings3 = array(
+             'user_id'=>$this->user_id, 'rl_id'=>$rule_id, 'chk_text'=>$condition['chk_text']);
+           $this->db->execQuery($query3, $bindings3);
+         }
+       }
+    }
+    return $err;
   }
 
   /**
@@ -722,7 +786,7 @@ class RssApp {
     $bindings2 = array('name'=>$name, 'user_id'=>$this->user_id, 'watch_id' => $watch_id);
     $query2 = "INSERT INTO `tbl_watches` ".
       "(`user_id`, `fd_watchid`, `title`) VALUES ".
-      "(:user_id, :watch_id, :name)";
+      "(:user_id,  :watch_id,    :name)";
     $this->db->execQuery($query2, $bindings2);
     return $watch_id;
   }
@@ -1083,7 +1147,8 @@ class RssApp {
           'flagged'    => 0);
       $query = "INSERT INTO `tbl_posts` " .
         "(`user_id`, `link`, `title`, `author`, `categories`, `timestamp`, `description`, `fd_postid`, `guid`, `fd_feedid`, `gr_original_id`, `read`, `flagged`) " .
-        "VALUES (:user_id, :link, :title, :author, :categories, :timestamp, :description, :fd_postid, :guid, :fd_feedid, :gr_original_id, :read, :flagged)";
+        "VALUES ".
+        "(:user_id,  :link,  :title,  :author,  :categories,  :timestamp,  :description,  :fd_postid,  :guid,  :fd_feedid,  :gr_original_id,  :read,  :flagged)";
       $this->db->execQuery($query, $bindings);
       // reverse action for `description` SELECT CONVERT(`description` USING utf8) ...
       $inserted_count++;
@@ -1462,7 +1527,7 @@ class RssApp {
   </div>';
     }
     echo '
-    <button id="reload_button" type="button" class="btn btn-outline-primary" onclick="window.location.reload();">
+      <button id="reload_button" type="button" class="btn btn-outline-primary" onclick="showUpdatingDialog(); window.location.reload();">
       <i class="fa fa-redo-alt"></i> Reload page
     </button>';
     echo '</div>';
@@ -1526,7 +1591,8 @@ class RssApp {
   public function setPersonalSetting($setting_name, $setting_value) {
     $this->deletePersonalSetting($setting_name);
 
-    $query = "INSERT INTO `tbl_settings` (`user_id`, `param`, `value`) VALUES (:user_id, :param_name, :param_value)";
+    $query = "INSERT INTO `tbl_settings` (`user_id`, `param`, `value`) ".
+      "VALUES (:user_id, :param_name, :param_value)";
     $bindings = array(
         'user_id' => $this->user_id,
         'param_name' => $setting_name,
@@ -1753,7 +1819,8 @@ class RssApp {
       'feed_id'   => $feed_id
     );
     $query = "INSERT INTO `tbl_subscr` ".
-      "(`user_id`, `group`, `fd_feedid`, `text`, `title`, `xmlUrl`, `htmlUrl`, `index_in_gr`, `download_enabled`) VALUES ".
+      "(`user_id`, `group`, `fd_feedid`, `text`, `title`, `xmlUrl`, `htmlUrl`, `index_in_gr`, `download_enabled`) ".
+      "VALUES ".
       "(:user_id,  :group,  :feed_id,    :text,  :title,  :xml_url, :html_url, 0, 1)";
     $this->db->execQuery($query, $bindings);
     return "";
