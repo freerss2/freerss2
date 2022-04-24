@@ -101,6 +101,7 @@ function scrollToTop() {
 // Go to next/previous feed
 function goToPrevFeed() {
   if (! prev_feed_id) { return; }
+  showUpdatingDialog();
   var curr_location = window.location.href;
   var new_url = curr_location.replace(/\?.*/, '') + '?type=subscr&id=' + prev_feed_id;
   window.location.href = new_url;
@@ -108,6 +109,7 @@ function goToPrevFeed() {
 
 function goToNextFeed() {
   if (! next_feed_id) { return; }
+  showUpdatingDialog();
   var curr_location = window.location.href;
   var new_url = curr_location.replace(/\?.*/, '') + '?type=subscr&id=' + next_feed_id;
   window.location.href = new_url;
@@ -116,6 +118,7 @@ function goToNextFeed() {
 // Go to next/previous watch
 function goToPrevWatch() {
   if (! prev_watch_id) { return; }
+  showUpdatingDialog();
   var curr_location = window.location.href;
   var new_url = curr_location.replace(/\?.*/, '') + '?type=watch&id=' + prev_watch_id;
   window.location.href = new_url;
@@ -123,6 +126,7 @@ function goToPrevWatch() {
 
 function goToNextWatch() {
   if (! next_watch_id) { return; }
+  showUpdatingDialog();
   var curr_location = window.location.href;
   var new_url = curr_location.replace(/\?.*/, '') + '?type=watch&id=' + next_watch_id;
   window.location.href = new_url;
@@ -131,6 +135,7 @@ function goToNextWatch() {
 // Go to next/previous group
 function goToPrevGroup() {
   if (! prev_group_id) { return; }
+  showUpdatingDialog();
   var curr_location = window.location.href;
   var new_url = curr_location.replace(/\?.*/, '') + '?type=group&id=' + prev_group_id;
   window.location.href = new_url;
@@ -138,6 +143,7 @@ function goToPrevGroup() {
 
 function goToNextGroup() {
   if (! next_group_id) { return; }
+  showUpdatingDialog();
   var curr_location = window.location.href;
   var new_url = curr_location.replace(/\?.*/, '') + '?type=group&id=' + next_group_id;
   window.location.href = new_url;
@@ -405,6 +411,14 @@ function triggerSearch() {
   window.location.href = new_url;
 }
 
+// Show "Updating" banner for background processing
+function showUpdatingDialog() {
+  document.title = "Free RSS (updating)";
+  // show "busy" banner
+  var refreshModal = new bootstrap.Modal(document.getElementById('processingDialog'), {focus: true});
+  refreshModal.show();
+}
+
 // start refresh process
 function refreshRss() {
   document.title = "Free RSS (updating)";
@@ -649,6 +663,7 @@ function changeArticleReadStateVisual(article_id, change) {
 
 // Mark all articles on current page as read and open next page
 function markReadAndNext() {
+  showUpdatingDialog();
   // get IDs of all articles on page
   var ids = getDisplayedArticleIds();
   // send "mark read" for those IDs
@@ -858,6 +873,7 @@ function bindKeysForFeeds() {
       case "h":
         if (event.altKey) {
           // console.log("Alt/H");
+          showUpdatingDialog();
           window.location.href = '/';
         }
         break;
