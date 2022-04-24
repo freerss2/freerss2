@@ -22,7 +22,7 @@
   // 2. Get argument (format=opml)
   // TODO: develop API args parser
 
-  if (!isset($_FILES['opmlFile'])) {
+  if (!isset($_FILES['opmlFile']) || !$_FILES['opmlFile']['name']) {
     echo "Error: missing 'opmlFile'";
     exit(1);
   }

@@ -33,7 +33,7 @@
   // 2. Get arguments (watchesFile=str-buffer)
   // TODO: develop API args parser
 
-  if (!isset($_FILES['watchesFile'])) {
+  if (!isset($_FILES['watchesFile']) || !$_FILES['watchesFile']['name']) {
     echo "Error: missing 'watchesFile'";
     exit(1);
   }
