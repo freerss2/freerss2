@@ -518,13 +518,14 @@ class RssApp {
     foreach ($watches as $watch) {
        $rl_action = ($watch['fd_watchid'] == 'trash') ? 'mark_read' : 'set_tag';
        $rl_act_arg = $watch['fd_watchid'];
-       "INSERT INTO `tbl_watches`";
-       $bindings1 = array(
-         'user_id'=>$this->user_id, 'watch_id'=>$watch['fd_watchid'], 'name'=>$watch['title']);
-       $query1 = "INSERT INTO `tbl_watches` ".
-         "(`user_id`, `fd_watchid`, `title`) VALUES ".
-         "(:user_id, :watch_id, :name)";
-       $this->db->execQuery($query1, $bindings1);
+       if ($watch['fd_watchid'] !== 'trash') {
+         $bindings1 = array(
+           'user_id'=>$this->user_id, 'watch_id'=>$watch['fd_watchid'], 'name'=>$watch['title']);
+         $query1 = "INSERT INTO `tbl_watches` ".
+           "(`user_id`, `fd_watchid`, `title`) VALUES ".
+           "(:user_id, :watch_id, :name)";
+         $this->db->execQuery($query1, $bindings1);
+       }
        foreach ($watch['rules'] as $rule_id => $rule) {
          $bindings2 = array(
            'user_id'=>$this->user_id, 'rl_id'=>$rule_id, 'title'=>$rule['title'],
