@@ -96,57 +96,53 @@ function scrollToTop() {
     document.documentElement.scrollTop = 0;
 }
 
+// -------------------( build URL )--------------------------------
+
+// get current app URL without args after '?...'
+function app_url_no_args() {
+  var curr_location = window.location.href;
+  return curr_location.replace(/\?.*/, '');
+}
+
+// go to current app URL with new arguments after '?...'
+function set_app_args(args) {
+  showUpdatingDialog();
+  window.location.href = app_url_no_args() + '?' + args;
+}
+
 // -------------------( getting next/prev view )-------------------
 
 // Go to next/previous feed
 function goToPrevFeed() {
   if (! prev_feed_id) { return; }
-  showUpdatingDialog();
-  var curr_location = window.location.href;
-  var new_url = curr_location.replace(/\?.*/, '') + '?type=subscr&id=' + prev_feed_id;
-  window.location.href = new_url;
+  set_app_args('type=subscr&id=' + prev_feed_id);
 }
 
 function goToNextFeed() {
   if (! next_feed_id) { return; }
-  showUpdatingDialog();
-  var curr_location = window.location.href;
-  var new_url = curr_location.replace(/\?.*/, '') + '?type=subscr&id=' + next_feed_id;
-  window.location.href = new_url;
+  set_app_args('type=subscr&id=' + next_feed_id);
 }
 
 // Go to next/previous watch
 function goToPrevWatch() {
   if (! prev_watch_id) { return; }
-  showUpdatingDialog();
-  var curr_location = window.location.href;
-  var new_url = curr_location.replace(/\?.*/, '') + '?type=watch&id=' + prev_watch_id;
-  window.location.href = new_url;
+  set_app_args('type=watch&id=' + prev_watch_id);
 }
 
 function goToNextWatch() {
   if (! next_watch_id) { return; }
-  showUpdatingDialog();
-  var curr_location = window.location.href;
-  var new_url = curr_location.replace(/\?.*/, '') + '?type=watch&id=' + next_watch_id;
-  window.location.href = new_url;
+  set_app_args('type=watch&id=' + next_watch_id);
 }
 
 // Go to next/previous group
 function goToPrevGroup() {
   if (! prev_group_id) { return; }
-  showUpdatingDialog();
-  var curr_location = window.location.href;
-  var new_url = curr_location.replace(/\?.*/, '') + '?type=group&id=' + prev_group_id;
-  window.location.href = new_url;
+  set_app_args('type=group&id=' + prev_group_id);
 }
 
 function goToNextGroup() {
   if (! next_group_id) { return; }
-  showUpdatingDialog();
-  var curr_location = window.location.href;
-  var new_url = curr_location.replace(/\?.*/, '') + '?type=group&id=' + next_group_id;
-  window.location.href = new_url;
+  set_app_args('type=group&id=' + next_group_id);
 }
 
 // get search URL by name
@@ -157,17 +153,24 @@ function getSearchUrl(search_name) {
   return '';
 }
 
-// delete watch
-function deleteWatch(watch_id) {
+// build API URL for edit_filter
+// @return: full URL for API call
+function build_api_url(url) {
   var curr_location = window.location.href;
   var base_url = curr_location.replace(/edit_filter\.php.*/, '');
-  var api_url = base_url + '../api/watch/delete/?watch_id=' + watch_id;
+  return base_url + '..' + url;
+}
+
+// delete watch
+function deleteWatch(watch_id) {
+  var api_url = build_api_url('/api/watch/delete/?watch_id=' + watch_id);
   var reply = httpGet(api_url);
   if ( reply.startsWith('Error') ) {
       // TODO: show error in a different way
       window.alert(reply);
       return;
   }
+  showUpdatingDialog();
   window.location.href = '/personal/edit_filter.php';
 }
 
@@ -177,10 +180,7 @@ function saveWatchName(watch_id) {
   if (! elm) { return; }
   new_watch_name = elm.value;
   if (! new_watch_name) { return; }
-  console.log("saveWatchName("+watch_id+","+new_watch_name+")");
-  var curr_location = window.location.href;
-  var base_url = curr_location.replace(/edit_filter\.php.*/, '');
-  var api_url = base_url + '../api/watch/'
+  var api_url = build_api_url('/api/watch/')
   if (watch_id) {
     api_url += 'update/?watch_id=' + watch_id + '&name=' + new_watch_name;
   } else {
@@ -192,6 +192,7 @@ function saveWatchName(watch_id) {
       window.alert(reply);
       return;
   }
+  showUpdatingDialog();
   if (watch_id) {
     window.location.reload();
   } else {
@@ -221,6 +222,7 @@ function rerunFilters() {
     }
     console.log(reply);
     // TODO: why reload?
+    showUpdatingDialog();
     window.location.href = '/personal/';
   });
 }
@@ -229,12 +231,8 @@ function rerunFilters() {
 // @param watch_id: watch where to delete rule
 // @param rule_id: rule to delete
 function deleteRule(watch_id, rule_id) {
-  var curr_location = window.location.href;
-  var base_url = curr_location.replace(/edit_filter\.php.*/, '');
-
-  api_url = base_url +
-    '../api/watch/rule/delete?watch_id=' + watch_id +
-    '&rule_id=' + rule_id;
+  api_url = build_api_url(
+    '/api/watch/rule/delete?watch_id=' + watch_id + '&rule_id=' + rule_id);
   var reply = httpGet(api_url);
   if ( reply.startsWith('Error') ) {
     // TODO: show it in a different way
@@ -252,11 +250,8 @@ function addRule(watch_id) {
   var elm = document.getElementById('new_rule');
   if (! elm) { return; }
   new_rule_name = elm.value;
-  var curr_location = window.location.href;
-  var base_url = curr_location.replace(/edit_filter\.php.*/, '');
-  api_url = base_url +
-    '../api/watch/rule/add?watch_id=' + watch_id +
-    '&rule_name=' + new_rule_name;
+  api_url = build_api_url(
+    '/api/watch/rule/add?watch_id=' + watch_id + '&rule_name=' + new_rule_name);
   var reply = httpGet(api_url);
   if (reply.startsWith('Error')) {
     // TODO: show it in a different way
@@ -271,12 +266,8 @@ function addRule(watch_id) {
 // @param watch_id: current watch ID
 // @param rule_id: current rule ID
 function openRuleEdit(watch_id, rule_id) {
-  var curr_location = window.location.href;
-  var base_url = curr_location.replace(/edit_filter\.php.*/, '');
-
-  api_url = base_url +
-    '../api/watch/rule/edit?watch_id=' + watch_id +
-    '&rule_id=' + rule_id;
+  api_url = build_api_url(
+    '/api/watch/rule/edit?watch_id=' + watch_id + '&rule_id=' + rule_id);
   var edit_code = httpGet(api_url);
 
   var ruleEditModal = new bootstrap.Modal(document.getElementById('ruleEditDialog'), {focus: true});
@@ -357,9 +348,9 @@ function triggerTitleSearch( selected_engine ) {
   tofind = encodeURIComponent(tofind);
   if (selected_engine == '') {
     // if selected local search - submit search URL in current window
-    var curr_location = window.location.href;
-    var new_url = curr_location.replace(/\?.*/, '').replace(/read.php/, '')
+    var new_url = app_url_no_args().replace(/read.php/, '')
       + 'read.php?type=watch&id=search&pattern=' + tofind;
+    showUpdatingDialog();
     window.location.href = new_url;
   }
   else {
@@ -405,9 +396,9 @@ function triggerSearch() {
   if (! elm || !elm.value) { return; }
   var tofind = elm.value;
   // console.log('trigger search for: '+tofind);
-  var curr_location = window.location.href;
-  var new_url = curr_location.replace(/\?.*/, '').replace(/read.php/, '')
+  var new_url = app_url_no_args().replace(/read.php/, '')
     + 'read.php?type=watch&id=search&pattern=' + tofind;
+  showUpdatingDialog();
   window.location.href = new_url;
 }
 
@@ -415,7 +406,9 @@ function triggerSearch() {
 function showUpdatingDialog() {
   document.title = "Free RSS (updating)";
   // show "busy" banner
-  var refreshModal = new bootstrap.Modal(document.getElementById('processingDialog'), {focus: true});
+  var elm = document.getElementById('processingDialog');
+  if (! elm) { return; }
+  var refreshModal = new bootstrap.Modal(elm, {focus: true});
   refreshModal.show();
 }
 
@@ -448,6 +441,7 @@ function completeRefreshRss(results) {
 }
 
 // callback for group selection change
+// propagate select-list value to input-box
 function changeFeedGroup() {
   var new_group_elm = document.getElementById('new-rss-group');
   var group_select_elm = document.getElementById('group-select');
@@ -487,6 +481,7 @@ function createFeed() {
       return;
     }
     var feed_id = buf.split("\n")[0].split(/: /)[1];
+    showUpdatingDialog();
     window.location.href = '/personal/read.php?type=subscr&id='+feed_id;
   });
 }
@@ -544,7 +539,7 @@ function domElementChangeVisibility(element_id, visibility) {
   if (visibility == 'on') { dom_obj.classList.remove('hidden-element'); }
   if (visibility == 'off') { dom_obj.classList.add('hidden-element'); }
 }
-//
+
 // For given DOM element change bold style
 // @param bold_style: 'on' / 'off' / 'toggle'
 function domElementChangeBoldStyle(dom_obj, bold_style) {
@@ -627,6 +622,7 @@ function changeArticleReadState(article_id, change) {
   httpGetAsync(url, function(buf){
     if ( buf.startsWith('Error') ) {
       console.log(buf);
+      showUpdatingDialog();
       window.location.href = '/';
     }
     console.log(buf);
@@ -775,6 +771,7 @@ function delete_feed(feed_id) {
     '&action=delete';
   httpGetAsync(url, function(buf){
     console.log(buf);
+    showUpdatingDialog();
     window.location.href = '/';
   });
 }
@@ -838,6 +835,7 @@ function goToPage(page_select, delta=0) {
   if (isNaN(page_target)) { console.log("ask a page number here"); return; }
   page_target = parseInt(page_target)+delta;
   if (! page_target) { return; }
+  showUpdatingDialog();
   window.location.href = window.location.href.replace(/&page=.*/, '') + '&page=' + page_target;
 }
 
@@ -855,7 +853,6 @@ function setArticlesContext( value=true ) {
       default:      articles_context = true;  break;
   }
 }
-
 
 // Bind keyboard shortcuts for feeds reader screen
 function bindKeysForFeeds() {
