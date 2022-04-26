@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.5d';
+$APP_VERSION = '2.0.1.6.5e';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -1447,6 +1447,39 @@ class RssApp {
   } // warnRssInactivity
 
   /**
+   * Generate code for item (article) edit
+   * @param $item_id: article ID
+   * @return: html code for article tags & watch modification
+  **/
+  public function itemEditCode($item_id) {
+    $result = array();
+    $labels = array('one', 'two');  # TODO: read from DB
+    $result []= '<h3>Labels</h3>';
+    foreach ($labels as $label) {
+      $result []= '<label>'.$label.'</label>&nbsp;';
+    }
+    $result []= '<br>';
+    $result []= '<label>Add label</label>&nbsp;<input type="text"></input><br>';
+    $item_watch_id = 'tag_warez';  # TODO: read from DB
+    $watches = $this->getWatchesList();
+
+    $result []= '<h3>Watch relation</h3>';
+    $result []= '<label>Store this article in:</label>&nbsp;<select>';
+    $selected = ($item_watch_id) ? '' : 'selected';
+    $result []= '<option '.$selected.' value="unfiltered"> - unfiltered - </option>';
+    foreach ($watches as $watch) {
+      $title = $watch['title'];
+      if ($title == 'trash') { continue; }
+      $watch_id = $watch['fd_watchid'];
+      if ( in_array($watch_id, $this->builtin_watches) ) { continue; }
+      $selected = ( $watch_id == $item_watch_id ) ? 'selected' : '';
+      $result []= '<option '.$selected.' value="'.$watch_id.'">'.$title.'</option>';
+    }
+    $result []= '</select>';
+    return implode("\n", $result);
+  }
+
+  /**
    * Show items as grid of accordion elements
    * @param $items: list of item records to be shown on this page
   **/
@@ -1500,7 +1533,7 @@ class RssApp {
              <li><a class="dropdown-item" href="https://www.facebook.com/sharer.php?u='.$link_quoted.'" target="_blank">- Facebook</a></li>
              <li><a class="dropdown-item" href="https://www.livejournal.com/update.bml?event='.$link_quoted.'" target="_blank">- LiveJournal</a></li>
              <li><a class="dropdown-item" href="https://twitter.com/intent/tweet?original_referer='.$link_quoted.'&text=From%20FreeRSS" target="_blank">- Twitter</a></li>
-             <li><a class="dropdown-item" href="#">Move to ...</a></li>
+             <li><a class="dropdown-item" href="javascript:changeArticle(\''.$fd_postid.'\')">Move to ...</a></li>
            </ul>
          </div>
          <h5>

@@ -518,6 +518,23 @@ $rss_app->showItems($items);
       </div>
     </div>
 
+    <div class="modal" id="editArticleDialog" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit article properties</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="editArticleContent">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="saveArticleChanges();">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal" id="processingDialog" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">

@@ -412,6 +412,24 @@ function showUpdatingDialog() {
   refreshModal.show();
 }
 
+// change article details (move to specific watch, edit labels)
+function changeArticle(article_id) {
+  // showUpdatingDialog();
+
+  var editArticleDialog = document.getElementById('editArticleDialog');
+  var editArticleModal = new bootstrap.Modal(editArticleDialog, {focus: true});
+  setArticlesContext(0);
+  editArticleDialog.addEventListener(
+      'hidden.bs.modal', function (event) { setArticlesContext(1); });
+  editArticleModal.show();
+
+  var url = '/api/articles/edit/?item_id='+article_id;
+  // send query to get article editing code
+  httpGetAsync(url, function(buf){
+    document.getElementById('editArticleContent').innerHTML = buf;
+  });
+}
+
 // start refresh process
 function refreshRss() {
   document.title = "Free RSS (updating)";
@@ -515,6 +533,16 @@ function getActiveArticleId() {
   }
   if (! article_id.startsWith('heading_')) {
     article_id = '';
+  }
+  if (! article_id ) {
+    var elements = document.getElementsByClassName('accordion-header');
+    for (var i = 0; i < elements.length; i++) {
+      var element = elements[i];
+      if (element.parentElement.children[1].classList.contains('show')) {
+        article_id = element.id;
+        break;
+      }
+    }
   }
   return article_id;
 }
@@ -736,6 +764,7 @@ function closeCurrentArticle() {
     article_id = getFirstArticleId();
   }
   changeArticleVisibility(article_id, 'hide');
+  focusOnArticleById(article_id, scroll_view=false);
 }
 
 function openCurrentArticle() {
@@ -746,6 +775,7 @@ function openCurrentArticle() {
   }
   changeArticleVisibility(article_id, 'show');
   changeArticleReadState(article_id.replace('heading_', ''), 'on');
+  focusOnArticleById(article_id, scroll_view=false);
 }
 
 function changeArticleVisibility(article_id, action) {
