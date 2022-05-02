@@ -368,49 +368,38 @@ if ($req_type == 'subscr') {
       </div>
       <div class="d-grid gap-2 d-md-block" style="max-width:30em;">
         <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="basic-addon1">RSS</span>
-          </div>
+          <span class="input-group-text" id="basic-addon1">RSS</span>
           <input type="text" class="form-control" placeholder="Feed URL"
               aria-label="RSS Feed URL" aria-describedby="basic-addon2"
               id="xmlUrl" value="'.$xmlUrl.'">
-          <div class="input-group-append">
-              <button class="btn btn-secondary" type="button"
-                onclick="set_feed_param(\'xmlUrl\', \'xmlUrl\', \''.$curr_feed_id.'\');">
-              <i class="far fa-thumbs-up"></i>
-            </button>
-          </div>
+          <button class="btn btn-secondary" type="button"
+            onclick="set_feed_param(\'xmlUrl\', \'xmlUrl\', \''.$curr_feed_id.'\');">
+            <i class="far fa-thumbs-up"></i>
+          </button>
         </div>
       </div>
       <div class="d-grid gap-2 d-md-block" style="max-width:30em;">
         <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="basic-addon1">Title</span>
-          </div>
+          <span class="input-group-text" id="basic-addon1">Title</span>
           <input type="text" class="form-control" placeholder="Feed Name"
               aria-label="RSS Feed Name" aria-describedby="basic-addon2"
               id="rss_title" value="'.$rss_title.'">
-          <div class="input-group-append">
-              <button class="btn btn-secondary" type="button"
-                onclick="set_feed_param(\'rss_title\', \'title\', \''.$curr_feed_id.'\');">
-              <i class="far fa-thumbs-up"></i>
-            </button>
-          </div>
+          <button class="btn btn-secondary" type="button"
+            onclick="set_feed_param(\'rss_title\', \'title\', \''.$curr_feed_id.'\');">
+            <i class="far fa-thumbs-up"></i>
+          </button>
         </div>
       </div>
       <div class="d-grid gap-2 d-md-block" style="max-width:30em;">
         <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="basic-addon1">Group</span>
-          </div>
+          <span class="input-group-text" id="basic-addon1">Group</span>
           <input type="text" class="form-control" placeholder="Group name"
               aria-label="Where to place RSS Feed" aria-describedby="basic-addon2"
               id="new-rss-group" value="'.$rss_group.'">
-          <div class="input-group-append">
-            <button class="btn btn-secondary" type="button"
-                onclick="set_feed_param(\'new-rss-group\', \'group\', \''.$curr_feed_id.'\');">
-              <i class="far fa-thumbs-up"></i>
-            </button>
+          <button class="btn btn-secondary" type="button"
+            onclick="set_feed_param(\'new-rss-group\', \'group\', \''.$curr_feed_id.'\');">
+            <i class="far fa-thumbs-up"></i>
+          </button>
           </div>
         </div>
         <select class="form-select mb-3" id="group-select" onchange="changeFeedGroup();" aria-label="Group select">';
@@ -522,14 +511,16 @@ $rss_app->showItems($items);
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Edit article properties</h5>
+            <h5 class="modal-title">Article properties</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body" id="editArticleContent">
+            <label>Preparing...</label>
+            <img style="display: block; margin-left: auto; margin-right: auto;" src="../img/processing_bar.gif" >
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick="saveArticleChanges();">Save changes</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+            <button type="button" class="btn btn-primary" onclick="saveArticleChanges();">Apply changes</button>
           </div>
         </div>
       </div>
@@ -539,7 +530,7 @@ $rss_app->showItems($items);
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">processing, please wait...</h5>
+            <h5 class="modal-title">Processing, please wait...</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">

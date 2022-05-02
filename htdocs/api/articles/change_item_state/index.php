@@ -1,7 +1,7 @@
 <?php
   /* - - - - - - - - - - - - *\
      Change article state:
-     read/unread, mark/unmark
+     read/unread, mark/unmark, labels & watch_id
   \* - - - - - - - - - - - - */
 
   session_start();
@@ -25,7 +25,7 @@
   $user_id = $_SESSION['user_id'];
   $rss_app->setUserId($user_id);
 
-  // 2. Get arguments (item_id=STR, change_read=on/off/toggle, change_flagged=on/off)
+  // 2. Get arguments (item_id=STR, change_read=on/off/toggle, change_flagged=on/off, labels=str, watch_id=str)
   // TODO: develop API args parser
 
   $item_id     = $_GET['item_id'];
@@ -36,8 +36,10 @@
 
   $change_read = $_GET['change_read'];
   $change_flagged = $_GET['change_flagged'];
+  $labels = $_GET['labels'];
+  $watch_id = $_GET['watch_id'];
 
-  if (! $change_read && ! $change_flagged) {
+  if (! $change_read && ! $change_flagged && is_null($labels) && is_null($watch_id)) {
     echo "missing change args";
     exit(1);
   }
@@ -52,6 +54,13 @@
   if ($change_flagged) {
     $rss_app->updateItemState($item_id, 'flagged', $change_flagged == 'on'? 1 : 0);
     echo "updated item 'flagged' state<BR>\n";
+  }
+  // 3.3 if $labels - update `categories`, update `gr_original_id`
+  if (! is_null($labels)) {
+    $rss_app->updateItemState($item_id, 'categories', $labels);
+    $rss_app->updateItemState($item_id, 'gr_original_id', $watch_id);
+    $rss_app->updateItemState($item_id, 'read', 0);
+    echo "updated item 'tags/watch' state<BR>\n";
   }
 
 ?>

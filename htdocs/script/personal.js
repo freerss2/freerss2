@@ -685,6 +685,22 @@ function changeArticleReadStateVisual(article_id, change) {
   return set_read;
 }
 
+// Change explicitly article labels and watch
+function saveArticleChanges() {
+  var new_labels = document.getElementById('new_label').value;
+  var elm = document.getElementById('new_watch_id');
+  var new_watch_id = elm.value;
+  var article_id = elm.attributes['dest_id'].value;
+  // call API and reload page on completion
+  var url = '/api/articles/change_item_state/?item_id='+article_id+'&labels='+new_labels+'&watch_id='+new_watch_id;
+  console.log(url);
+  httpGetAsync(url, function(buf){
+    console.log(buf);
+    // reload page on completion
+    window.location.reload();
+  });
+}
+
 // Mark all articles on current page as read and open next page
 function markReadAndNext() {
   showUpdatingDialog();

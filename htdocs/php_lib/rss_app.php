@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.5e';
+$APP_VERSION = '2.0.1.6.5g';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -693,9 +693,7 @@ class RssApp {
     $rule_title = $rule['title'];
 
     $result[] = "<div class=\"input-group mb-3\">";
-    $result[] = "  <div class=\"input-group-prepend\">";
-    $result[] = "    <span class=\"input-group-text\">Name</span>";
-    $result[] = "  </div>";
+    $result[] = "  <span class=\"input-group-text\">Name</span>";
     $result[] = "  <input type=\"text\" class=\"form-control\" id=\"rule_title\" style=\"min-width: 8rem;\" value=\"$rule_title\" placeholder=\"Unique rule name\">";
     $result[] = "  </div>";
     $result[] = "</div>";
@@ -975,11 +973,8 @@ class RssApp {
     $rule_title = $rule['title'];
     $result[] = "<div class=\"card-body\">";
     $result[] = "<div class=\"input-group mb-3\">";
-    $result[] = "  <div class=\"input-group-prepend\">";
-    $result[] = "    <span class=\"input-group-text\">Rule</span>";
-    $result[] = "  </div>";
+    $result[] = "  <span class=\"input-group-text\">Rule</span>";
     $result[] = "  <input type=\"text\" readonly class=\"form-control rule-title-ro\" id=\"$rule_id\" style=\"min-width:8rem;\" value=\"$rule_title\" placeholder=\"Unique rule name\">";
-    $result[] = "  <div class=\"input-group-append\">";
     $result[] = "    <button class=\"btn btn-outline-secondary\" type=\"button\" onclick=\"openRuleEdit('$watch_id', '$rule_id');\"><i class=\"far fa-edit\"></i></button>";
     $result[] = "    <button class=\"btn btn-outline-secondary\" type=\"button\" onclick=\"deleteRule('$watch_id', '$rule_id');\"><i class=\"far fa-trash-alt\"></i></button>";
     # "move" selector
@@ -990,7 +985,6 @@ class RssApp {
       $result[] = "      <li><a class=\"dropdown-item\" href=\"#".$w['fd_watchid']."\">".$w['title']."</a></li>";
     }
     $result[] = "    </ul>";
-    $result[] = "  </div>";
     $result[] = "</div>";
     # show group limitation
     # take group name from rule where[0] if it looks like
@@ -1453,20 +1447,25 @@ class RssApp {
   **/
   public function itemEditCode($item_id) {
     $result = array();
-    $labels = array('one', 'two');  # TODO: read from DB
-    $result []= '<h3>Labels</h3>';
-    foreach ($labels as $label) {
-      $result []= '<label>'.$label.'</label>&nbsp;';
-    }
-    $result []= '<br>';
-    $result []= '<label>Add label</label>&nbsp;<input type="text"></input><br>';
-    $item_watch_id = 'tag_warez';  # TODO: read from DB
+    // read from DB gr_original_id & categories
+    $query = "SELECT `gr_original_id`, `categories` ".
+      "FROM `tbl_posts` WHERE ".
+      "`user_id`=:user_id AND `fd_postid`=:fd_postid";
+    $bindings = array('user_id'=>$this->user_id, 'fd_postid'=>$item_id);
+    $item_info = $this->db->fetchSingleRow($query, $bindings);
+    $labels = $item_info[1];
+    $result []= '<div class="input-group input-group-sm mb-3">';
+    $result []= '  <span class="input-group-text">Label(s)</span>';
+    $result []= '  <input type="text" class="form-control" value="'.$labels.'" id="new_label"></input>';
+    $result []= '</div>';
+    $item_watch_id = $item_info[0];
     $watches = $this->getWatchesList();
 
-    $result []= '<h3>Watch relation</h3>';
-    $result []= '<label>Store this article in:</label>&nbsp;<select>';
+    $result []= '<div class="input-group mb-3">';
+    $result []= '  <span class="input-group-text">Associate with watch</span>';
+    $result []= '  <select class="form-select" dest_id="'.$item_id.'" id="new_watch_id">';
     $selected = ($item_watch_id) ? '' : 'selected';
-    $result []= '<option '.$selected.' value="unfiltered"> - unfiltered - </option>';
+    $result []= '    <option '.$selected.' value="unfiltered"> - unfiltered - </option>';
     foreach ($watches as $watch) {
       $title = $watch['title'];
       if ($title == 'trash') { continue; }
@@ -1475,7 +1474,8 @@ class RssApp {
       $selected = ( $watch_id == $item_watch_id ) ? 'selected' : '';
       $result []= '<option '.$selected.' value="'.$watch_id.'">'.$title.'</option>';
     }
-    $result []= '</select>';
+    $result []= '  </select>';
+    $result []= '</div>';
     return implode("\n", $result);
   }
 

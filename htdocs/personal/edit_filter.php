@@ -130,18 +130,14 @@
         <span style="display:inline-block; vertical-align: top; max-width: 800px;">
 
           <div class="input-group mb-3">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Watch</span>
-            </div>
+            <span class="input-group-text">Watch</span>
             <input type="text" class="form-control" value="<?php echo $active_watch['title'] ?>" id="watch_name" style="min-width: 8rem;" placeholder="Watch name">
-            <div class="input-group-append <?php echo $show_save_delete; ?>">
-              <button type="button" class="btn btn-outline-secondary" onclick="saveWatchName('<?php echo $active_watch['fd_watchid']; ?>')">
+            <button type="button" class="btn btn-outline-secondary <?php echo $show_save_delete; ?>" onclick="saveWatchName('<?php echo $active_watch['fd_watchid']; ?>')">
                 Save
-              </button>
-              <button type="button" class="btn btn-outline-secondary <?php echo $show_all_edit; ?>" onclick="deleteWatch('<?php echo $active_watch['fd_watchid']; ?>')">
+            </button>
+            <button type="button" class="btn btn-outline-secondary <?php echo $show_save_delete; ?> <?php echo $show_all_edit; ?>" onclick="deleteWatch('<?php echo $active_watch['fd_watchid']; ?>')">
                 Delete
-              </button>
-            </div>
+            </button>
           </div>
           <?php
               if ( ! is_null($active_watch) ) {
@@ -152,15 +148,11 @@
               }
           ?>
           <div class="input-group mb-3 <?php echo $show_all_edit; ?>">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Add rule</span>
-            </div>
+            <span class="input-group-text">Add rule</span>
             <input type="text" class="form-control" id="new_rule" style="min-width: 8rem;" placeholder="New rule name">
-            <div class=\"input-group-append\">
-              <button class="btn btn-outline-secondary" type="button" onclick="addRule('<?php echo $watch_req; ?>');">
+            <button class="btn btn-outline-secondary" type="button" onclick="addRule('<?php echo $watch_req; ?>');">
                 <i class="far fa-edit"></i>
-              </button>
-            </div>
+            </button>
           </div>
         </span>
       </div>
