@@ -89,7 +89,7 @@
               echo '  <div class="col-3 no-text-overflow"><a href="'.$ref.'" target="_blank">'.$rec[2].'</a></div>';
               echo '  <div class="col-2" >'.$timestamp.'</div>';
               echo '  <div class="col-2 no-text-overflow" >'.$rec[4].'</div>';
-              echo '  <div class="col-5" >'.$rec[5].'</div>';
+              echo '  <div class="col-5" >'.substr(strip_tags($rec[5]), 0, 80).'</div>';
               echo "</div>\n";
             }
           } else {
