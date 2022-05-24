@@ -105,17 +105,29 @@
   width: 93%;
 }
 
+@media screen and (max-width: 1024px) {
+
+.item-header-bar {
+  padding-left: 0;
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
+  padding-right: 0.3rem;
+  margin-left: 5em;
+  width: 86%;
+}
+
+}
+
 @media screen and (max-width: 450px) {
 
 .item-header-bar {
   padding-left: 0;
   padding-top: 0.3em;
   padding-bottom: 0.3em;
-  padding-right: 0;
+  padding-right: 0.3rem;
   margin-left: 5em;
-  width: 85%;
+  width: 75%;
 }
-
 
 }
 
