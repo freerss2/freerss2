@@ -32,9 +32,10 @@ class DbApp extends DbSql {
       'download_enabled' => 'INTEGER', # download enable flag
     ),
     'tbl_watches'   => array( # tags AKA watches AKA newspapers - set of records with specific keyword
-      'user_id'     => 'INTEGER',
-      'title'       => 'TEXT', # displayed name
+      'user_id'     => 'INTEGER NOT NULL',
+      'title'       => 'TEXT NOT NULL', # displayed name
       'fd_watchid'  => 'TEXT', # 'tag_' + ID to be stored in associated posts
+      'sort_index'  => 'INTEGER NOT NULL', # display order index
     ),
     'tbl_rules'     => array( # rules for automatic fintering/tagging
       'user_id'     => 'INTEGER',
@@ -212,9 +213,9 @@ class DbApp extends DbSql {
    * @param $table_name: in which table to search
    * @param $where: condition for search (take all when omitted)
   **/
-  public function queryTableRecords($table_name, $where=null) {
+  public function queryTableRecords($table_name, $where=null, $order=null) {
       if (array_key_exists($table_name, $this->DB_SCHEMA)) {
-          return parent::queryTableRecords($table_name, $where);
+          return parent::queryTableRecords($table_name, $where, $order);
       }
       # TODO: report exception
       $this->reportError("unsupported table '$table_name'");

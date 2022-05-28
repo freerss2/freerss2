@@ -198,10 +198,10 @@ class DbSql {
 
   // query table records
   // return all records with all fields inside
-  public function queryTableRecords($table_name, $where=null) {
+  public function queryTableRecords($table_name, $where=null, $order=null) {
     $what = '*';
     $where = $this->buildWhere($where);
-    return $this->queryTable($table_name, $what, $where);
+    return $this->queryTable($table_name, $what, $where, $order);
   }
 
   // update field(s) for records matching 'where' condition

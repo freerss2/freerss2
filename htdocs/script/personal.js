@@ -200,6 +200,26 @@ function saveWatchName(watch_id) {
   }
 }
 
+// move watch in direction, specified by delta
+// @param watch_id: watch ID
+// @param delta: signed integer - move watch forward/backward according to sign
+// @return: 'Ok' on success, error message on failure
+function moveWatch(watch_id, delta) {
+  api_url = '/api/watch/move/?watch_id='+watch_id+'&delta='+delta;
+  showUpdatingDialog();
+  console.log(api_url);
+  httpGetAsync(api_url, function(reply){
+    // reload on completion
+    if ( reply.startsWith('Error') ) {
+      // TODO: show it in a different way
+      window.alert(reply);
+      return;
+    }
+    console.log(reply);
+    window.location.reload();
+  });
+}
+
 // open dialog box prompting for feeds init: [add link] or [upload OPML]
 function promptForInit() {
   var promptForInit = new bootstrap.Modal(document.getElementById('promptForInit'), {focus: true});
@@ -913,6 +933,12 @@ function bindKeysForFeeds() {
     }
 
     switch (event.key) {
+      case "r":
+        if (event.altKey) {
+          // console.log("Alt/H");
+          refreshRss();
+        }
+        break;
       case "h":
         if (event.altKey) {
           // console.log("Alt/H");

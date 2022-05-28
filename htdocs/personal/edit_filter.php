@@ -120,8 +120,12 @@
                   $active = $watch['fd_watchid'] === $active_watch['fd_watchid'] ? 'active' : '';
                   $watch_id = $watch['fd_watchid'];
                   $title = $watch['title'];
-                  echo "<li class=\"nav-item\">\n";
-                  echo "<a class=\"nav-link $active\" href=\"edit_filter.php?watch_id=$watch_id#\">$title</a>\n";
+                  echo "<li class=\"nav-item btn-group\">\n";
+                  echo "<a class=\"nav-link $active col-6\" href=\"edit_filter.php?watch_id=$watch_id#\">$title</a>\n";
+                  if ($title != 'trash') {
+                    echo "<a class=\"btn btn-light col-3\" onclick=\"moveWatch('$watch_id', -1)\" style=\"padding-left: 0.2rem;padding-right: 0.2rem;\"><i class=\"fas fa-chevron-up\"></i></a>\n";
+                    echo "<a class=\"btn btn-light col-3\" onclick=\"moveWatch('$watch_id', 1)\" style=\"padding-left: 0.2rem;padding-right: 0.2rem;\"><i class=\"fas fa-chevron-down\"></i></a>\n";
+                  }
                   echo "</li>\n";
               }
             ?>            

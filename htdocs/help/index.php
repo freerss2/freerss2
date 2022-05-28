@@ -120,7 +120,8 @@
         <tr><td>Ctrl/ArrowRight</td><td>Go to next RSS</td></tr>
         <tr><td>Ctrl/ArrowLeft</td><td>Go to previous RSS</td></tr>
         <tr><td>Ctrl/ArrowDown</td><td>Mark current article as "read" and move to next one</td></tr>
-        <tr><td>Alt/H</td><td>Jump to service homepage</td></tr>
+        <tr><td>Alt/H</td><td>Return to app homepage</td></tr>
+        <tr><td>Alt/R</td><td>Refresh articles from RSS sources</td></tr>
         <tr><td>Ctrl/Z</td><td>Mark all articles on current page as "read"</td></tr>
       </table>
       <a name="WatchFilters"></a>

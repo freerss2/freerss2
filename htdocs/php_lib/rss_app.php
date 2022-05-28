@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.5j';
+$APP_VERSION = '2.0.1.6.5k';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -515,15 +515,17 @@ class RssApp {
     #     create condition record in `tbl_rules_text`
     #
     $watches = spyc_load($watches_source);
+    $count = 0;
     foreach ($watches as $watch) {
        $rl_action = ($watch['fd_watchid'] == 'trash') ? 'mark_read' : 'set_tag';
        $rl_act_arg = $watch['fd_watchid'];
        if ($watch['fd_watchid'] !== 'trash') {
+         $count++;
          $bindings1 = array(
-           'user_id'=>$this->user_id, 'watch_id'=>$watch['fd_watchid'], 'name'=>$watch['title']);
+           'user_id'=>$this->user_id, 'watch_id'=>$watch['fd_watchid'], 'name'=>$watch['title'], 'sort_index'=>$count);
          $query1 = "INSERT INTO `tbl_watches` ".
-           "(`user_id`, `fd_watchid`, `title`) VALUES ".
-           "(:user_id, :watch_id, :name)";
+           "(`user_id`, `fd_watchid`, `title`, `sort_index`) VALUES ".
+           "(:user_id,  :watch_id,    :name,   :sort_index)";
          $this->db->execQuery($query1, $bindings1);
        }
        foreach ($watch['rules'] as $rule_id => $rule) {
@@ -604,7 +606,7 @@ class RssApp {
       $result[] = array('title'=>ucfirst($watch_name), 'fd_watchid'=>$watch_name);
     }
     $plist = $this->db->queryTableRecords('tbl_watches',
-       array('user_id'=>$this->user_id));
+       array('user_id'=>$this->user_id), 'sort_index');
     $plist[] = array('title'=>'trash', 'fd_watchid'=>'trash');
     foreach ($plist as $watch) {
       # echo json_encode($watch)."<BR>\n";
@@ -763,6 +765,41 @@ class RssApp {
     return $result;
   }
 
+  public function moveWatch($watch_id, $delta) {
+    if (! is_numeric($delta) ) {
+      return "Error: delta '$delta' should be integer";
+    }
+    # Get $curr_index for this $watch_id
+    $bindings0 = array('user_id'=>$this->user_id, 'watch_id' => $watch_id);
+    $query0 = "SELECT `sort_index` FROM `tbl_watches`
+        WHERE `user_id` = :user_id AND `fd_watchid` = :watch_id";
+    $curr_index = $this->db->fetchSingleResult($query0, $bindings0);
+    # Get $new_index relative to $curr_index according to $delta
+    if ( $delta < 0 ) {
+      $query1 = "SELECT MAX(`sort_index`) FROM `tbl_watches` 
+          WHERE `sort_index` < :curr_index AND `user_id` = :user_id";
+    } else {
+      $query1 = "SELECT MIN(`sort_index`) FROM `tbl_watches` 
+          WHERE `sort_index` > :curr_index AND `user_id` = :user_id";
+    }
+    $bindings1 = array('user_id'=>$this->user_id, 'curr_index' => $curr_index);
+    $new_index = $this->db->fetchSingleResult($query1, $bindings1);
+    # Exit if $new_index is NULL
+    if (! $new_index ) {
+      return "Error: can't move in this direction";
+    }
+    # Exchange indexes
+    $bindings2 = array('user_id'=>$this->user_id, 'curr_index' => $curr_index, 'new_index' => $new_index);
+    $query2 = "UPDATE `tbl_watches` SET `sort_index` = :curr_index
+      WHERE `user_id` = :user_id AND `sort_index` = :new_index";
+    $bindings3 = array('user_id'=>$this->user_id, 'new_index' => $new_index, 'watch_id' => $watch_id);
+    $query3 = "UPDATE `tbl_watches` SET `sort_index` = :new_index
+      WHERE `user_id` = :user_id AND `fd_watchid` = :watch_id";
+    $this->db->execQuery($query2, $bindings2);
+    $this->db->execQuery($query3, $bindings3);
+    return "Ok";
+  }
+
   /**
    * create watch
    * @param $name: new display name for watch
@@ -782,11 +819,14 @@ class RssApp {
     $count1 = $this->db->fetchSingleResult($query1, $bindings1);
     if ($count1 != 0) { return "Error: this id already in use"; }
     // Create record in table
-    $bindings2 = array('name'=>$name, 'user_id'=>$this->user_id, 'watch_id' => $watch_id);
-    $query2 = "INSERT INTO `tbl_watches` ".
-      "(`user_id`, `fd_watchid`, `title`) VALUES ".
-      "(:user_id,  :watch_id,    :name)";
-    $this->db->execQuery($query2, $bindings2);
+    $bindings2 = array('user_id'=>$this->user_id);
+    $query2 = "SELECT COALESCE(MAX(`sort_index`),0)+1 FROM `tbl_watches` WHERE `user_id` = :user_id";
+    $count2 = $this->db->fetchSingleResult($query2, $bindings2);
+    $bindings3 = array('name'=>$name, 'user_id'=>$this->user_id, 'watch_id' => $watch_id, 'sort_index'=>$count2);
+    $query3 = "INSERT INTO `tbl_watches` ".
+      "(`user_id`, `fd_watchid`, `title`, `sort_index`) VALUES ".
+      "(:user_id,  :watch_id,    :name,   :sort_index)";
+    $this->db->execQuery($query3, $bindings3);
     return $watch_id;
   }
 
