@@ -3,7 +3,7 @@
 Motivation
 ==========
 
-During last years every one realized the importance of correct information sources. When we say "correct", we are not talking about the quality of one media or blog, but about a variety of opinions. Only by studying the maximum range of interpretations of the same event, one can make a balanced assessment of reality. FreeRSS, like other news aggregators, provides you such technical capability in modern-style and friendly way. It is up to you to decide whether to remain among the people subject to conspiracy theories and brainwashing, or to take your first step towards informational freedom.
+During last years every one realized the importance of correct information sources. When we say "correct", we are not talking about the quality of one media or blog, but about a variety of opinions. Only by studying the maximum interpretations range for the same event, one can make a balanced assessment of reality. FreeRSS, like other news aggregators, provides you such technical capability in friendly and modern-style way. It is up to you to decide whether to remain among the people subject to conspiracy theories and brainwashing, or to take your first step towards informational freedom.
 
 About
 =====
@@ -16,8 +16,8 @@ But even RSS is not ideal - sometime on the same news channel you can receive al
 
 This is the goal of Free RSS project: collect articles from different sites, filter-out unwanted content (by tags or keywords), and group the rest in handy "newspapers" - each on specific subject
 
-Some terminology
-================
+Terminology
+===========
 
 Term "Feed" is a short of "RSS Feed". This way we'll refer a link where news could be downloaded, and also the articles, received from it
 
@@ -55,8 +55,14 @@ For making better user experience on bigger screen with large distances between 
 | Ctrl/ArrowRight | Go to next RSS |
 | Ctrl/ArrowLeft | Go to previous RSS |
 | Ctrl/ArrowDown | Mark current article as "read" and move to next one |
-| Alt/H | Jump to service homepage |
+| Alt/H | Return to app homepage |
+| Alt/R | Refresh articles from RSS sources |
 | Ctrl/Z | Mark all articles on current page as "read" |
+
+Watches (Filters)
+=================
+
+Sometime it's not enough to get a bunch of articles as a single newspaper. It's really hard to read such mix, even by passing over their titles. Much more convenient could be some classification by topics. FreeRSS2 has almost unique feature that allows you to customize your own "watches" by definition of logical rules, or "filters". The filter is a boolean sentence that describes which articles should be tagged for this watch. In addition you can define a condition for built-in "trash" watch. Articles, matching "trash" condition, will be marked as "already read" and wouldn't appear in default view.
 
 Technical details and source code
 =================================
