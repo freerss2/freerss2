@@ -274,7 +274,7 @@ class RssApp {
       $channel_items = $rss->channel ? $rss->channel->item : $rss->entry;
       foreach ($channel_items as $item) {
         $link = is_array($item->link)? $item->link[0] : $item->link;
-        if ($link->attributes()) {
+        if ($link && $link->attributes()) {
           $link = $link->attributes()['href'];
         }
         $link = is_array($link) ? $link['href'] : $link;
