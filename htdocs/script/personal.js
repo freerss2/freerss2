@@ -932,23 +932,28 @@ function bindKeysForFeeds() {
       return; // Skip irrelevant cases
     }
 
+    var handled = false;
     switch (event.key) {
       case "r":
+        if (event.ctrlKey) { return; }
         if (event.altKey) {
           // console.log("Alt/H");
           refreshRss();
+          handled = true;
         }
         break;
       case "h":
         if (event.altKey) {
           // console.log("Alt/H");
           showUpdatingDialog();
+          handled = true;
           window.location.href = '/';
         }
         break;
       case "z":
         if (event.ctrlKey) {
           // console.log("Ctrl/Z");
+          handled = true;
           markReadAndNext();
         }
         break;
@@ -962,10 +967,12 @@ function bindKeysForFeeds() {
           if (! article_id) { article_id = getFirstArticleId(); }
           changeArticleReadState(article_id.replace('heading_', ''), 'on');
           done = focusOnNextArticle();
+          handled = true;
           if (! done) { return; }
         } else {
           // console.log('"down arrow" key press.');
           done = focusOnNextArticle();
+          handled = true;
           if (! done) { return; }
         }
         break;
@@ -976,28 +983,31 @@ function bindKeysForFeeds() {
         } else {
           // console.log('"up arrow" key press.');
           done = focusOnPreviousArticle();
+          handled = true;
           if (! done) { return; }
         }
         break;
         break;
       case "Left": // IE/Edge specific value
       case "ArrowLeft":
+        if (event.altKey) { return; }
         if (event.ctrlKey) {
-          if     (req_type == 'subscr') { goToPrevFeed();  }
-          else if(req_type == 'watch' ) { goToPrevWatch(); }
-          else if(req_type == 'group' ) { goToPrevGroup(); }
+          if     (req_type == 'subscr') { goToPrevFeed();  handled = true; }
+          else if(req_type == 'watch' ) { goToPrevWatch(); handled = true; }
+          else if(req_type == 'group' ) { goToPrevGroup(); handled = true; }
         } else {
-          closeCurrentArticle();
+          closeCurrentArticle(); handled = true;
         }
         break;
       case "Right": // IE/Edge specific value
       case "ArrowRight":
+        if (event.altKey) { return; }
         if (event.ctrlKey) {
-          if     (req_type == 'subscr') { goToNextFeed();  }
-          else if(req_type == 'watch' ) { goToNextWatch(); }
-          else if(req_type == 'group' ) { goToNextGroup(); }
+          if     (req_type == 'subscr') { goToNextFeed();  handled = true; }
+          else if(req_type == 'watch' ) { goToNextWatch(); handled = true; }
+          else if(req_type == 'group' ) { goToNextGroup(); handled = true; }
         } else {
-          openCurrentArticle();
+          openCurrentArticle(); handled = true;
         }
         break;
       case "Enter":
@@ -1012,7 +1022,9 @@ function bindKeysForFeeds() {
     }
 
     // Cancel the default action to avoid it being handled twice
-    event.preventDefault();
+    if (handled) {
+      event.preventDefault();
+    }
   }, true);
 
 }
