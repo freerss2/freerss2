@@ -119,7 +119,7 @@ if($req_type == 'watch') {
 
 }
 
-$articles_count = count($items);
+$articles_count = $items ? count($items) : 0;
 if ($articles_count >= 100) { $articles_count = '99+'; }
 
 // if specified page N - get specific page
