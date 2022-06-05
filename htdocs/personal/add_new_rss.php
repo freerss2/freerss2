@@ -64,7 +64,7 @@
      <nav class="navbar sticky-top navbar-dark bg-dark">
        <button class="openbtn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
        <span class="navbar-brand">&nbsp;<a href="/" class="navbar-brand">Free RSS</a></span>
-       <a class="btn btn-secondary btn-md" href="../help">
+       <a class="btn btn-secondary btn-md" href="../help/#WatchFilters">
            <i class="fas fa-question"></i>
        </a>
 
