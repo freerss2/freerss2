@@ -18,6 +18,7 @@ $VER_SUFFIX = "?v=$APP_VERSION";
 define('PASSWORD_CHARSET',
   '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.,-+!:@');
 
+
 class RssApp {
   private $db;
   private $NOW;
@@ -38,6 +39,8 @@ class RssApp {
     $this->user_id = null;
     $this->reserved_watches = $this->builtin_watches;
     $this->reserved_watches[] = 'search';
+    $this->reserved_watches[] = 'trash';
+    $this->reserved_watches[] = '= new =';
   }
 
   public function dumpDb($filename) {
@@ -505,7 +508,7 @@ class RssApp {
     # [{"fd_watchid":"tag_serials","title":"Serials","rules":
     #   {"tag_serials_3":
     #     {"title":"By_content","rl_type":"text","conditions":
-    #        [{"chk_text":"`fd_feedid` 
+    #        [{"chk_text":"`fd_feedid`
     #
     # For each watch in top array:
     # create watch record in `tbl_watches`
@@ -776,10 +779,10 @@ class RssApp {
     $curr_index = $this->db->fetchSingleResult($query0, $bindings0);
     # Get $new_index relative to $curr_index according to $delta
     if ( $delta < 0 ) {
-      $query1 = "SELECT MAX(`sort_index`) FROM `tbl_watches` 
+      $query1 = "SELECT MAX(`sort_index`) FROM `tbl_watches`
           WHERE `sort_index` < :curr_index AND `user_id` = :user_id";
     } else {
-      $query1 = "SELECT MIN(`sort_index`) FROM `tbl_watches` 
+      $query1 = "SELECT MIN(`sort_index`) FROM `tbl_watches`
           WHERE `sort_index` > :curr_index AND `user_id` = :user_id";
     }
     $bindings1 = array('user_id'=>$this->user_id, 'curr_index' => $curr_index);
@@ -806,8 +809,8 @@ class RssApp {
    * @return: error message (if any) or new watch ID
   **/
   public function createWatch($name) {
-    if (strtolower($name) == 'all') { return "Error: reserved name"; }
-    if (strtolower($name) == 'trash') { return "Error: reserved name"; }
+    if ( $this->isReservedWatch(strtolower($name)) ) { return "Error: reserved name"; }
+
     // Check that such name is not in use
     $query0 = "SELECT COUNT(1) FROM `tbl_watches` WHERE LOWER(`title`)=LOWER(:name) AND `user_id`=:user_id";
     $bindings0 = array('name'=>$name, 'user_id'=>$this->user_id);
