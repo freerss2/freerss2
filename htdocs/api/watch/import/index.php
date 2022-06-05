@@ -45,6 +45,8 @@
   # call app-function for parsing and import
   $err = $rss_app->loadWatches($watches_source);
   if ($err) {
-    echo $err;
+    echo $err; /* TODO: show popup */
+  } else {
+    header("Location: /personal/edit_filter.php"); /* Redirect browser */
   }
 ?>
