@@ -392,7 +392,17 @@ function startTitleSearch(article_id) {
   searchTitleDialog.addEventListener(
       'hidden.bs.modal', function (event) { setArticlesContext(1); });
   setTimeout(function() {
-    document.getElementById('title-text-to-find').focus();
+    var search_input = document.getElementById('title-text-to-find');
+    // try to select irrelevant part (if any)
+    var i0 = search_input.value.indexOf(' / ');
+    var i1 = search_input.value.length;
+    if (i0<0) {
+      i0 = search_input.value.indexOf(' (');
+    }
+    if (i0>=0) {
+      select_sub_string(search_input, i0, i1);
+    }
+    search_input.focus();
   }, 200);
   searchModal.show();
 }

@@ -136,3 +136,22 @@ function getQueryParams(url) {
   return obj;
 }
 
+// Select range in input element (compatible with different browser engines)
+// @param element: DOM element
+// @param begin: initial selection index in text
+// @param end: end selection index in text
+function select_sub_string(element, begin, end)
+{
+	if (element.setSelectionRange)
+	{
+		element.setSelectionRange(begin, end);
+	}
+	else if (element.createTextRange)
+	{
+		var range = element.createTextRange();
+		range.moveStart("character", begin);
+		range.moveEnd("character", end);
+		range.select();
+	}
+} // select_sub_string
+
