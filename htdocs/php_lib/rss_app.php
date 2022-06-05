@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.5k';
+$APP_VERSION = '2.0.1.6.6';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -839,13 +839,19 @@ class RssApp {
   **/
   public function deleteWatch($watch_id) {
     $bindings = array('user_id'=>$this->user_id, 'watch_id' => $watch_id);
+    // first, remove related logical expressions
     $query1 = "DELETE FROM `tbl_rules_text` WHERE `user_id`=:user_id AND ".
       "`rl_id` IN (SELECT r.`rl_id` FROM `tbl_rules` AS r WHERE r.`user_id`=:user_id AND r.`rl_act_arg`=:watch_id)";
     $this->db->execQuery($query1, $bindings);
+    // then, remove rules
     $query2 = "DELETE FROM `tbl_rules` WHERE `user_id`=:user_id AND `rl_act_arg`=:watch_id";
     $this->db->execQuery($query2, $bindings);
+    // finally remove watches
     $query3 = "DELETE FROM `tbl_watches` WHERE `user_id`=:user_id AND `fd_watchid`=:watch_id";
     $this->db->execQuery($query3, $bindings);
+    // ensure consistency: clean this tag from all posts for this user
+    $query4 = "UPDATE `tbl_posts` SET `gr_original_id`='' WHERE `user_id`=:user_id AND `gr_original_id`=:watch_id";
+    $this->db->execQuery($query4, $bindings);
     return "";
   }
 
@@ -1884,7 +1890,7 @@ class RssApp {
    * @param $xml_url: feed XML URL
    * @return: error (if any)
   **/
-  public function insertNewFeed($group, $text, $title, $htmlUrl, $xmlUrl) {
+  public function insertNewFeed($group, $text, $title, $html_url, $xml_url) {
     $feed_id = _digest_hex($xml_url);
     $bindings = array(
       'user_id'   => $this->user_id,
