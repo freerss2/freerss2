@@ -161,17 +161,39 @@ function build_api_url(url) {
   return base_url + '..' + url;
 }
 
+// Open confirmation dialog
+// @param message: message to be shown (HTML)
+// @param action_func: action to be run on "Ok" press
+function askConfirmation(message, action_func) {
+  var elm_d = document.getElementById('confirmationDialog');
+  if (! elm_d) { return; }
+  var confirmationDialog = new bootstrap.Modal(elm_d, {focus: true});
+  var elm_m = document.getElementById('confirmation-body');
+  elm_m.innerHTML = message;
+  var elm_b = document.getElementById('confirmation-button');
+  elm_b.onclick = function() {
+    confirmationDialog.dispose();
+    action_func();
+  };
+  confirmationDialog.show();
+}
+
 // delete watch
 function deleteWatch(watch_id) {
-  var api_url = build_api_url('/api/watch/delete/?watch_id=' + watch_id);
-  var reply = httpGet(api_url);
-  if ( reply.startsWith('Error') ) {
-      // TODO: show error in a different way
-      window.alert(reply);
-      return;
-  }
-  showUpdatingDialog();
-  window.location.href = '/personal/edit_filter.php';
+  // show confirmation modal and delete on "Ok"
+  askConfirmation("This watch will be <b>deleted</b>, are you sure?", 
+      function() {
+        var api_url = build_api_url('/api/watch/delete/?watch_id=' + watch_id);
+        var reply = httpGet(api_url);
+        if ( reply.startsWith('Error') ) {
+            // TODO: show error in a different way
+            window.alert(reply);
+            return;
+        }
+        showUpdatingDialog();
+        window.location.href = '/personal/edit_filter.php';
+      }
+  );
 }
 
 // save watch name
@@ -251,16 +273,20 @@ function rerunFilters() {
 // @param watch_id: watch where to delete rule
 // @param rule_id: rule to delete
 function deleteRule(watch_id, rule_id) {
-  api_url = build_api_url(
-    '/api/watch/rule/delete?watch_id=' + watch_id + '&rule_id=' + rule_id);
-  var reply = httpGet(api_url);
-  if ( reply.startsWith('Error') ) {
-    // TODO: show it in a different way
-    window.alert(reply);
-    return;
-  }
-  console.log(reply);
-  window.location.reload();
+  askConfirmation("This rule will be <b>deleted</b>, are you sure?", 
+      function() {
+        api_url = build_api_url(
+          '/api/watch/rule/delete?watch_id=' + watch_id + '&rule_id=' + rule_id);
+        var reply = httpGet(api_url);
+        if ( reply.startsWith('Error') ) {
+          // TODO: show it in a different way
+          window.alert(reply);
+          return;
+        }
+        console.log(reply);
+        window.location.reload();
+      }
+  );
 }
 
 // add rule to current watch
@@ -839,24 +865,28 @@ function changeArticleVisibility(article_id, action) {
 
 // ----------------------( feed settings )-----------------------
 
-// delete feed
-function delete_feed(feed_id) {
-  // todo - get confirmation?
-  // send request to server
-  var url = '/api/feeds/change/?feed_id='+feed_id+
-    '&action=delete';
-  httpGetAsync(url, function(buf){
-    console.log(buf);
-    showUpdatingDialog();
-    window.location.href = '/';
-  });
+// delete feed by ID
+function deleteFeed(feed_id) {
+  // get confirmation
+  askConfirmation("This feed will be <b>deleted</b>, are you sure?", 
+      function() {
+        // send request to server
+        var url = '/api/feeds/change/?feed_id='+feed_id+
+          '&action=delete';
+        httpGetAsync(url, function(buf){
+          console.log(buf);
+          showUpdatingDialog();
+          window.location.href = '/';
+        });
+      }
+  );
 }
 
 // set feed parameter: xmlUrl, title or group
 // @param dom_id: ID of DOM element, which "value" should be taken
 // @param db_field: DB field to be updated
 // @param feed_id: which RSS feed should be updated
-function set_feed_param(dom_id, db_field, feed_id) {
+function setFeedParam(dom_id, db_field, feed_id) {
   var elm = document.getElementById(dom_id);
   if (! elm) { return; }
   var new_value = elm.value;
@@ -877,7 +907,7 @@ function set_feed_param(dom_id, db_field, feed_id) {
 
 // enable feed: change enable/disable presentation
 // and send "enable" request to server
-function enable_feed(feed_id, enable_state) {
+function enableFeed(feed_id, enable_state) {
   if (enable_state) {
     domElementChangeVisibility('feed-enabled', "on");
     domElementChangeVisibility('feed-disabled', "off");

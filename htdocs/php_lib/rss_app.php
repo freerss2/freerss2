@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.6';
+$APP_VERSION = '2.0.1.6.7';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -1230,9 +1230,9 @@ class RssApp {
       "`gr_original_id`, `fd_feedid` ".
       "FROM `tbl_posts` ".
       "WHERE `user_id` = :user_id AND ".
-      "(`title` LIKE '%$pattern%' OR `description` LIKE '%$pattern%')";
+      "(`title` LIKE :pattern OR `description` LIKE :pattern)";
     $query .= " ORDER BY ".(('time' === $order_articles) ? "`timestamp` DESC" : "`title`");
-    $bindings = array('user_id' => $this->user_id);
+    $bindings = array('user_id' => $this->user_id, 'pattern' => "%$pattern%");
     $items = $this->db->fetchQueryRows($query, $bindings);
     $result = $this->addWatchesInfo($items);
     $result = $this->addFeedInfo($result);
@@ -1479,7 +1479,7 @@ class RssApp {
           <ul class="list-group list-group-flush">
             <li class="list-group-item"><a href="javascript:refreshRss();"> <i class="fa fa-sync-alt"></i> Refresh the content</a></li>
             <li class="list-group-item"> <i class="fas fa-external-link-alt"></i> Check RSS channel status</li>
-            <li class="list-group-item"><a href="javascript:delete_feed(\''.$curr_feed_id.'\')"> <i class="far fa-trash-alt"></i> Delete feed as inactive</li>
+            <li class="list-group-item"><a href="javascript:deleteFeed(\''.$curr_feed_id.'\')"> <i class="far fa-trash-alt"></i> Delete feed as inactive</a></li>
           </ul>
         </div>
       </div>

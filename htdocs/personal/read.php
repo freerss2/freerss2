@@ -355,11 +355,11 @@ if ($req_type == 'subscr') {
       <div class="btn-toolbar mb-3" role="toolbar" aria-label="Enable feed">
         <div class="btn-group me-2" role="group" aria-label="Enable/disable">
           <button type="button" class="btn btn-outline-primary"
-              onclick="enable_feed(\''.$curr_feed_id.'\', 0)">
+              onclick="enableFeed(\''.$curr_feed_id.'\', 0)">
             <i class="fas fa-ban"></i>
           </button>
           <button type="button" class="btn btn-outline-primary"
-              onclick="enable_feed(\''.$curr_feed_id.'\', 1)">
+              onclick="enableFeed(\''.$curr_feed_id.'\', 1)">
             <i class="fas fa-check"></i>
           </button>
         </div>
@@ -373,7 +373,7 @@ if ($req_type == 'subscr') {
               aria-label="RSS Feed URL" aria-describedby="basic-addon2"
               id="xmlUrl" value="'.$xmlUrl.'">
           <button class="btn btn-secondary" type="button"
-            onclick="set_feed_param(\'xmlUrl\', \'xmlUrl\', \''.$curr_feed_id.'\');">
+            onclick="setFeedParam(\'xmlUrl\', \'xmlUrl\', \''.$curr_feed_id.'\');">
             <i class="far fa-thumbs-up"></i>
           </button>
         </div>
@@ -385,7 +385,7 @@ if ($req_type == 'subscr') {
               aria-label="RSS Feed Name" aria-describedby="basic-addon2"
               id="rss_title" value="'.$rss_title.'">
           <button class="btn btn-secondary" type="button"
-            onclick="set_feed_param(\'rss_title\', \'title\', \''.$curr_feed_id.'\');">
+            onclick="setFeedParam(\'rss_title\', \'title\', \''.$curr_feed_id.'\');">
             <i class="far fa-thumbs-up"></i>
           </button>
         </div>
@@ -397,7 +397,7 @@ if ($req_type == 'subscr') {
               aria-label="Where to place RSS Feed" aria-describedby="basic-addon2"
               id="new-rss-group" value="'.$rss_group.'">
           <button class="btn btn-secondary" type="button"
-            onclick="set_feed_param(\'new-rss-group\', \'group\', \''.$curr_feed_id.'\');">
+            onclick="setFeedParam(\'new-rss-group\', \'group\', \''.$curr_feed_id.'\');">
             <i class="far fa-thumbs-up"></i>
           </button>
           </div>
@@ -412,7 +412,7 @@ if ($req_type == 'subscr') {
 
       </div>
       <div class="d-grid gap-2 d-md-block">
-        <button type="button" class="btn btn-danger" onclick="delete_feed(\''.$curr_feed_id.'\');" style="min-width:8em;">
+        <button type="button" class="btn btn-danger" onclick="deleteFeed(\''.$curr_feed_id.'\');" style="min-width:8em;">
           <i class="far fa-trash-alt"></i>
         </button>
       </div>
@@ -464,7 +464,26 @@ $rss_app->showItems($items);
       </div>
     </div>
 
-    <!-- Modals (dialog windows) -->
+    <!-- -- -- -- -- -- -- ( Modal windows ) -- -- -- -- -- -- -->
+
+    <div class="modal fade" id="confirmationDialog" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title alert alert-danger"><i class="fas fa-exclamation-triangle"></i>&nbsp;Please confirm</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="confirmation-body">
+            
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+            <button type="button" class="btn btn-primary" id="confirmation-button">Ok</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal" id="promptForInit" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
