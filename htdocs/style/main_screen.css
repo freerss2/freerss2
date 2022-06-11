@@ -62,6 +62,10 @@
   background-color: #444;
 }
 
+.indicate-required {
+  color: red;
+}
+
 #main {
   transition: margin-left .5s;
   padding-left: 16px;

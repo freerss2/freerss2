@@ -72,11 +72,11 @@
      <div class="card">
        <h1>Add new RSS channel subscription</h1>
        <div class="card-body">
-         <h5 class="card-title">RSS XML address</h5>
+         <h5 class="card-title">RSS XML address <span class="indicate-required">(*)<span></h5>
          <input type="text" class="form-control" id="new-rss-xml-url">
-         <h5 class="card-title">RSS title (description)</h5>
+         <h5 class="card-title">RSS title (description) <span class="indicate-required">(*)<span></h5>
          <input type="text" class="form-control" id="new-rss-title">
-         <h5 class="card-title">Group (main topic)</h5>
+         <h5 class="card-title">Group (main topic) <span class="indicate-required">(*)<span></h5>
          <input type="text" class="form-control" id="new-rss-group"
            value="<?php echo $groups[0]; ?>">
 
