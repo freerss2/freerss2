@@ -178,6 +178,17 @@ function askConfirmation(message, action_func) {
   confirmationDialog.show();
 }
 
+// Display error in modal window (no action required)
+// @param message: message to be shown (HTML)
+function showError(message) {
+  var elm_d = document.getElementById('errorDialog');
+  if (! elm_d) { return; }
+  var errorDialog = new bootstrap.Modal(elm_d, {focus: true});
+  var elm_m = document.getElementById('error-body');
+  elm_m.innerHTML = message;
+  errorDialog.show();
+}
+
 // delete watch
 function deleteWatch(watch_id) {
   // show confirmation modal and delete on "Ok"
@@ -186,8 +197,7 @@ function deleteWatch(watch_id) {
         var api_url = build_api_url('/api/watch/delete/?watch_id=' + watch_id);
         var reply = httpGet(api_url);
         if ( reply.startsWith('Error') ) {
-            // TODO: show error in a different way
-            window.alert(reply);
+            showError(reply);
             return;
         }
         showUpdatingDialog();
@@ -210,8 +220,7 @@ function saveWatchName(watch_id) {
   }
   var reply = httpGet(api_url);
   if ( reply.startsWith('Error') ) {
-      // TODO: show it in a different way
-      window.alert(reply);
+      showError(reply);
       return;
   }
   showUpdatingDialog();
@@ -233,8 +242,7 @@ function moveWatch(watch_id, delta) {
   httpGetAsync(api_url, function(reply){
     // reload on completion
     if ( reply.startsWith('Error') ) {
-      // TODO: show it in a different way
-      window.alert(reply);
+      showError(reply);
       return;
     }
     console.log(reply);
@@ -258,8 +266,7 @@ function rerunFilters() {
     refreshModal.hide();
     // go to homepage on completion
     if ( reply.startsWith('Error') ) {
-      // TODO: show it in a different way
-      window.alert(reply);
+      showError(reply);
       return;
     }
     console.log(reply);
@@ -279,8 +286,7 @@ function deleteRule(watch_id, rule_id) {
           '/api/watch/rule/delete?watch_id=' + watch_id + '&rule_id=' + rule_id);
         var reply = httpGet(api_url);
         if ( reply.startsWith('Error') ) {
-          // TODO: show it in a different way
-          window.alert(reply);
+          showError(reply);
           return;
         }
         console.log(reply);
@@ -300,8 +306,7 @@ function addRule(watch_id) {
     '/api/watch/rule/add?watch_id=' + watch_id + '&rule_name=' + new_rule_name);
   var reply = httpGet(api_url);
   if (reply.startsWith('Error')) {
-    // TODO: show it in a different way
-    window.alert(reply);
+    showError(reply);
     return;
   }
   console.log(reply);
@@ -358,8 +363,7 @@ function saveRule(watch_id, rule_id) {
   var post_url = '/api/watch/rule/update/';
   reply = httpPost(post_url, JSON.stringify(result));
   if (reply.startsWith('Error')) {
-    // TODO: show error in a different way
-    window.alert(reply);
+    showError(reply);
     return;
   }
   console.log(reply);
