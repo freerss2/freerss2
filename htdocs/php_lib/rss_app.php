@@ -1551,6 +1551,13 @@ class RssApp {
         );
         $link_quoted = urlencode($item['link']);
         $item_title = html_entity_decode(preg_replace('/(#\d+;)/', '&${1}', $item['title']));
+
+        # build tooltip text:
+        $tooltip = array( '[published: '.$item['dateStr'].']');
+        if($item['feed_info']  ) { $tooltip []= '[feed: '.$item['feed_info']['title'].']'; }
+        if($item['watch_title']) { $tooltip []= '[watch: '.$item['watch_title'].']';}
+        if($item['author']     ) { $tooltip []= '[author: '.$item['author'].']';}
+        $tooltip = implode('; ', $tooltip);
         echo '  <div class="accordion-item">
     <h2 class="accordion-header item-header" id="heading_'.$fd_postid.'">
         <span class="btn-group me-2 item-header-buttons" role="group">
@@ -1565,6 +1572,7 @@ class RssApp {
         </span>
       <button class="accordion-button collapsed item-header-bar" type="button" data-bs-toggle="collapse"
           data-bs-target="#collapse_'.$fd_postid.'" aria-expanded="false" aria-controls="collapse_'.$fd_postid.'"
+          title="'.$tooltip.'"
           onclick="onArticleHeadingClick(event, \'heading_'.$fd_postid.'\')">
         &nbsp;
         <span class="'.($read? '':'bold-element').' no-text-overflow">'.$item_title.'</span>

@@ -204,10 +204,10 @@ $prev_page = $displayed_page > 1;
         <div>
           <button class="openbtn" onclick="toggleNav()"><i class="fas fa-bars"></i></button>
           <div class="btn-group" role="group" aria-label="toolbar group">
-            <button class="btn btn-secondary btn-md" onclick="startSearch();">
+            <button title="Search..." class="btn btn-secondary btn-md" onclick="startSearch();">
               <i class="fas fa-search"></i>
             </button>
-            <button type="button" class="btn btn-secondary btn-md position-relative" onclick="refreshRss();">
+            <button type="button" title="Refresh now" class="btn btn-secondary btn-md position-relative" onclick="refreshRss();">
               <i class="fa fa-sync-alt"></i>
              <span class="<?php echo $statistics['update_required'] ? '': 'visually-hidden' ?> position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
                 <span class="visually-hidden">Too old</span>
@@ -215,7 +215,7 @@ $prev_page = $displayed_page > 1;
             </button>
           </div>
         </div>
-        <span class="navbar-brand no-text-overflow">&nbsp;<a href="/" class="navbar-brand">Free RSS</a></span>
+        <span class="navbar-brand no-text-overflow">&nbsp;<a href="/" title="Go to homepage" class="navbar-brand">Free RSS</a></span>
         <div class="btn-group" role="group" aria-label="toolbar group">
           <div class="dropdown">
             <button class="btn btn-secondary btn-md dropdown-toggle" type="button" id="feedReadMenu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -336,13 +336,13 @@ if ($req_type == 'subscr') {
     echo '<a role="button" class="btn btn-light btn-sm big-icon-button" href="edit_filter.php?watch_id='.$curr_watch_id.'"> <i class="far fa-edit"></i> </a>';
   }
   echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextWatch()"><i class="fas fa-chevron-right"></i></button>';
- echo $watch_title;
+ echo '<i class="fas fa-filter"></i>&nbsp;'.$watch_title;
 } elseif ($req_type == 'group') {
   echo 
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>'.
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevGroup()"><i class="fas fa-chevron-left"></i></button>'.
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextGroup()"><i class="fas fa-chevron-right"></i></button>';
- echo $req_id;
+ echo '<i class="far fa-newspaper"></i>&nbsp;'.$req_id;
 } else {
   echo 
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>';
