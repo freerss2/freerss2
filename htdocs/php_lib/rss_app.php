@@ -1096,7 +1096,10 @@ class RssApp {
     array_unshift($tag_watches, $trash);
     $count = 0;
     foreach ($tag_watches as $watch) {
-      $count += 1;
+      // do not count built-in watches
+      if ( ! $this->isReservedWatch($watch['fd_watchid']) ) {
+        $count += 1;
+      }
       if ($watch['queries']) {
         $set = ($watch['title'] == 'trash') ?
           array('read' => 1) :
