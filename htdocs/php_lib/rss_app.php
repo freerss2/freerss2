@@ -768,6 +768,21 @@ class RssApp {
     return $result;
   }
 
+  /**
+   * move rule to other watch
+   * @param $rule_id: rule ID
+   * @param $watch_id: destination watch ID
+   * @return: error message (if any)
+  **/
+  public function moveRuleToWatch($rule_id, $watch_id) {
+    $result = 'Ok';
+    $bindings = array('user_id'=>$this->user_id, 'watch_id' => $watch_id, 'rule_id' => $rule_id);
+    $query = "UPDATE `tbl_rules` SET `rl_act_arg` = :watch_id 
+        WHERE `user_id` = :user_id AND `rl_id` = :rule_id";
+    $this->db->execQuery($query, $bindings);
+    return $result;
+  }
+
   public function moveWatch($watch_id, $delta) {
     if (! is_numeric($delta) ) {
       return "Error: delta '$delta' should be integer";
@@ -1031,7 +1046,7 @@ class RssApp {
     $result[] = "    <ul class=\"dropdown-menu\">";
     foreach ($watches as $w) {
       if ($w['fd_watchid'] === $watch_id) { continue; }
-      $result[] = "      <li><a class=\"dropdown-item\" href=\"#".$w['fd_watchid']."\">".$w['title']."</a></li>";
+      $result[] = "      <li><a class=\"dropdown-item\" href=\"javascript:moveRuleToWatch('$rule_id','".$w['fd_watchid']."');\">".$w['title']."</a></li>";
     }
     $result[] = "    </ul>";
     $result[] = "</div>";
@@ -1105,15 +1120,13 @@ class RssApp {
           array('read' => 1) :
           array('gr_original_id' => $watch['fd_watchid']);
         $extra_cond = ($watch['title'] == 'trash') ?
-          '' :
+          "(`flagged` != 1) AND " :
           "(`gr_original_id` = '') AND ";
         foreach ($watch['queries'] as $where) {
           if ($where) {
-            $where = "$extra_cond $where AND `user_id`=:user_id";
+            $where = "$extra_cond $where AND (`read` = 0) AND `user_id`=:user_id";
             $set['user_id'] = $this->user_id;
-            # echo "$set -- $where<BR>\n";
             $this->db->updateRecordsByFields('tbl_posts', $set, $where);
-            // echo "updateRecordsByFields('tbl_posts', 'set'=>".json_encode($set).", 'where'=>$extra_cond $where)<BR>\n";
           }
         }
       }

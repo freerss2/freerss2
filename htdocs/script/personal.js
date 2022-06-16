@@ -250,6 +250,25 @@ function moveWatch(watch_id, delta) {
   });
 }
 
+// move rule to different watch
+// @param rule_id: rule ID
+// @param watch_id: watch ID
+function moveRuleToWatch(rule_id, watch_id) {
+  api_url = '/api/watch/rule/move/?watch_id='+watch_id+'&rule_id='+rule_id;
+  // call API, get result, reload page with destination watch
+  showUpdatingDialog();
+  console.log('Move rule '+rule_id+' to watch '+watch_id);
+  httpGetAsync(api_url, function(reply){
+    // reload on completion
+    if ( reply.startsWith('Error') ) {
+      showError(reply);
+      return;
+    }
+    console.log(reply);
+    window.location.href = '/personal/edit_filter.php?watch_id='+watch_id;
+  });
+}
+
 // open dialog box prompting for feeds init: [add link] or [upload OPML]
 function promptForInit() {
   var promptForInit = new bootstrap.Modal(document.getElementById('promptForInit'), {focus: true});
