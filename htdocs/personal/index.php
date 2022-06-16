@@ -149,11 +149,11 @@
            <b><?php echo $statistics['unread_articles']; ?></b>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
-           <span class="stat-title"> <i class="far fa-bookmark"></i> Bookmarked articles  </span>
+           <span class="stat-title"> <i class="far fa-star"></i> Bookmarked articles  </span>
            <b><?php echo $statistics['bookmarked_articles']; ?></b>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
-           <span class=""> <i class="far fa-clock"></i> Updated </span>
+           <span style="width: 6em; display: inline-block;"> <i class="far fa-clock"></i> Updated </span>
            <b><?php echo $statistics['updated_at']; ?></b>
          </div>
 

@@ -61,11 +61,17 @@ if ($_GET['logout']) {
 
 
 <main class="form-signin">
-  <h1 class="h3 mb-3 fw-normal">Free RSS 2.0
-           <a href="../help/#about" class="btn btn-dark btn-sm low-action-button">
+
+    <div class="container" style="padding-right: 0;">
+      <div class="row">
+        <h1 class="h3 col-8 fw-normal" style="padding-left: 0;">Free RSS 2.0 </h1>
+        <div class="col" style="text-align: right;">
+          <a href="../help/#about" class="btn btn-dark btn-sm low-action-button">
              <i class="fab fa-readme"></i>&nbsp;About
-           </a>
-  </h1>
+          </a>
+        </div>
+      </div>
+    </div>
 
     <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
