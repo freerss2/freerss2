@@ -322,7 +322,7 @@ if ($req_type == 'subscr') {
   "&nbsp;
   <span style='vertical-align: bottom;'>
     <i class='fas fa-rss'></i>
-    <span class='position-relative translate-middle badge rounded-pill bg-primary' style='font-size: x-small; top: -8px;'>
+    <span id='articles_count' class='position-relative translate-middle badge rounded-pill bg-primary' style='font-size: x-small; top: -8px;'>
       $articles_count
     </span>
   </span>

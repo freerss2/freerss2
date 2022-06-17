@@ -761,7 +761,24 @@ function changeArticleReadStateVisual(article_id, change) {
   } else {
     console.log('missing: heading_'+article_id);
   }
+  changeUnreadArticlesCount(!is_read, set_read=='off');
   return set_read;
+}
+
+// Change articles count state
+// @param curr_unread: true/false
+// @param new_unread: true/false
+function changeUnreadArticlesCount(curr_unread, new_unread) {
+  if (curr_unread == new_unread) { return; }
+  var elm = document.getElementById('articles_count');
+  if (! elm) { return; }
+  var count = elm.innerText;
+  if (count == '99+') { return; }
+  count = parseInt(count);
+  if (isNaN(count)) { return; }
+  count = new_unread ? count+1 : count-1;
+  if (count >= 100) count = '99+';
+  elm.innerText = count;
 }
 
 // Change explicitly article labels and watch

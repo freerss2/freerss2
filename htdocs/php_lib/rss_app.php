@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.7a';
+$APP_VERSION = '2.0.1.6.7b';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -777,7 +777,7 @@ class RssApp {
   public function moveRuleToWatch($rule_id, $watch_id) {
     $result = 'Ok';
     $bindings = array('user_id'=>$this->user_id, 'watch_id' => $watch_id, 'rule_id' => $rule_id);
-    $query = "UPDATE `tbl_rules` SET `rl_act_arg` = :watch_id 
+    $query = "UPDATE `tbl_rules` SET `rl_act_arg` = :watch_id
         WHERE `user_id` = :user_id AND `rl_id` = :rule_id";
     $this->db->execQuery($query, $bindings);
     return $result;
