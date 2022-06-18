@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.7b';
+$APP_VERSION = '2.0.1.6.7c';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -18,6 +18,7 @@ $VER_SUFFIX = "?v=$APP_VERSION";
 define('PASSWORD_CHARSET',
   '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.,-+!:@');
 
+define('PAGE_RANGE', 10);
 
 class RssApp {
   private $db;
@@ -168,28 +169,6 @@ class RssApp {
     }
 
     return $login_result;
-  }
-
-  /**
-   * Read collected statistics from DB - TODO
-   * @param $id: view ID
-   * @param $type: View type
-  **/
-  public function get_statistics_from_db($id, $type) {
-    if($id == 'search')  {
-      # special case - no statistics in static table - query from actual articles
-      #my ($total,$unread,$new_t) = _get_rss_statistics(%args);
-      #return ($total,$unread,$new_t,'none','');
-    }
-    $rec = $this->db->queryTableRecords('tbl_subscr_state', array('id'=>$id, 'type'=>$type, 'user_id'=>$this->user_id));
-
-    return array(
-     $rec[0]->total  || 0,
-     $rec[0]->unread || 0,
-     $rec[0]->timestamp || '1970-01-01 00:00:01',
-     $rec[0]->upd_status || 'none',
-     $rec[0]->upd_log || ''
-     );
   }
 
   /**
@@ -1433,7 +1412,6 @@ class RssApp {
    * @return: (page_articles, maxpage, displayed_page)
   **/
   public function buildPaging($articles, $page_size, $page_num=null) {
-    // TODO: use page_size from personal settings
     if (! $page_num ) { $page_num = 1; }
     $count_articles = count($articles);
     if ($count_articles <= $page_size) {
@@ -1456,10 +1434,9 @@ class RssApp {
    * @return: pages list +/- 10
               and "select..." when this range does not cover 1 .. maxpage
   **/
-  function getPagesRange($maxpage, $page_num) {
-    // TODO: define +/- 10 as constant
-    $low = max(($page_num - 9), 1);
-    $high = min(($page_num + 10), $maxpage);
+  public function getPagesRange($maxpage, $page_num) {
+    $low = max(($page_num - PAGE_RANGE + 1), 1);
+    $high = min(($page_num + PAGE_RANGE), $maxpage);
     $result = range($low, $high);
     if ($low > 1 || $high < $maxpage) { array_push($result, "select:..."); }
     return $result;
@@ -1477,11 +1454,11 @@ class RssApp {
 
     # return empty string when running out specific feed context
     if (! $curr_feed_id) { return ''; }
-    # TODO: separate messages for empty list and too old last item date
     if ( ! count($items) || _date_to_passed_seconds($items[0]['dateStr']) > $_S['week']*3) {
-
-      # TODO: add links in text?
-      $msg = "There's no fresh articles on this channel.";
+      $query = "SELECT `xmlUrl` FROM `tbl_subscr` WHERE `user_id` = :user_id AND `fd_feedid` = :feed_id";
+      $bindings = array('user_id'=>$this->user_id, 'feed_id'=>$curr_feed_id);
+      $feed_url = $this->db->fetchSingleResult($query, $bindings);
+      $msg = "There's no <b>fresh articles</b> on this channel.";
       return '
 <div class="alert alert-warning d-flex align-items-center" role="alert">
   <div>
@@ -1494,7 +1471,7 @@ class RssApp {
         <div class="card card-body">
           <ul class="list-group list-group-flush">
             <li class="list-group-item"><a href="javascript:refreshRss();"> <i class="fa fa-sync-alt"></i> Refresh the content</a></li>
-            <li class="list-group-item"> <i class="fas fa-external-link-alt"></i> Check RSS channel status</li>
+            <li class="list-group-item"><a href="'.$feed_url.'" target="_blank"> <i class="fas fa-external-link-alt"></i> Check RSS channel status </a></li>
             <li class="list-group-item"><a href="javascript:deleteFeed(\''.$curr_feed_id.'\')"> <i class="far fa-trash-alt"></i> Delete feed as inactive</a></li>
           </ul>
         </div>

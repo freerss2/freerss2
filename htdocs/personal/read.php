@@ -578,6 +578,25 @@ $rss_app->showItems($items);
       </div>
     </div>
 
+    <div class="modal fade" id="pageSelectDialog" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Go to page</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <label class="mb-3">Page number:</label>
+            <input type="number" min="1" class="form-control" id="page-number">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="goToInputPage();">Go there</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal fade" id="searchDialog" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">

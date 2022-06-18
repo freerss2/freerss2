@@ -192,7 +192,7 @@ function showError(message) {
 // delete watch
 function deleteWatch(watch_id) {
   // show confirmation modal and delete on "Ok"
-  askConfirmation("This watch will be <b>deleted</b>, are you sure?", 
+  askConfirmation("This watch will be <b>deleted</b>, are you sure?",
       function() {
         var api_url = build_api_url('/api/watch/delete/?watch_id=' + watch_id);
         var reply = httpGet(api_url);
@@ -299,7 +299,7 @@ function rerunFilters() {
 // @param watch_id: watch where to delete rule
 // @param rule_id: rule to delete
 function deleteRule(watch_id, rule_id) {
-  askConfirmation("This rule will be <b>deleted</b>, are you sure?", 
+  askConfirmation("This rule will be <b>deleted</b>, are you sure?",
       function() {
         api_url = build_api_url(
           '/api/watch/rule/delete?watch_id=' + watch_id + '&rule_id=' + rule_id);
@@ -454,6 +454,33 @@ function startTitleSearch(article_id) {
     search_input.focus();
   }, 200);
   searchModal.show();
+}
+
+// open page selection dialog
+function openPageSelectDialog() {
+  var pageSelectDialog = document.getElementById('pageSelectDialog');
+  var pageSelectModal = new bootstrap.Modal(pageSelectDialog, {focus: false});
+  setArticlesContext(0);
+  pageSelectDialog.addEventListener(
+      'hidden.bs.modal', function (event) { setArticlesContext(1); });
+  setTimeout(function() {
+    document.getElementById('page-number').focus();
+  }, 200);
+  pageSelectModal.show();
+}
+
+// go to page, typed by user
+function goToInputPage() {
+  var elm = document.getElementById('page-number');
+  if (! elm) return;
+  var page_num = elm.value;
+  if (! page_num) page_num = 1;
+  // replace in args &page=... with new page_num
+  var args = getQueryParams(document.location.search);
+  args['page'] = page_num;
+  var new_url = new URL(app_url_no_args());
+  new_url.search = new URLSearchParams( args );
+  window.location.href = new_url.href;
 }
 
 // start search dialog
@@ -908,7 +935,7 @@ function changeArticleVisibility(article_id, action) {
 // delete feed by ID
 function deleteFeed(feed_id) {
   // get confirmation
-  askConfirmation("This feed will be <b>deleted</b>, are you sure?", 
+  askConfirmation("This feed will be <b>deleted</b>, are you sure?",
       function() {
         // send request to server
         var url = '/api/feeds/change/?feed_id='+feed_id+
@@ -978,7 +1005,10 @@ function goToPage(page_select, delta=0) {
     page_select = document.getElementById('page_select');
   }
   page_target = page_select.value;
-  if (isNaN(page_target)) { console.log("ask a page number here"); return; }
+  if (isNaN(page_target)) {
+    openPageSelectDialog();
+    return;
+  }
   page_target = parseInt(page_target)+delta;
   if (! page_target) { return; }
   showUpdatingDialog();
