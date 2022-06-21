@@ -70,8 +70,8 @@
        </a>
 
      </nav>
+     <br>
      <div class="card container">
-       <br>
        <?php
           echo '<div class="row">';
           echo '  <div class="col-4">Name</div>';
@@ -91,7 +91,7 @@
             if (strstr($last_upd, '-') !== false) {
               $last_upd = "<B>$last_upd</B>";
             }
-            echo '<div class="row">';
+            echo '<div class="row stat_row">';
             echo '  <div class="col-4"><a href="'.$ref.'" class="no-text-overflow" '.$enable_style.' target="_blank">'.$rec[1].'</a></div>';
             echo '  <div class="col-2" style="text-align:center;">'.$unread.'</div>';
             echo '  <div class="col-2" style="text-align:center;">'.$flagged.'</div>';

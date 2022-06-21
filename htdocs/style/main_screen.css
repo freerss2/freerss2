@@ -287,3 +287,4 @@
   max-width: 25%;
 }
 
+.stat_row:nth-child(even) {background-color: #f2f2f2;}

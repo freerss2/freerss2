@@ -85,7 +85,7 @@
             foreach ($report_data as $rec) {
               $ref = 'read.php?type='.$rec[1].'&id='.$rec[0];
               $timestamp = _date_to_passed_time($rec[3]);
-              echo '<div class="row">';
+              echo '<div class="row stat_row">';
               echo '  <div class="col-3 no-text-overflow"><a href="'.$ref.'" target="_blank">'.$rec[2].'</a></div>';
               echo '  <div class="col-2" >'.$timestamp.'</div>';
               echo '  <div class="col-2 no-text-overflow" >'.$rec[4].'</div>';
