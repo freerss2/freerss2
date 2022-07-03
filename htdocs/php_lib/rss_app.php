@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.7c';
+$APP_VERSION = '2.0.1.6.7d';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -1728,6 +1728,63 @@ class RssApp {
   **/
   public function saveLastLink($actual_link) {
     $this->setPersonalSetting('last_page', $actual_link);
+  }
+
+
+  /**
+   * Generate feeds group editing code
+   * @param $group_id: edited group ID
+   * @return: HTML code for group change modal dialog
+  **/
+  public function feedsGroupEdit($group_id) {
+    $buffer = array();
+    // group feeds list
+    $query1 = "SELECT `fd_feedid`, `title`, `htmlUrl` FROM `tbl_subscr`
+      WHERE `user_id`=:user_id AND `group`=:group_id ORDER BY index_in_gr";
+    $bindings = array('user_id'=>$this->user_id, 'group_id'=>$group_id);
+    $feeds = $this->db->fetchQueryRows($query1, $bindings);
+
+    $buffer []= '<ul class="nav nav-pills flex-column">';
+    foreach ($feeds as $feed) {
+      $buffer []= '
+<li class="nav-item btn-group feed-in-group" id="feed_'.$feed['fd_feedid'].'">
+<label class="col-6 bold-element no-text-overflow" title="'.$feed['htmlUrl'].'">'.$feed['title'].'</label>
+<a class="btn btn-light col-3" onclick="moveFeed(\'feed_'.$feed['fd_feedid'].'\', -1)" style="padding-left: 0.2rem;padding-right: 0.2rem;"><i class="fas fa-chevron-up"></i></a>
+<a class="btn btn-light col-3" onclick="moveFeed(\'feed_'.$feed['fd_feedid'].'\', 1)" style="padding-left: 0.2rem;padding-right: 0.2rem;"><i class="fas fa-chevron-down"></i></a>
+</li>';
+    }
+    $buffer []= '</ul>';
+    return implode("\n", $buffer);
+  }
+
+  /**
+   * Save updated info about feeds group
+   * @param $group_id: original group_id
+   * @param $data: dictionary with 'new_group_id' and
+   * array 'feeds' with feed IDs in updated order
+   * @return: error message (if any)
+  **/
+  public function feedsGroupSave($group_id, $data) {
+    // if new group id differs from original - make sure it's not already in use
+    $new_group_id = $data->new_group_id;
+    if ($group_id != $new_group_id) {
+      $query1 = "SELECT COUNT(*) FROM `tbl_subscr`
+        WHERE `user_id`=:user_id AND `group`=:new_group_id";
+      $bindings1 = array('user_id'=>$this->user_id, 'new_group_id'=>$new_group_id);
+      $count = $this->db->fetchSingleResult($query1, $bindings1);
+      if ($count != 0) { return "Error: '$new_group_id' already in use"; }
+    }
+    $query2 = "UPDATE `tbl_subscr` SET `group`=:new_group_id, `index_in_gr`=:i
+      WHERE `user_id`=:user_id AND `group`=:group_id AND `fd_feedid`=:feed_id";
+    $bindings2 = array('user_id'=>$this->user_id, 'new_group_id'=>$new_group_id, 'group_id'=>$group_id);
+    $index = 0;
+    foreach ($data->feeds as $feed_id) {
+      $index += 1;
+      $bindings2['feed_id'] = $feed_id;
+      $bindings2['i'] = $index;
+      $this->db->execQuery($query2, $bindings2);
+    }
+    return "";
   }
 
   /**

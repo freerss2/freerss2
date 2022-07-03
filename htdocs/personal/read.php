@@ -340,8 +340,11 @@ if ($req_type == 'subscr') {
 } elseif ($req_type == 'group') {
   echo 
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>'.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevGroup()"><i class="fas fa-chevron-left"></i></button>'.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextGroup()"><i class="fas fa-chevron-right"></i></button>';
+  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevGroup()"><i class="fas fa-chevron-left"></i></button>';
+  if($req_id != 'all') {
+    echo '<button role="button" class="btn btn-light btn-sm big-icon-button" onclick="editGroup(\''.$req_id.'\')"> <i class="far fa-edit"></i> </button>';
+  }
+  echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextGroup()"><i class="fas fa-chevron-right"></i></button>';
  echo '<i class="far fa-newspaper"></i>&nbsp;'.$req_id;
 } else {
   echo 
@@ -540,6 +543,30 @@ $rss_app->showItems($items);
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
             <button type="button" class="btn btn-primary" onclick="saveArticleChanges();">Apply changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="editGroupModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Change feeds group</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div>
+              <label>Name:</label>&nbsp;<input id="group_id" value=""></input>
+            </div>
+            <div id="editGroupContent">
+              <label>Preparing...</label>
+              <img style="display: block; margin-left: auto; margin-right: auto;" src="../img/processing_bar.gif" >
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+            <button type="button" class="btn btn-primary" onclick="saveGroupChanges();">Apply changes</button>
           </div>
         </div>
       </div>

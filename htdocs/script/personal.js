@@ -1015,6 +1015,76 @@ function goToPage(page_select, delta=0) {
   window.location.href = window.location.href.replace(/&page=.*/, '') + '&page=' + page_target;
 }
 
+// start group editing - open dialog
+function editGroup(group_id) {
+  var editGroupModal = new bootstrap.Modal(document.getElementById('editGroupModal'), {focus: true});
+  editGroupModal.show();
+  var elm_n = document.getElementById('group_id');
+  elm_n.value = group_id;
+  // fill modal with content using api call
+  var url = '/api/feeds/group/?action=edit&group_id=' + group_id;
+  httpGetAsync(url, function(buf){
+    // console.log(buf);
+    var elm_e = document.getElementById('editGroupContent');
+    elm_e.innerHTML = buf;
+  });
+}
+
+// move feed in group up/down (when possible)
+function moveFeed(id, delta) {
+  // get all feeds by class name 
+  var feeds = document.getElementsByClassName('feed-in-group');
+  // find feed index by id
+  var feed_idx = -1;
+  for (var i=0; i<feeds.length; i++) {
+    if (feeds[i].id == id) {
+      feed_idx = i;
+      break;
+    }
+  }
+  if (feed_idx == -1) { return; }
+  // try to move
+  var new_idx = feed_idx+delta;
+  if (new_idx < 0 || new_idx >= feeds.length) { return; }
+  var feeds_html = [];
+  for (var i=0; i<feeds.length; i++) {
+    feeds_html[i] = feeds[i].outerHTML;
+  }
+  var tmp = feeds_html[new_idx];
+  feeds_html[new_idx] = feeds_html[feed_idx];
+  feeds_html[feed_idx] = tmp;
+  var buffer = '<ul class="nav nav-pills flex-column">';
+  for (var i=0; i<feeds_html.length; i++) {
+    buffer += feeds_html[i];
+  }
+  buffer += '</ul>';
+  var elm_e = document.getElementById('editGroupContent');
+  elm_e.innerHTML = buffer;
+}
+
+// Save changes in feeds group
+function saveGroupChanges() {
+  var elm_n = document.getElementById('group_id');
+  var new_group_id = elm_n.value;
+  var args = new URLSearchParams(window.location.search);
+  var group_id = args.get('id');
+  var feeds = document.getElementsByClassName('feed-in-group');
+  var result = {'group_id': group_id, 'new_group_id': new_group_id, 'feeds': []}
+  for (var i=0; i<feeds.length; i++) {
+    console.log(feeds[i].id);
+    result.feeds.push(feeds[i].id.replace('feed_', ''));
+  }
+  // console.log('saveGroupChanges: '+JSON.stringify(result));
+  // send update via API
+  var url = '/api/feeds/group/?action=save&group_id=' + group_id;
+  var result = httpPost(url, JSON.stringify(result));
+  // check if new group is not exist (excluding case of same name)
+  // save to 'tbl_subscr' with 'user_id', 'fd_feed_id', 'group', 'index_in_gr'
+  // and reload page on api completion
+  // TODO: show error if returned
+  window.location.reload();
+}
+
 // Set articles context on/off
 // change global semaphore article_context (boolean) value
 function setArticlesContext( value=true ) {
