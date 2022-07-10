@@ -71,6 +71,10 @@
           <li class="nav-item" title="Getting started">
             <a class="nav-link" href="#start"><i class="fas fa-running"></i></a>
           </li>
+          <li class="nav-item" title="Reading newspaper">
+            <a class="nav-link" href="#read"><i class="far fa-newspaper"></i></a>
+          </li>
+
           <li class="nav-item" title="Keyboard shortcuts">
             <a class="nav-link" href="#keyboard"><i class="far fa-keyboard"></i></a>
           </li>
@@ -110,6 +114,14 @@
       <p>There are two possible ways for filling-up personal list of subscriptions: import from OPML file or enter their links one-by-one.</p>
       <p>If you know what's OPML - just go to "settings" and upload your OPML file. Please be careful - this operation removes all existing feeds definitions, so it could be used for recovery, but should not repeated in regular circumstances.</p>
       <p>Now let's learn how to add single RSS subscription to FreeRSS reader. First, you've to copy the feed URL to clipboard. Then select from application menu "Add new RSS" and paste the URL in first textbox. You can add some informal title, but it's not critical: the original title will be read from RSS, and you can always rename it. The "group" selection is also optional, but it could be nice to place new RSS under right origin.</p>
+      <a name="read"></a>
+      <H1 id="read"><i class="far fa-newspaper"></i> Reading newspaper</H1>
+      <p>There are 4 possible ways to start reading the articles:<ol><li>By clicking "New articles" link after feeds refresh<li>By selecting desired "newspaper" in left menu (after pressing respective button)<li>By clicking on "Start reading" button on home screen - you can customize which page should open there<li>By clicking "last page" on home screen.</ol></p>
+      <p>Subscriptions tree that appear after clicking "hamburger" icon on the left shows different ways to browse subscriptions: all feeds, separate feeds, feed groups and filtered articles by rules (watches) or built-in conditions (like "today" or "bookmarked").</p>
+      <p>The articles are displayed by default as a list of titles. Article content could be opened by clicking on title (or pressing "right arrow" key). Opened article is automatically marked as "read" - see envelope icon on the left. The "read" status could be toggled on/off by clicking this envelope. </p>
+      <p>In addition, article could be "bookmarked". This way guaranteed that it could not be accidentially marked as "read". For example, opening such article content will not change "read/unread" state.</p>
+      <p>If all displayed articles on current page already read (or not interesting) it's possible to mark the whole page as "read" and load more unread articles - just press "checkbox" button over the "envelopes" column.</p>
+      <p>The newspaper could be read either in alphabetical titles order, or sorted by timestamp (newest first). It is possible to take a peek on already read articles by selecting resprctive mode in "three dots" menu on the right.</p>
       <a name="keyboard"></a>
       <H1 id="keyboard"><i class="far fa-keyboard"></i> Keyboard shortcuts</H1>
       <p>For making better user experience on bigger screen with large distances between control buttons, we added some keyboard shortcuts:</p>
@@ -126,7 +138,9 @@
       </table>
       <a name="WatchFilters"></a>
       <H1 id="WatchFilters"><i class="fas fa-filter"></i> Watches (Filters)</H1>
-      <p>Sometime it's not enough to get a bunch of articles as a single newspaper. It's really hard to read such mix, even by passing over their titles. Much more convenient could be some classification by topics. FreeRSS2 has almost unique feature that allows you to customize your own "watches" by definition of logical rules, or "filters". The filter is a boolean sentence that describes which articles should be tagged for this watch. In addition you can define a condition for built-in "trash" watch. Articles, matching "trash" condition, will be marked as "already read" and wouldn't appear in default view.</p>
+      <p>Sometime it's not enough to get a bunch of articles as a single newspaper. Such mix is really hard to read, even by passing over their titles. Much more convenient could be some classification by topics. FreeRSS2 has almost unique feature that allows you to customize your own "watches" by definition of logical rules, or "filters". The filter is a boolean sentence that describes which articles should be tagged for this watch. In addition you can define a condition for built-in "trash" watch. Articles, matching "trash" condition, will be marked as "already read" and wouldn't appear in default view.</p>
+      <p>Watch is defined by one or more rules. Each rule is a set of conditions, comparing article parameters with wanted/unwanted pattern. Comparison could be exact "equals"/"not equals" or approximate "match"/"not match". Wildcard fields for match condition designated with "asterisk", for example: "<i>*audiobook*</i>" means "anything that contains <i>audiobook</i> inside". Conditions could be conjuncted by "OR", while sequence of "OR" conditions could be joined with more sequences by "AND". This way one can define set of matching patterns and at the same time - some exclusions. For example: "title matches *book* OR categories matches *book* AND title not matches *audiobook*".</p>
+      <p>Full list of article attributes, used in rules: <ul><li>title<li>link<li>categories<li>description</ul></p>
       <a name="code"></a>
       <H1 id="code"><i class="far fa-file-code"></i> Technical details and source code</H1>
       <p>This is a FREE Open Source project. All code (excluding hosting-specific credentials) is available online on <a href="https://github.com/freerss2/freerss2" target="_blank">GitHub</a></p>
