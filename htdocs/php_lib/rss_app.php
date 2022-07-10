@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.7d';
+$APP_VERSION = '2.0.1.6.7e';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -17,6 +17,9 @@ $VER_SUFFIX = "?v=$APP_VERSION";
 
 define('PASSWORD_CHARSET',
   '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.,-+!:@');
+
+define('API_KEY_CHARSET',
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
 define('PAGE_RANGE', 10);
 
@@ -572,6 +575,49 @@ class RssApp {
       $opml->appendToBody($opml_group->toStr());
     }
     return $opml->toStr();
+  }
+
+  /**
+   * Export articles
+   * @param $format: output format
+   * @return: all unread/flagged articles for this user
+  **/
+  public function exportArticles($format) {
+    switch($format) {
+      case "json":
+        $articles_data = $this->getActualArticles();
+        $result = json_encode($articles_data);
+        break;
+      # TODO: support other formats: XML/YAML/...
+      default:
+        $result = "Error: unsupported format - $format";
+        break;
+    }
+    return $result;
+  }
+
+  /**
+   * Get actual (unread/flagged) articles
+   * @return: list of records with article data
+  **/
+
+  public function getActualArticles() {
+    $query = "SELECT `fd_postid`, `fd_feedid`, `title`,
+      CONVERT(`description` USING utf8) as description, `link`, `guid`,
+      `author`, `categories`, `read`, `flagged`,
+      `gr_original_id`, `timestamp`
+ FROM `tbl_posts`
+WHERE `user_id` = :user_id
+  AND (`read` <> 1 OR `flagged` = 1)";
+    $bindings = array('user_id'=>$this->user_id);
+    $db_data = $this->db->fetchQueryRows($query, $bindings);
+    $result = array();
+    $keys = array('fd_postid', 'fd_feedid', 'title', 'description', 'link',
+      'guid', 'author', 'categories', 'read', 'flagged', 'gr_original_id', 'timestamp');
+    foreach ($db_data as $r) {
+      $result []= array_intersect_key($r, array_flip($keys));
+    }
+    return $result;
   }
 
   /**
@@ -1729,7 +1775,6 @@ class RssApp {
   public function saveLastLink($actual_link) {
     $this->setPersonalSetting('last_page', $actual_link);
   }
-
 
   /**
    * Generate feeds group editing code

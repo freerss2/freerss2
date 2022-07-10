@@ -21,7 +21,7 @@
   $user_id = $_SESSION['user_id'];  # take from login info
   $rss_app->setUserId($user_id);
 
-  $admin_element = ($user_id == 1) ? '' : 'visually-hidden';
+  $admin_elements = ($user_id == 1);
 
   $subscr_tree = $rss_app->getAllSubscrTree();
   
@@ -164,31 +164,52 @@
        <h1>&nbsp;<i class="far fa-edit"></i>&nbsp;Manage Content</h1>
        <div class="card-body">
          <a type="button" class="btn btn-primary mb-3" href="/personal/edit_filter.php" style="min-width:18em;">
-           <i class="fa fa-filter"></i>
-            Edit Filters (Watches)
+           <div class="row">
+             <i class="fa fa-filter col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Edit Filters (Watches)</span>
+           </div>
          </a> <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/add_new_rss.php" style="min-width:18em;">
-           <i class="fa fa-plus"></i>
-            Add new RSS
+           <div class="row">
+             <i class="fa fa-plus col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Add new RSS</span>
+           </div>
          </a> <br>
          <button type="button" class="btn btn-primary mb-3" style="min-width:18em;" onclick="openImportModal()">
-           <i class="fas fa-cloud-upload-alt"></i>
-           Import OPML
+           <div class="row">
+             <i class="fa fa-cloud-upload-alt col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Import OPML</span>
+           </div>
          </button> <br>
          <a type="button" class="btn btn-primary mb-3" href="../api/feeds/export/" style="min-width:18em;">
-           <i class="fas fa-download"></i>
-           Export OPML
+           <div class="row">
+             <i class="fa fa-download col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Export OPML</span>
+           </div>
          </a> <br>
-         <div class="<?php echo $admin_element; ?>">
+         <?php
+           if ( $admin_elements ) {
+             echo '
          <a type="button" class="btn btn-primary mb-3" href="../api/maintenance/" style="min-width:18em;">
-           <i class="fas fa-database"></i>
-            Create DB snapshot
+           <div class="row">
+             <i class="fas fa-database col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Create DB snapshot</span>
+           </div>
          </a> <br>
          <a type="button" class="btn btn-primary mb-3" href="../data/" style="min-width:18em;">
-           <i class="fas fa-tasks"></i>
-            DB snapshots list
+           <div class="row">
+             <i class="fas fa-tasks col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">DB snapshots list</span>
+           </div>
+         </a> <br>';
+           }
+         ?>
+         <a type="button" class="btn btn-primary mb-3" href="../api/articles/export/" style="min-width:18em;">
+           <div class="row">
+             <i class="fa fa-download col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Export articles (JSON)</span>
+           </div>
          </a> <br>
-         </div>
        </div>
      </div>
 
@@ -196,12 +217,16 @@
        <h1>&nbsp;<i class="far fa-chart-bar"></i>&nbsp;Reports</h1>
        <div class="card-body">
          <a type="button" class="btn btn-primary mb-3" href="/personal/report_stat.php" style="min-width:18em;">
-           <i class="fa fa-file-alt"></i>
-           Statistics
+           <div class="row">
+             <i class="fa fa-file-alt col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Statistics</span>
+           </div>
          </a> <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/report_events.php" style="min-width:18em;">
-           <i class="fas fa-exclamation-circle"></i>
-           Events (update failures)
+           <div class="row">
+             <i class="fas fa-exclamation-circle col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Events (update failures)</span>
+           </div>
          </a> <br>
        </div>
      </div>
@@ -213,15 +238,18 @@
        </div>
        <div class="card-body">
          <a type="button" class="btn btn-primary mb-3" href="https://github.com/freerss2/freerss2/issues/new" target="_blank" style="min-width:18em;">
-           <i class="fas fa-bug"></i>
-           Report an issue
+           <div class="row">
+             <i class="fas fa-bug col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Report an issue</span>
+           </div>
          </a> <br>
          <a type="button" class="btn btn-primary mb-3" href="../help/" style="min-width:18em;">
-           <i class="fas fa-book-reader"></i>
-           Documentation
+           <div class="row">
+             <i class="fas fa-book-reader col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Documentation</span>
+           </div>
          </a> <br>
        </div>
-     </div>
      </div>
 
     </div>
