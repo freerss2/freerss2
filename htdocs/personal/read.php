@@ -332,8 +332,8 @@ if ($req_type == 'subscr') {
   echo 
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>'.
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevWatch()"><i class="fas fa-chevron-left"></i></button>';
-  if (! $rss_app->isReservedWatch($curr_watch_id)) {
-    echo '<a role="button" class="btn btn-light btn-sm big-icon-button" href="edit_filter.php?watch_id='.$curr_watch_id.'"> <i class="far fa-edit"></i> </a>';
+  if (! $rss_app->isReservedWatch($req_id)) {
+    echo '<a role="button" class="btn btn-light btn-sm big-icon-button" href="edit_filter.php?watch_id='.$req_id.'"> <i class="far fa-edit"></i> </a>';
   }
   echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextWatch()"><i class="fas fa-chevron-right"></i></button>';
  echo '<i class="fas fa-filter"></i>&nbsp;'.$watch_title;
