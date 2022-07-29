@@ -576,6 +576,7 @@ function changeFeedGroup() {
 
 // callback for create (add) new feed
 function createFeed() {
+  var input_type = document.getElementById('inputTypeRss');
   var xml_elm = document.getElementById('new-rss-xml-url');
   var title_elm = document.getElementById('new-rss-title');
   var group_elm = document.getElementById('new-rss-group');
@@ -591,7 +592,8 @@ function createFeed() {
   createFeedModal.show();
   var url = '/api/feeds/create/?title=' + rss_title +
     '&group=' + rss_group +
-    '&xml_url=' + encodeURIComponent(rss_xml);
+    '&xml_url=' + encodeURIComponent(rss_xml) +
+    '&input_type_rss=' + input_type.checked;
   httpGetAsync(url, function(buf){
     // console.log(buf);
     if (buf.startsWith("ERROR")) {

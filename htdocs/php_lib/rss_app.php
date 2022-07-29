@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.7e';
+$APP_VERSION = '2.0.1.6.8';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -215,6 +215,37 @@ class RssApp {
   }
 
   /**
+   * Read site code using URL and try to find rss feed address and title
+   * @param: site_url: site full address
+   * @return: dictionary with fields 'xmlUrl' and 'title' (if any found)
+  **/
+  public function findRssForSite($site_url) {
+    // Disable any errors reporting
+    error_reporting(0);
+    $page_code = file_get_contents($site_url);
+    error_reporting(E_ERROR | E_WARNING | E_PARSE);
+    // Enable errors and warnings
+    $rec = array();
+    if (! $page_code) { return $rec; }
+    foreach (explode('>', $page_code) as $html_tag) {
+      if (stripos($html_tag, 'rss') === false) { continue; }
+      if (stripos($html_tag, 'href=') === false) { continue; }
+      preg_match('/href=([^>< ]+)/', $html_tag, $matches);
+      $xml_url = trim($matches[1], '\'"');
+      $xml_url_info = parse_url($xml_url);
+      if (! array_key_exists('host', $xml_url_info)) {
+        $url_info = parse_url($site_url);
+        $xml_url = $url_info['scheme'] . '://' . $url_info['host'] . '/' . $xml_url;
+      }
+      $rec['xmlUrl'] = $xml_url;
+    }
+    preg_match ('/<title>([^<>]+)<\/title>/i', $page_code, $title);
+    if ($title) {
+      $rec['title'] = $title[1];
+    }
+    return $rec;
+  }
+  /**
    * Read articles from speficic RSS feed source
    * @param rss_url: RSS URL address
    * @param rss_title: RSS page title (for diagnostics)
@@ -418,6 +449,22 @@ class RssApp {
   } // getAllSubscrTree
 
   /**
+   * Serialize (represent as a dictionary) all user-specific data
+   * @return: dictionary with keys 'system', 'subscr', 'watches', 'articles'
+   *  under 'system': login_name, full_name, db_version, app_version
+   *  under 'subscr': list of records {'group', 'text', 'title', 'htmlUrl', 'xmlUrl', 'index_in_gr'}
+   *  under 'watches':
+  **/
+  public function serializeUserData() {
+    $result = array(
+      'system' => array(),
+      'subscr' => array(),
+      'watches' => array(),
+      'articles' => array());
+    return $result;
+  }
+
+  /**
    * Convert watches for dump
    * @param $watches_data: array of all watch descriptors
    * @return: list of correct formatted objects
@@ -618,6 +665,50 @@ WHERE `user_id` = :user_id
       $result []= array_intersect_key($r, array_flip($keys));
     }
     return $result;
+  }
+
+  /**
+   * Import articles from serialized source (dump file)
+   * @param $articles: parsed list of records
+     'fd_postid', 'fd_feedid', 'title', 'description', 'link',
+     'guid', 'author', 'categories', 'read', 'flagged', 'gr_original_id',
+     'timestamp'
+   * @return: insert & update counts
+  **/
+  public function importArticles($articles) {
+    $inserted = 0;
+    $updated = 0;
+    # get all article IDs for this user
+    $query1 = "SELECT `fd_postid` FROM `tbl_posts` WHERE `user_id` = :user_id";
+    $bindings1 = array('user_id'=>$this->user_id);
+    $db_ids_rec = $this->db->fetchQueryRows($query1, $bindings1);
+    $db_ids = array();
+    foreach ($db_ids_rec as $rec) {
+      $db_ids []= $rec['fd_postid'];
+    }
+    foreach ($articles as $rec) {
+      $post_id = $rec['fd_postid'];
+      $bindings2 = $rec;
+      $bindings2['user_id'] = $this->user_id;
+      # insert or update record
+      if (in_array($post_id, $db_ids)) {
+        $query2 = "UPDATE `tbl_posts`
+          SET
+          `link`=:link, `title`=:title, `author`=:author, `categories`=:categories, `timestamp`=:timestamp,
+          `description`=:description, `guid`=:guid, `fd_feedid`=:fd_feedid, `gr_original_id`=:gr_original_id,
+          `read`=:read, `flagged`=:flagged
+          WHERE `user_id` = :user_id AND `fd_postid` = :post_id";
+        $updated += 1;
+      } else {
+        $query2 = "INSERT INTO `tbl_posts`".
+        "(`user_id`, `link`, `title`, `author`, `categories`, `timestamp`, `description`, `fd_postid`, `guid`, `fd_feedid`, `gr_original_id`, `read`, `flagged`) " .
+        "VALUES ".
+        "(:user_id,  :link,  :title,  :author,  :categories,  :timestamp,  :description,  :fd_postid,  :guid,  :fd_feedid,  :gr_original_id,  :read,  :flagged)";
+        $inserted += 1;
+      }
+      $this->db->execQuery($query2, $bindings2);
+    }
+    return array('' => $inserted, '' => $updated);
   }
 
   /**

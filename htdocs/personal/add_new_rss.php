@@ -72,8 +72,24 @@
      <div class="card">
        <h1>Add new RSS channel subscription</h1>
        <div class="card-body">
-         <h5 class="card-title">RSS XML address <span class="indicate-required">(*)<span></h5>
+
+         <h5 class="form-check-label card-title" for="inputTypeSite">
+           Address <span class="indicate-required">(*)<span>
+         </h5>
+         <div class="form-check form-check-inline">
+           <input class="form-check-input" type="radio" name="inputType" id="inputTypeSite">
+           <label class="form-check-label card-title" for="inputTypeSite">
+             Site
+           </label>
+         </div>
+         <div class="form-check form-check-inline">
+           <input class="form-check-input" type="radio" name="inputType" id="inputTypeRss" checked>
+           <label class="form-check-label card-title" for="inputTypeRss">
+             RSS XML
+           </label>
+         </div>
          <input type="text" class="form-control" id="new-rss-xml-url">
+
          <h5 class="card-title">RSS title (description) <span class="indicate-required">(*)<span></h5>
          <input type="text" class="form-control" id="new-rss-title">
          <h5 class="card-title">Group (main topic) <span class="indicate-required">(*)<span></h5>

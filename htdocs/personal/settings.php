@@ -210,6 +210,12 @@
              <span class="col-10 col-sm-9">Export articles (JSON)</span>
            </div>
          </a> <br>
+         <a type="button" class="btn btn-primary mb-3" href="../api/articles/import/" style="min-width:18em;">
+           <div class="row">
+             <i class="fas fa-project-diagram col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Import articles (JSON)</span>
+           </div>
+         </a> <br>
        </div>
      </div>
 

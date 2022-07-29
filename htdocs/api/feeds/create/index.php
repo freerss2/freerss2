@@ -1,7 +1,8 @@
 <?php
   /* - - - - - - - - - - - - *\
      Create feed
-     by XMLURL
+     by xml_url, title and group
+     if passed input_type_rss=false, consider xml_url as site URL
   \* - - - - - - - - - - - - */
   session_start();
 
@@ -28,10 +29,22 @@
   if (! $title) { echo "missing title arg"; exit(1); }
   $group = $_GET['group'];
   if (! $group) { echo "missing group arg"; exit(1); }
+  $input_type_rss = $_GET['input_type_rss'] == 'true';
 
+  if (! $input_type_rss) {
+    $result = $rss_app->findRssForSite($xml_url);
+    if (! array_key_exists('xmlUrl', $result) ) {
+      echo "ERROR: failed to find RSS in $xml_url";
+      exit(0);
+    }
+    $xml_url = $result['xmlUrl'];
+    if ( $result['title'] ) {
+      $title = $result['title'];
+    }
+  }
   list ($error, $feed_id, $title) = $rss_app->createFeed($xml_url, $title, $group);
   if ($error) {
-    echo "ERROR: $error";
+    echo mb_strimwidth("ERROR: $error", 0, 240, "...");;
     exit(1);
   }
   echo "Created: $feed_id\nTitle: $title\n";
