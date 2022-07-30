@@ -11,6 +11,11 @@ var SEARCH_ENGINES = {
 // semaphore for enabling keyboard shortucts in articles context only
 var articles_context = false;
 
+// codes: '' - no touch/scroll right now
+//        'touch'
+//        'scroll handled'
+var scroll_handle = '';
+
 // ------------------( control nav appearance )------------------
 
 var nav_visible = 0;
@@ -1102,9 +1107,57 @@ function setArticlesContext( value=true ) {
   }
 }
 
-// Bind keyboard shortcuts for feeds reader screen
+// Show/hide document elements belonging to given class
+// @param class_name: DOM class name
+// @param is_visible: <true> if element should be shown
+function changeClassVisibility( class_name, is_visible ) {
+  var to_change = Array.from( document.getElementsByClassName( class_name ) );
+  var set_display = is_visible ? "" : "none";
+  for (var i=0; i<to_change.length; i++) {
+    to_change[i].style.display = set_display;
+  }
+}
+
+// Bind keyboard/touch events for feeds reading screen
 function bindKeysForFeeds() {
 
+  // Touch-screen start click
+  window.addEventListener("touchstart", function(event) {
+    scroll_handle = 'touch'; // touch - still no move
+  }, true);
+
+  // Touch-screen move
+  window.addEventListener("touchmove", function (event) {
+    if (event.defaultPrevented) {
+      return; // Do nothing if the event was already processed outside
+    }
+
+    if (! articles_context) {
+      return; // Skip irrelevant cases
+    }
+
+    if (scroll_handle != 'touch') {
+      return; // Do nothing if it's not first time after touch
+    }
+
+    // temporary hide elements of class 'post-time-info', 'item-menu-button'
+    changeClassVisibility( 'post-time-info', 0 );
+    changeClassVisibility( 'item-menu-button', 0 );
+
+    scroll_handle = 'scroll handled';
+  }, true);
+
+  // Touch-screen end click/move
+  window.addEventListener("touchend", function (event) {
+    if (scroll_handle == 'scroll handled') {
+      // unhide elements of class 'post-time-info', 'item-menu-button'
+      changeClassVisibility( 'post-time-info', 1 );
+      changeClassVisibility( 'item-menu-button', 1 );
+    }
+    scroll_handle = '';
+  }, true);
+
+  // Keyboard events (including keys combinations)
   window.addEventListener("keydown", function (event) {
     if (event.defaultPrevented) {
       return; // Do nothing if the event was already processed
@@ -1119,14 +1172,12 @@ function bindKeysForFeeds() {
       case "r":
         if (event.ctrlKey) { return; }
         if (event.altKey) {
-          // console.log("Alt/H");
           refreshRss();
           handled = true;
         }
         break;
       case "h":
         if (event.altKey) {
-          // console.log("Alt/H");
           showUpdatingDialog();
           handled = true;
           window.location.href = '/';
@@ -1134,7 +1185,6 @@ function bindKeysForFeeds() {
         break;
       case "z":
         if (event.ctrlKey) {
-          // console.log("Ctrl/Z");
           handled = true;
           markReadAndNext();
         }
@@ -1144,7 +1194,6 @@ function bindKeysForFeeds() {
         if (event.ctrlKey) {
           // mark current article as read
           // go to next article
-          // console.log('"Ctrl down arrow" key press.');
           var article_id = getActiveArticleId();
           if (! article_id) { article_id = getFirstArticleId(); }
           changeArticleReadState(article_id.replace('heading_', ''), 'on');
@@ -1152,7 +1201,6 @@ function bindKeysForFeeds() {
           handled = true;
           if (! done) { return; }
         } else {
-          // console.log('"down arrow" key press.');
           done = focusOnNextArticle();
           handled = true;
           if (! done) { return; }
@@ -1163,7 +1211,6 @@ function bindKeysForFeeds() {
         if (event.ctrlKey) {
           console.log('"Ctrl up arrow" key press.');
         } else {
-          // console.log('"up arrow" key press.');
           done = focusOnPreviousArticle();
           handled = true;
           if (! done) { return; }
