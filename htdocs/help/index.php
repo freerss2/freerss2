@@ -148,7 +148,7 @@
       <a name="author"></a>
       <H1 id="author"><i class="fas fa-at"></i> Contacting the author</H1>
       <p>Feel free to open bug report or improvement suggestion via <a href="https://github.com/freerss2/freerss2/issues/new" target="_blank">GitHub</a></p>
-      <p>Please see my contact email on <a href="http://felixl.coolpage.biz/" target="_blank">personal homepage</a></p>
+      <p>Please see my contact email on <a href="http://felixl.coolpage.biz/" target="_blank">personal homepage</a> or send me a <a href="https://telegram.me/coolwolf0" target="_blank">telegram</a></p>
     </div>
 
   </body>

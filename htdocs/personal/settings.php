@@ -246,7 +246,13 @@
          <a type="button" class="btn btn-primary mb-3" href="https://github.com/freerss2/freerss2/issues/new" target="_blank" style="min-width:18em;">
            <div class="row">
              <i class="fas fa-bug col-2 col-xs-1 settings-icon"></i>
-             <span class="col-10 col-sm-9">Report an issue</span>
+             <span class="col-10 col-sm-9">Report an issue (GitHub)</span>
+           </div>
+         </a> <br>
+         <a type="button" class="btn btn-primary mb-3" href="https://telegram.me/coolwolf0" target="_blank" style="min-width:18em;">
+           <div class="row">
+             <i class="far fa-paper-plane col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Contact author</span>
            </div>
          </a> <br>
          <a type="button" class="btn btn-primary mb-3" href="../help/" style="min-width:18em;">
