@@ -115,5 +115,16 @@ function my_sleep($seconds) {
   curl_close($ch);
 }
 
+/**
+ * Remove UTF8 Bom
+ * @param $text: buffer to be fixed
+ * @return: buffer without UTF8 BOM sequence
+**/
+function remove_utf8_bom($text)
+{
+  $bom = pack('H*','EFBBBF');
+  $text = preg_replace("/^$bom/", '', $text);
+  return $text;
+}
 
 ?>

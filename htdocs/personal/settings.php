@@ -210,12 +210,12 @@
              <span class="col-10 col-sm-9">Export articles (JSON)</span>
            </div>
          </a> <br>
-         <a type="button" class="btn btn-primary mb-3" href="../api/articles/import/" style="min-width:18em;">
+         <button type="button" class="btn btn-primary mb-3" onclick="openImportArticles()" style="min-width:18em;">
            <div class="row">
              <i class="fas fa-project-diagram col-2 col-xs-1 settings-icon"></i>
              <span class="col-10 col-sm-9">Import articles (JSON)</span>
            </div>
-         </a> <br>
+         </button> <br>
        </div>
      </div>
 
@@ -263,7 +263,6 @@
          </a> <br>
        </div>
      </div>
-
     </div>
 
     <div class="modal fade" id="upoladOpmlDialog" tabindex="-1" aria-hidden="true">
@@ -279,6 +278,29 @@
              <div class="alert alert-danger" role="alert">
                  <i class="fas fa-exclamation-triangle"></i>&nbsp;
                  This action could not be undone. All existing subscriptions and downloaded articles will be erased.
+             </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+            <button type="submit" class="btn btn-warning">Start import</button>
+          </div>
+        </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal fade" id="upoladArticlesDialog" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form action="../api/articles/import/" method="post" enctype="multipart/form-data">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Import Subscriptions from Articles file</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+             <input type="file" class="mb-3" id="articles" name="articles" />
+             <div class="alert alert-warning" role="alert">
+                 All existing articles remain, only new ones will be imported
              </div>
           </div>
           <div class="modal-footer">

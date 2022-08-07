@@ -449,18 +449,28 @@ class RssApp {
   } // getAllSubscrTree
 
   /**
-   * Serialize (represent as a dictionary) all user-specific data
+   * Collect (in a dictionary) all user-specific data
    * @return: dictionary with keys 'system', 'subscr', 'watches', 'articles'
    *  under 'system': login_name, full_name, db_version, app_version
    *  under 'subscr': list of records {'group', 'text', 'title', 'htmlUrl', 'xmlUrl', 'index_in_gr'}
-   *  under 'watches':
+   *  under 'watches': list of records {'fd_watchid', 'title', 'rules'}
   **/
-  public function serializeUserData() {
+  public function collectUserData() {
+    global $APP_VERSION;
+    $query = "SELECT `full_name`, `login_name`, `email` FROM `tbl_users` WHERE `user_id`=:user_id";
+    $bindings = array( 'user_id'   => $this->user_id );
+    $user_data = $this->db->fetchSingleRow($query0, $bindings);
+    $watches_data = $this->getWatchesList();
+    $watches_data = $this->convertWatchesForDump($watches_data);
     $result = array(
-      'system' => array(),
-      'subscr' => array(),
-      'watches' => array(),
-      'articles' => array());
+      'system' => array('app_version'=>$APP_VERSION,
+        'full_name'=>$user_data[0],
+        'login_name'=>$user_data[1],
+        'email'=>$user_data[2]),
+      'subscr' => $this->getSubscrForExport(),
+      'watches' => $watches_data,
+      'articles' => $this->getActualArticles()
+    );
     return $result;
   }
 
@@ -583,17 +593,27 @@ class RssApp {
     return $err;
   }
 
+
+  /**
+   * Get subscriptions info as a list of records
+   * `group`, `text`, `title`, `htmlUrl`, `xmlUrl`, `index_in_gr`
+   * @return: array of dictionaries
+  **/
+  public function getSubscrForExport() {
+    $bindings = array("user_id" => $this->user_id);
+    $query = "SELECT `group`, `text`, `title`, `htmlUrl`, `xmlUrl`, `index_in_gr`".
+      "FROM `tbl_subscr` WHERE `user_id`=:user_id ".
+      "ORDER BY `group`, `index_in_gr`";
+    return $this->db->fetchQueryRows($query, $bindings);
+  }
+
   /**
    * Generate OPML (XML) representation of groups and their feeds
    * @return: text buffer with XML
   **/
   public function exportOpml() {
     # get list of subscriptions
-    $bindings = array("user_id" => $this->user_id);
-    $query = "SELECT `group`, `text`, `title`, `htmlUrl`, `xmlUrl` ".
-      "FROM `tbl_subscr` WHERE `user_id`=:user_id ".
-      "ORDER BY `group`, `index_in_gr`";
-    $subscr = $this->db->fetchQueryRows($query, $bindings);
+    $subscr = $this->getSubscrForExport();
     $opml = new GenOpml(array('version'=>'1.1'));
     $opml->setHead('RSS Subscriptions',
                    date_format(date_create(),"Y-m-d H:i:s"));
@@ -697,7 +717,7 @@ WHERE `user_id` = :user_id
           `link`=:link, `title`=:title, `author`=:author, `categories`=:categories, `timestamp`=:timestamp,
           `description`=:description, `guid`=:guid, `fd_feedid`=:fd_feedid, `gr_original_id`=:gr_original_id,
           `read`=:read, `flagged`=:flagged
-          WHERE `user_id` = :user_id AND `fd_postid` = :post_id";
+          WHERE `user_id` = :user_id AND `fd_postid` = :fd_postid";
         $updated += 1;
       } else {
         $query2 = "INSERT INTO `tbl_posts`".
