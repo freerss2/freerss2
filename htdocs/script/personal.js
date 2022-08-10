@@ -578,12 +578,16 @@ function completeRefreshRss(results) {
 
 // callback for group selection change
 // propagate select-list value to input-box
-function changeFeedGroup() {
+function changeFeedGroup(group_select_val='') {
   var new_group_elm = document.getElementById('new-rss-group');
-  var group_select_elm = document.getElementById('group-select');
   if (! new_group_elm) { return; }
-  if (! group_select_elm || ! group_select_elm.value) { return; }
-  new_group_elm.value = group_select_elm.value;
+  if (! group_select_val) {
+    group_select_elm = document.getElementById('group-select');
+    if (! group_select_elm) { return; }
+    group_select_val = group_select_elm.value;
+  }
+  if (! group_select_val) { return; }
+  new_group_elm.value = group_select_val;
 }
 
 // callback for create (add) new feed
@@ -1175,7 +1179,13 @@ function bindKeysForFeeds() {
     }
 
     var handled = false;
-    switch (event.key) {
+    var event_key = event.key;
+    switch (event.keyCode) {
+      case 82: event_key = "r"; break;
+      case 72: event_key = "h"; break;
+      case 90: event_key = "z"; break;
+    }
+    switch (event_key) {
       case "r":
         if (event.ctrlKey) { return; }
         if (event.altKey) {

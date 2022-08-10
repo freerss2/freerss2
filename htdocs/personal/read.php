@@ -160,7 +160,7 @@ $prev_page = $displayed_page > 1;
 
     <title>Free RSS</title>
   </head>
-  <body onload="setArticlesContext(1); <?php echo $promptForInit; ?>">
+  <body onload="<?php echo $promptForInit; ?>">
 
     <!-- Optional JavaScript; choose one of the two! -->
 
@@ -176,7 +176,7 @@ $prev_page = $displayed_page > 1;
     <script src="../script/service.js<?php echo $VER_SUFFIX;?>" ></script>
     <script src="../script/personal.js<?php echo $VER_SUFFIX;?>" ></script>
 
-    <script> bindKeysForFeeds(); </script>
+    <script> setArticlesContext(1); bindKeysForFeeds(); </script>
 
     <div id="mySidebar" class="sidebar">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"><i class="fas fa-times"></i></a>
@@ -354,7 +354,7 @@ if ($req_type == 'subscr') {
   echo "</H3>";
   echo
  '<div class="collapse" id="feedSettings">
-    <div class="card card-body">
+    <div class="card card-body mb-3">
       <div class="btn-toolbar mb-3" role="toolbar" aria-label="Enable feed">
         <div class="btn-group me-2" role="group" aria-label="Enable/disable">
           <button type="button" class="btn btn-outline-primary"
@@ -377,7 +377,7 @@ if ($req_type == 'subscr') {
               id="xmlUrl" value="'.$xmlUrl.'">
           <button class="btn btn-secondary" type="button"
             onclick="setFeedParam(\'xmlUrl\', \'xmlUrl\', \''.$curr_feed_id.'\');">
-            <i class="far fa-thumbs-up"></i>
+            Save
           </button>
         </div>
       </div>
@@ -389,32 +389,36 @@ if ($req_type == 'subscr') {
               id="rss_title" value="'.$rss_title.'">
           <button class="btn btn-secondary" type="button"
             onclick="setFeedParam(\'rss_title\', \'title\', \''.$curr_feed_id.'\');">
-            <i class="far fa-thumbs-up"></i>
+            Save
           </button>
         </div>
       </div>
       <div class="d-grid gap-2 d-md-block" style="max-width:30em;">
         <div class="input-group">
           <span class="input-group-text" id="basic-addon1">Group</span>
-          <input type="text" class="form-control" placeholder="Group name"
+          <input type="text" class="form-control" placeholder="Associate feed with group"
               aria-label="Where to place RSS Feed" aria-describedby="basic-addon2"
               id="new-rss-group" value="'.$rss_group.'">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false"></button>
+            <ul class="dropdown-menu dropdown-menu-end">
+            <li><span class="dropdown-item-text">Select from existing</span></li>
+              ';
+              foreach ($groups as $group) {
+                $sel = $group == $rss_group ? 'active' : '';
+                echo "<li><a class=\"dropdown-item $sel\" href=\"javascript:changeFeedGroup('$group');\">$group</a></li>";
+              }
+            echo '
+            </ul>
           <button class="btn btn-secondary" type="button"
             onclick="setFeedParam(\'new-rss-group\', \'group\', \''.$curr_feed_id.'\');">
-            <i class="far fa-thumbs-up"></i>
+            Save
           </button>
           </div>
         </div>
-        <select class="form-select mb-3" id="group-select" onchange="changeFeedGroup();" aria-label="Group select">';
-        foreach ($groups as $group) {
-           $sel = $group == $rss_group ? 'selected' : '';
-           echo "<option $sel value='$group'>$group</option>";
-        }
-        echo '
-        </select>
 
       </div>
-      <div class="d-grid gap-2 d-md-block">
+      <div class="d-grid gap-2 d-md-block mb-3">
         <button type="button" class="btn btn-danger" onclick="deleteFeed(\''.$curr_feed_id.'\');" style="min-width:8em;">
           <i class="far fa-trash-alt"></i>
         </button>
