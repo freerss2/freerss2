@@ -112,27 +112,27 @@
          <div class="input-group mb-3" style="max-width:30em;">
            <span class="input-group-text">hours</span>
            <input type="number" min="1" max="24" class="form-control" id="reminder-hours" value="<?php echo $reminder_hours; ?>">
-           <button class="btn btn-outline-secondary" type="button" id="submit1" onclick="updateSettingsFrom('reminder_hours', 'reminder-hours')">
-             <i class="fa fa-check"></i>
+           <button class="btn btn-secondary" type="button" id="submit1" onclick="updateSettingsFrom('reminder_hours', 'reminder-hours')">
+             Save
            </button>
          </div>
          <h5 class="card-title">How many articles to leave on cleanup</h5>
          <div class="input-group mb-3" style="max-width:30em;">
            <span class="input-group-text">articles</span>
            <input type="number" min="10" max="200" step="10" class="form-control" id="retention-leave-articles" value="<?php echo $retention_leave_articles; ?>">
-           <button class="btn btn-outline-secondary" type="button" id="submit2" onclick="updateSettingsFrom('retention_leave_articles', 'retention-leave-articles')">
-             <i class="fa fa-check"></i>
+           <button class="btn btn-secondary" type="button" id="submit2" onclick="updateSettingsFrom('retention_leave_articles', 'retention-leave-articles')">
+             Save
            </button>
          </div>
          <h5 class="card-title">Page size</h5>
          <div class="input-group mb-3" style="max-width:30em;">
            <span class="input-group-text">articles</span>
            <input type="number" min="5" max="100" class="form-control" id="page-size" value="<?php echo $page_size; ?>">
-           <button class="btn btn-outline-secondary" type="button" id="submit3" onclick="updateSettingsFrom('page_size', 'page-size')">
-             <i class="fa fa-check"></i>
+           <button class="btn btn-secondary" type="button" id="submit3" onclick="updateSettingsFrom('page_size', 'page-size')">
+             Save
            </button>
          </div>
-         <h5 class="card-title">Start reading from</h5>
+         <h5 class="card-title">Start reading from page</h5>
          <select class="form-select" id="start-page" style="max-width:30em;" onchange="updateSettings('start_page', this.value)">
             <?php
               foreach ($subscr_tree as $row) {
