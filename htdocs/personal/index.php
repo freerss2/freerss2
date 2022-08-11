@@ -100,12 +100,12 @@
     <div id="main">
       <nav class="navbar sticky-top navbar-dark bg-dark">
         <div>
-          <button class="openbtn" onclick="toggleNav()"><i class="fas fa-bars"></i></button>
+          <button class="openbtn" onclick="toggleNav()" title="Select feed/group/watch from subscriptions tree"><i class="fas fa-bars"></i></button>
           <div class="btn-group" role="group" aria-label="toolbar group">
-            <button title="Search..." class="btn btn-secondary btn-md" onclick="startSearch();">
+            <button title="Search in articles..." class="btn btn-secondary btn-md" onclick="startSearch();">
               <i class="fas fa-search"></i>
             </button>
-            <button title="Refresh now" type="button" class="btn btn-secondary btn-md position-relative" onclick="refreshRss();">
+            <button title="Refresh articles from feeds" type="button" class="btn btn-secondary btn-md position-relative" onclick="refreshRss();">
               <i class="fa fa-sync-alt"></i>
              <span class="<?php echo $statistics['update_required'] ? '': 'visually-hidden' ?> position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
                 <span class="visually-hidden">Too old</span>
@@ -158,16 +158,16 @@
          </div>
 
          <div>
-           <a href="<?php echo $start_page; ?>" class="btn btn-dark btn-sm low-action-button">
+           <a href="<?php echo $start_page; ?>" title="Open feed/group/watch specified in settings as default" class="btn btn-dark btn-sm low-action-button">
              <i class="fas fa-rss"></i> Start reading
            </a>
-           <a href="<?php echo $statistics['last_page']; ?>" class="btn btn-dark btn-sm low-action-button">
+           <a href="<?php echo $statistics['last_page']; ?>" title="Return to last watched feeds page" class="btn btn-dark btn-sm low-action-button">
              <i class="fas fa-history"></i> Last page
            </a>
            <a href="../login?logout=1" class="btn btn-dark btn-sm low-action-button">
              <i class="fas fa-sign-out-alt"></i> Logout
            </a>
-           <a href="../help/#start" class="btn btn-dark btn-sm low-action-button">
+           <a href="../help/#start" title="Read documentation" class="btn btn-dark btn-sm low-action-button">
              <i class="fab fa-readme"></i> Help
            </a>
          </div>

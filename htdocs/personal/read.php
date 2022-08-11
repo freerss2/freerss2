@@ -369,7 +369,7 @@ if ($req_type == 'subscr') {
         <label id="feed-enabled" '.$enabled_class.'>Enabled</label>
         <label id="feed-disabled" '.$disabled_class.'>Disabled</label>
       </div>
-      <div class="d-grid gap-2 d-md-block" style="max-width:30em;">
+      <div class="d-grid gap-2 d-md-block short-input" >
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon1">RSS</span>
           <input type="text" class="form-control" placeholder="Feed URL"
@@ -381,7 +381,7 @@ if ($req_type == 'subscr') {
           </button>
         </div>
       </div>
-      <div class="d-grid gap-2 d-md-block" style="max-width:30em;">
+      <div class="d-grid gap-2 d-md-block short-input" >
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon1">Title</span>
           <input type="text" class="form-control" placeholder="Feed Name"
@@ -393,7 +393,7 @@ if ($req_type == 'subscr') {
           </button>
         </div>
       </div>
-      <div class="d-grid gap-2 d-md-block" style="max-width:30em;">
+      <div class="d-grid gap-2 d-md-block short-input" >
         <div class="input-group">
           <span class="input-group-text" id="basic-addon1">Group</span>
           <input type="text" class="form-control" placeholder="Associate feed with group"

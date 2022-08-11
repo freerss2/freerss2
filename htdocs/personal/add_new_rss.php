@@ -77,37 +77,46 @@
            Address <span class="indicate-required">(*)<span>
          </h5>
          <div class="form-check form-check-inline">
-           <input class="form-check-input" type="radio" name="inputType" id="inputTypeSite">
-           <label class="form-check-label card-title" for="inputTypeSite">
+           <input class="btn-check" type="radio" name="inputType" id="inputTypeSite">
+           <label class="btn btn-outline-secondary card-title" for="inputTypeSite">
              Site
            </label>
          </div>
          <div class="form-check form-check-inline">
-           <input class="form-check-input" type="radio" name="inputType" id="inputTypeRss" checked>
-           <label class="form-check-label card-title" for="inputTypeRss">
+           <input class="btn-check" type="radio" name="inputType" id="inputTypeRss" checked>
+           <label class="btn btn-outline-secondary card-title" for="inputTypeRss">
              RSS XML
            </label>
          </div>
-         <input type="text" class="form-control" id="new-rss-xml-url">
+         <input type="text" class="form-control short-input" id="new-rss-xml-url" placeholder="Link to website or RSS XML (feed)">
 
          <h5 class="card-title">RSS title (description) <span class="indicate-required">(*)<span></h5>
-         <input type="text" class="form-control" id="new-rss-title">
+         <input type="text" class="form-control short-input" id="new-rss-title" placeholder="Informal feed description">
          <h5 class="card-title">Group (main topic) <span class="indicate-required">(*)<span></h5>
-         <input type="text" class="form-control" id="new-rss-group"
-           value="<?php echo $groups[0]; ?>">
+         <div class="d-grid gap-2 d-md-block short-input" >
+           <div class="input-group">
+             <input type="text" class="form-control" id="new-rss-group"
+           value="<?php echo $groups[0]; ?>" placeholder="To which feeds group it should belong">
 
            <?php
              if ($groups) {
-               echo '<select class="form-select" id="group-select" onchange="changeFeedGroup();" aria-label="Group select">';
-               $sel = 'selected';
+               echo '<button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"></button>
+               <ul class="dropdown-menu dropdown-menu-end">
+                 <li><span class="dropdown-item-text">Select from existing</span></li>';
+
+               $sel = 'active';
                foreach ($groups as $group) {
-                 echo "<option $sel value='$group'>$group</option>";
+                 echo "<li><a class=\"dropdown-item $sel\" href=\"javascript:changeFeedGroup('$group');\">$group</a></li>";
                  $sel = '';
                }
-               echo '</select>';
+
+               echo '</ul>';
              }
            ?>
 
+           </div>
+         </div>
          <BR>
          <button type="button" class="btn btn-primary" onclick="createFeed();" style="min-width:8em;">
            <i class="fas fa-rss-square"></i>
