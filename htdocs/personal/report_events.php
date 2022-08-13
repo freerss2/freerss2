@@ -21,8 +21,19 @@
   $user_id = $_SESSION['user_id'];  # take from login info
   $rss_app->setUserId($user_id);
 
-  $event_type = 'subscr';
-  $report_data = $rss_app->eventsReportData($event_type);
+  $event_type = $_GET['type'];
+  $id = $_GET['id'];
+  if ( $event_type ) {
+    $query_type = ( $event_type == 'all' ) ? null : $event_type;
+  } else {
+    $query_type = 'subscr';
+  }
+  if ( $event_type && $id ) {
+    $event_rec = $rss_app->getEventRecord($event_type, $id);
+  } else {
+    $event_rec = array();
+  }
+  $report_data = $rss_app->eventsReportData($query_type);
 
 ?>
 
@@ -45,7 +56,13 @@
 
     <title>Free RSS - Events Report</title>
   </head>
-  <body onload="setArticlesContext(0);">
+  <body onload="setArticlesContext(0);
+    <?php
+      if ( $event_rec ) {
+         echo "showEventDialog();";
+      }
+    ?>
+    ">
 
     <!-- Optional JavaScript; choose one of the two! -->
 
@@ -83,7 +100,7 @@
             echo '</div>';
 
             foreach ($report_data as $rec) {
-              $ref = 'read.php?type='.$rec[1].'&id='.$rec[0];
+              $ref = 'read.php?type='.$rec[0].'&id='.$rec[1];
               $timestamp = _date_to_passed_time($rec[3]);
               echo '<div class="row stat_row">';
               echo '  <div class="col-3 no-text-overflow"><a href="'.$ref.'" target="_blank">'.$rec[2].'</a></div>';
@@ -97,6 +114,36 @@
           }
        ?>
      </div>
+
+
+    <div class="modal fade" id="eventDetailsDialog" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Event details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <?php
+              if ( $event_rec ) {
+                // received record with 'name', 'timestamp', 'status', 'log'
+                if ( ! $event_rec ) {
+                  echo "Wrong event type & id: $event_type, $id";
+                } else {
+                  echo $event_rec['timestamp']."<br>";
+                  echo $event_rec['name']."<br>";
+                  echo "<label>".$event_rec['status'].":</label>&nbsp;";
+                  echo $event_rec['log']."<br>";
+                }
+              }
+            ?>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
 
   </body>

@@ -166,6 +166,14 @@ function build_api_url(url) {
   return base_url + '..' + url;
 }
 
+// Open single event dialog
+function showEventDialog() {
+  var elm_d = document.getElementById('eventDetailsDialog');
+  if (! elm_d) { return; }
+  var eventDetailsDialog = new bootstrap.Modal(elm_d, {focus: true});
+  eventDetailsDialog.show();
+}
+
 // Open confirmation dialog
 // @param message: message to be shown (HTML)
 // @param action_func: action to be run on "Ok" press

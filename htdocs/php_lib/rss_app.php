@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.8d';
+$APP_VERSION = '2.0.1.6.8e';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -351,6 +351,34 @@ class RssApp {
   }
 
   /**
+   * Get event info
+   * @param $obj_type: object type
+   * @param $id: object ID
+   * @return: record with fields 'name', 'timestamp', 'status', 'log'
+  **/
+  public function getEventRecord($obj_type, $id) {
+    $rec = array();
+    # for type == 'subscr' resolve ID to name
+    if ( $obj_type == 'subscr' ) {
+      $bindings0 = array('user_id'=>$this->user_id, 'id' => $id);
+      $query0 = "SELECT f.`title` FROM `tbl_subscr` AS f ".
+        "WHERE f.`fd_feedid`=:id AND f.`user_id`=:user_id";
+      $name = $this->db->fetchSingleResult($query0, $bindings0);
+    } else {
+      $name = $id;
+    }
+    $bindings1 = array(
+      'user_id'=>$this->user_id, 'type' => $obj_type, 'id' => $id);
+    $query1 = "SELECT s.`timestamp`, s.`upd_status` AS status, s.`upd_log` AS log ".
+      "FROM `tbl_subscr_state`AS s ".
+      "WHERE s.`user_id`=:user_id AND s.`id`=:id AND s.`type`=:type";
+    $rec = $this->db->fetchSingleRow($query1, $bindings1);
+    if (! $rec) { return $rec; }
+    $rec['name'] = $name;
+    return $rec;
+  }
+
+  /**
    * Events report
    * @param $obj_type: object type (when missing - take all)
    * @return: array of records with
@@ -362,13 +390,18 @@ class RssApp {
       $obj_cond = '';
     } else {
       $bindings['type'] = $obj_type;
-      $obj_cond = ' AND s.`type`=:type ';
+      $obj_cond = ' WHERE a.`type`=:type ';
     }
-    $query = "SELECT s.`type`, s.`id`, f.`title`, s.`timestamp`, ".
-      "s.`upd_status`, s.`upd_log` ".
-      "FROM `tbl_subscr_state`AS s, `tbl_subscr` AS f ".
-      "WHERE s.`user_id`=:user_id AND s.`id` = f.`fd_feedid` $obj_cond ".
-      "ORDER BY s.`timestamp` DESC";
+    $query = "SELECT a.* FROM (
+SELECT s1.`type`, s1.`id`, f.`title`, s1.`timestamp`, s1.`upd_status`, s1.`upd_log` 
+FROM `tbl_subscr_state`AS s1, `tbl_subscr` AS f 
+WHERE s1.`user_id`=:user_id AND s1.`id` = f.`fd_feedid` AND s1.`type`='subscr' 
+UNION
+SELECT s2.`type`, s2.`id`, s2.`id`, s2.`timestamp`, s2.`upd_status`, s2.`upd_log` 
+FROM `tbl_subscr_state`AS s2
+WHERE s2.`user_id`=:user_id AND s2.`type`!='subscr' 
+) a $obj_cond
+ORDER BY a.`timestamp` DESC";
     return $this->db->fetchQueryRows($query, $bindings);
   }
 
@@ -559,6 +592,7 @@ class RssApp {
     $watches = spyc_load($watches_source);
     $count = 0;
     foreach ($watches as $watch) {
+       if ( ! array_key_exists('fd_watchid' , $watch) ) { continue; }
        $rl_action = ($watch['fd_watchid'] == 'trash') ? 'mark_read' : 'set_tag';
        $rl_act_arg = $watch['fd_watchid'];
        if ($watch['fd_watchid'] !== 'trash') {
@@ -590,6 +624,7 @@ class RssApp {
          }
        }
     }
+    if ( ! $count ) { $err = "nothing imported (wrong format?)"; }
     return $err;
   }
 

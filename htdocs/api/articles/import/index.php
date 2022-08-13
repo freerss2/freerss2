@@ -58,6 +58,6 @@
     $rss_app->registerAppEvent('system', 'import_articles', 'Success', "$count articles");
   }
 
-  echo $error;
+  header("Location: /personal/report_events.php?type=system&id=import_articles"); /* Redirect browser */
   exit(0);
 ?>

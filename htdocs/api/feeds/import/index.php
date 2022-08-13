@@ -38,5 +38,5 @@
   } else {
     $rss_app->registerAppEvent('system', 'import_opml', 'Success', "$groups_count groups, $feeds_count feeds");
   }
-  header("Location: /personal/"); /* Redirect browser */
+  header("Location: /personal/report_events.php?type=system&id=import_opml"); /* Redirect browser */
 ?>

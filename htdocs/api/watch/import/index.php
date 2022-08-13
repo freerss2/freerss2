@@ -44,9 +44,12 @@
   $watches_source = file_get_contents($_FILES['watchesFile']['tmp_name']);
   # call app-function for parsing and import
   $err = $rss_app->loadWatches($watches_source);
+
   if ($err) {
-    echo $err; /* TODO: show popup */
+    $rss_app->registerAppEvent('system', 'import_watches', 'Error', $err);
+    header("Location: /personal/report_events.php?type=system&id=import_watches"); /* Redirect browser */
   } else {
+    $rss_app->registerAppEvent('system', 'import_watches', 'Success', $_FILES['watchesFile']['name']);
     header("Location: /personal/edit_filter.php"); /* Redirect browser */
   }
 ?>
