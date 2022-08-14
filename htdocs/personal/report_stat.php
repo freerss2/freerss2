@@ -73,10 +73,10 @@
      <br>
      <div class="card container">
        <?php
-          echo '<div class="row">';
+          echo '<div class="row hide-on-cellular">';
           echo '  <div class="col-4">Name</div>';
           echo '  <div class="col-2" style="text-align:center;">Unread</div>';
-          echo '  <div class="col-2" style="text-align:center;">Flagged</div>';
+          echo '  <div class="col-2" style="text-align:center;">Bookmarked</div>';
           echo '  <div class="col-4" style="text-align:center;">Last Update</div>';
           echo '</div>';
 
@@ -89,13 +89,22 @@
             $ref = 'read.php?type='.$rec[2].'&id='.$rec[3];
             $last_upd = _date_to_passed_time($last_upd);
             if (strstr($last_upd, '-') !== false) {
-              $last_upd = "<B>$last_upd</B>";
+              $last_upd_style = "font-weight: bold;";
+              $last_upd_class = "bg-danger";
+            } else {
+              $last_upd_style = "";
+              $last_upd_class = "bg-info text-dark";
             }
             echo '<div class="row stat_row">';
-            echo '  <div class="col-4"><a href="'.$ref.'" class="no-text-overflow" '.$enable_style.' target="_blank">'.$rec[1].'</a></div>';
-            echo '  <div class="col-2" style="text-align:center;">'.$unread.'</div>';
-            echo '  <div class="col-2" style="text-align:center;">'.$flagged.'</div>';
-            echo '  <div class="col-4" style="text-align:center;">'.$last_upd.'</div>';
+            echo '  <div class="col-4 hide-on-cellular"><a href="'.$ref.'" class="no-text-overflow" '.$enable_style.' target="_blank">'.$rec[1].'</a></div>';
+            echo '  <div class="col-2 hide-on-cellular" style="text-align:center;">'.$unread.'</div>';
+            echo '  <div class="col-2 hide-on-cellular" style="text-align:center;">'.$flagged.'</div>';
+            echo '  <div class="col-4 hide-on-cellular" style="text-align:center;'.$last_upd_style.'">'.$last_upd.'</div>';
+            echo '  <div class="col-12 hide-on-wide-screen">'.
+              '<a href="'.$ref.'" class="no-text-overflow" '.$enable_style.' target="_blank">'.$rec[1].'</a><br>'.
+              '<span class="badge '.$last_upd_class.'">'.$last_upd.'</span>&nbsp;'.
+              'unread '.$unread.'&nbsp;&nbsp;bookmarked '.$flagged.
+              '</div>';
             echo "</div>\n";
           }
        ?>

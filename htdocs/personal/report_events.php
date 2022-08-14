@@ -92,7 +92,7 @@
        <br>
        <?php
           if ($report_data) {
-            echo '<div class="row">';
+            echo '<div class="row hide-on-cellular">';
             echo '  <div class="col-3">Name</div>';
             echo '  <div class="col-2">Timestamp</div>';
             echo '  <div class="col-2">Status</div>';
@@ -102,11 +102,17 @@
             foreach ($report_data as $rec) {
               $ref = 'read.php?type='.$rec[0].'&id='.$rec[1];
               $timestamp = _date_to_passed_time($rec[3]);
+              $badge_class = $rec[4] == 'Error' ? 'bg-danger' : 'bg-info text-dark';
               echo '<div class="row stat_row">';
-              echo '  <div class="col-3 no-text-overflow"><a href="'.$ref.'" target="_blank">'.$rec[2].'</a></div>';
-              echo '  <div class="col-2" >'.$timestamp.'</div>';
-              echo '  <div class="col-2 no-text-overflow" >'.$rec[4].'</div>';
-              echo '  <div class="col-5" >'.substr(strip_tags($rec[5]), 0, 80).'</div>';
+              echo '  <div class="col-3 no-text-overflow hide-on-cellular"><a href="'.$ref.'" target="_blank">'.$rec[2].'</a></div>';
+              echo '  <div class="col-2 hide-on-cellular" >'.$timestamp.'</div>';
+              echo '  <div class="col-2 no-text-overflow hide-on-cellular" >'.$rec[4].'</div>';
+              echo '  <div class="col-5 hide-on-cellular" >'.substr(strip_tags($rec[5]), 0, 80).'</div>';
+              echo '  <div class="col-12 hide-on-wide-screen"><span class="badge bg-secondary">'.$timestamp.'</span>'.
+                '&nbsp;<span class="badge '.$badge_class.'">'.$rec[4].'</span>'.
+                '<br><a href="'.$ref.'" target="_blank">'.$rec[2].'</a>'.
+                '<br>'.substr(strip_tags($rec[5]), 0, 80).
+                '</div>';
               echo "</div>\n";
             }
           } else {
