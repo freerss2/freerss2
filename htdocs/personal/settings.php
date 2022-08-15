@@ -96,6 +96,9 @@
           <li class="nav-item" title="Content">
             <a class="nav-link" href="#content"><i class="far fa-edit"></i></a>
           </li>
+          <li class="nav-item" title="Import & Backup">
+            <a class="nav-link" href="#import"><i class="fas fa-gift"></i></a>
+          </li>
           <li class="nav-item" title="Reports">
             <a class="nav-link" href="#reports"><i class="far fa-chart-bar"></i></a>
           </li>
@@ -163,18 +166,57 @@
      <div class="card mb-3" id="content">
        <h1>&nbsp;<i class="far fa-edit"></i>&nbsp;Manage Content</h1>
        <div class="card-body">
-         <a type="button" class="btn btn-primary mb-3" href="/personal/edit_filter.php" style="min-width:18em;">
-           <div class="row">
-             <i class="fa fa-filter col-2 col-xs-1 settings-icon"></i>
-             <span class="col-10 col-sm-9">Edit Filters (Watches)</span>
-           </div>
-         </a> <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/add_new_rss.php" style="min-width:18em;">
            <div class="row">
              <i class="fa fa-plus col-2 col-xs-1 settings-icon"></i>
              <span class="col-10 col-sm-9">Add new RSS</span>
            </div>
          </a> <br>
+         <a type="button" class="btn btn-primary mb-3" href="/personal/edit_filter.php" style="min-width:18em;">
+           <div class="row">
+             <i class="fa fa-filter col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Edit Filters (Watches)</span>
+           </div>
+         </a> <br>
+         <!-- TODO: hide when no any RSS -->
+         <button class="btn btn-primary dropdown-toggle mb-3" type="button" style="min-width:18em;"
+           data-bs-toggle="dropdown" aria-expanded="false">
+           <div class="row">
+             <i class="far fa-edit col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Edit RSS...</span>
+           </div>
+         </button>
+           <ul class="dropdown-menu dropdown-menu-end">
+             <?php
+               $feeds = $rss_app->getAllFeeds();
+               foreach ($feeds as $feed) {
+                 $title = $feed['title'];
+                 $feedid = $feed['fd_feedid'];
+                 echo '<li><a class="dropdown-item" href="/personal/read.php?type=subscr&id='.$feedid.'&open=edit">'.$title.'</a></li>';
+               }
+             ?>
+           </ul> <br>
+         <button class="btn btn-primary dropdown-toggle mb-3" type="button" style="min-width:18em;"
+           data-bs-toggle="dropdown" aria-expanded="false">
+           <div class="row">
+             <i class="far fa-edit col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Edit Feeds Group...</span>
+           </div>
+         </button>
+           <ul class="dropdown-menu dropdown-menu-end">
+             <?php
+               $groups = $rss_app->getSubscrGroups();
+               foreach ($groups as $group) {
+                 echo '<li><a class="dropdown-item" href="/personal/read.php?type=group&id='.$group.'&open=edit">'.$group.'</a></li>';
+               }
+             ?>
+           </ul> <br>
+       </div>
+     </div>
+
+     <div class="card mb-3" id="import">
+       <h1>&nbsp;<i class="fas fa-gift"></i>&nbsp;Import &amp; Backup</h1>
+       <div class="card-body">
          <button type="button" class="btn btn-primary mb-3" style="min-width:18em;" onclick="openImportModal()">
            <div class="row">
              <i class="fa fa-cloud-upload-alt col-2 col-xs-1 settings-icon"></i>

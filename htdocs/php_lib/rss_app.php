@@ -446,6 +446,19 @@ ORDER BY a.`timestamp` DESC";
   }
 
   /**
+   * Get all feeds as records
+   * @return: list of records 'title', 'fd_feedid'
+  **/
+  public function getAllFeeds() {
+    $where = array("user_id" => $this->user_id);
+    $feeds = $this->db->queryTable('tbl_subscr',
+      array('group', 'title', 'fd_feedid'),
+      $where,
+      array('group', 'index_in_gr'));
+    return $feeds;
+  }
+
+  /**
    * Get all subscriptions as tree
    * @return: tree, where each record contains path, title, type and id
   **/

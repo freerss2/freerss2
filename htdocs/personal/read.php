@@ -60,6 +60,17 @@ $order_active = array(
 $req_type = $_GET['type'] ? $_GET['type'] : 'group';
 $req_id = $_GET['id'] ? $_GET['id'] : 'all';
 
+// "feed edit" / "group edit" popup trigger
+$edit_feed = '';
+$edit_group = '';
+if ($_GET['open'] == 'edit') {
+  $edit_feed = $req_type == 'subscr' ? 'show' : '';
+  $edit_group = $req_type == 'group' ? 'editGroup(\''.$req_id.'\');' : '';
+}
+if ( $promptForInit ) {
+  $edit_group = '';
+}
+
 if ($req_type == 'group' && $req_id == 'all') {
   $req_type = 'watch';
 }
@@ -160,7 +171,7 @@ $prev_page = $displayed_page > 1;
 
     <title>Free RSS</title>
   </head>
-  <body onload="<?php echo $promptForInit; ?>">
+  <body onload="<?php echo $promptForInit; echo $edit_group; ?>">
 
     <!-- Optional JavaScript; choose one of the two! -->
 
@@ -353,7 +364,7 @@ if ($req_type == 'subscr') {
 }
   echo "</H3>";
   echo
- '<div class="collapse" id="feedSettings">
+ '<div class="collapse '.$edit_feed.'" id="feedSettings">
     <div class="card card-body mb-3">
       <div class="btn-toolbar mb-3" role="toolbar" aria-label="Enable feed">
         <div class="btn-group me-2" role="group" aria-label="Enable/disable">
