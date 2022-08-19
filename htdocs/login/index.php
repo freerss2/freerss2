@@ -40,6 +40,21 @@ if ($_GET['logout']) {
 
     <title>Free RSS</title>
 
+  <style>
+    body::after {
+  content: "";
+  background: url(../img/rss_bg4_sm.png);
+  opacity: 0.3;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  z-index: -1;   
+  background-size: 200px;
+}
+  </style>
+
   </head>
   <body>
 
@@ -62,18 +77,19 @@ if ($_GET['logout']) {
 
 <main class="form-signin">
 
-    <div class="container" style="padding-right: 0;">
+    <div class="container alert alert-secondary" style="padding-right: 0;">
       <div class="row">
-        <h1 class="h3 col-8 fw-normal" style="padding-left: 0;">Free RSS 2.0 </h1>
-        <div class="col" style="text-align: right;">
+        <h1 class="h3 col-7 fw-normal" >Free RSS 2.0 </h1>
+        <div class="col" style="text-align: right; margin-right:4px;">
           <a href="../help/#about" class="btn btn-dark btn-sm low-action-button">
              <i class="fab fa-readme"></i>&nbsp;About
           </a>
         </div>
       </div>
+      <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+
     </div>
 
-    <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
     <div class="form-floating">
       <input type="email" class="form-control" id="login_email" placeholder="name@example.com">
@@ -85,7 +101,7 @@ if ($_GET['logout']) {
     </div>
     <button class="w-100 btn btn-lg btn-primary" onclick="signIn()">Sign in</button>
   <div >
-    <p class="mt-5 mb-3 text-muted">No account? Create it!</p>
+    <p class="mt-5 mb-3 text-muted alert alert-secondary">No account? Create it!</p>
     <div class="form-floating">
       <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com">
       <label for="email">Email address</label>
@@ -94,9 +110,9 @@ if ($_GET['logout']) {
       <input type="text" class="form-control" id="name" name="name" placeholder="Name">
       <label for="name">Name</label>
     </div>
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="" id="no_mail_send">
-      <label class="form-check-label" for="no_mail_send">
+    <div class="form-check alert alert-secondary">
+      <input class="form-check-input" type="checkbox" style="margin-left:1px;margin-right:6px;" value="" id="no_mail_send">
+      <label class="form-check-label" style="display:inline;" for="no_mail_send">
       Do not send password by email<BR>(I'm aware of potential security issues)
       </label>
     </div>
