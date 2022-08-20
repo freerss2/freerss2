@@ -360,7 +360,13 @@ class RssApp {
     $rec = array();
     # for type == 'subscr' resolve ID to name
     if ( $obj_type == 'subscr' ) {
-      $bindings0 = array('user_id'=>$this->user_id, 'id' => $id);
+      $bindings0 = array('user_id'=>$this->user_id);
+      if (strtolower($id) == 'last') {
+        $query = "SELECT s.`id` FROM `tbl_subscr_state` AS s ".
+          "WHERE s.`user_id`=:user_id ORDER BY s.`timestamp` DESC";
+        $id = $this->db->fetchSingleResult($query, $bindings0);
+      }
+      $bindings0['id'] = $id;
       $query0 = "SELECT f.`title` FROM `tbl_subscr` AS f ".
         "WHERE f.`fd_feedid`=:id AND f.`user_id`=:user_id";
       $name = $this->db->fetchSingleResult($query0, $bindings0);
@@ -370,7 +376,7 @@ class RssApp {
     $bindings1 = array(
       'user_id'=>$this->user_id, 'type' => $obj_type, 'id' => $id);
     $query1 = "SELECT s.`timestamp`, s.`upd_status` AS status, s.`upd_log` AS log ".
-      "FROM `tbl_subscr_state`AS s ".
+      "FROM `tbl_subscr_state` AS s ".
       "WHERE s.`user_id`=:user_id AND s.`id`=:id AND s.`type`=:type";
     $rec = $this->db->fetchSingleRow($query1, $bindings1);
     if (! $rec) { return $rec; }

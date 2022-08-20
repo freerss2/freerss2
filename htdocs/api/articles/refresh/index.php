@@ -69,7 +69,8 @@
   # echo "Updated: $updated<BR>\n";
   echo "New articles: <b><a href='/personal/read.php'>$new_count</a></b><BR>\n";
   if (count($errors)) {
-    echo "Download errors: <a href='/personal/report_events.php'>".count($errors)."</a><BR>\n";
+    echo "Download errors: <a href='/personal/report_events.php?type=subscr&id=last'>".
+      count($errors)."</a><BR>\n";
   }
   echo substr(implode("<BR>\n", $maintenance_log), 0, 80);
 
