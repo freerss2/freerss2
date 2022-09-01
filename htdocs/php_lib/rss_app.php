@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.8f';
+$APP_VERSION = '2.0.1.6.8h';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -917,11 +917,11 @@ WHERE `user_id` = :user_id
         $op = str_replace('LIKE', 'MATCH', $op);
         $val = str_replace('%', '*', $matches[3]);
         $result = array_merge($result, $this->editRuleOrNode($field, $op, $val));
-        $result[] = "<span class=\"rule_logical_delimiter\"> OR </span>";
+        $result[] = "<span class=\"rule_logical_delimiter edit-rule-group\"> OR </span>";
       }
       $result = array_merge($result, $this->editRuleOrNode('', '==', ''));
       $result[] = "</span>";
-      $result[] = "<p class=\"rule_logical_delimiter\">AND</p>";
+      $result[] = "<p class=\"rule_logical_delimiter edit-rule-delimiter\">AND</p>";
     }
     $result[] = "<span class=\"rule-or-group\">";
     $result = array_merge($result, $this->editRuleOrNode('', '==', ''));
@@ -940,7 +940,7 @@ WHERE `user_id` = :user_id
     $result = array();
     $field_options = array('title', 'link', 'categories', 'description', '');
     $op_options = array('==', '!=', 'MATCH', 'NOT MATCH');
-    $result[] = "<div class=\"input-group rule-or-node\">";
+    $result[] = "<div class=\"input-group rule-or-node edit-rule-group\">";
     $result[] = "  <select class=\"btn btn-outline-secondary form-select\" aria-label=\"select field\">";
     foreach ($field_options as $opt) {
       $selected = $field === $opt ? 'selected' : '';

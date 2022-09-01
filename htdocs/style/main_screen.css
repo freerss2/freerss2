@@ -282,6 +282,17 @@
   padding: 10px;
 }
 
+.edit-rule-group {
+  padding-left: 0.5rem;
+  border-left: 3px solid black;
+}
+
+.edit-rule-delimiter {
+  margin-bottom: 0px;
+  text-align: center;
+  display: block;
+}
+
 .rule-title-ro {
   min-width: 8rem;
   max-width: 25%;
