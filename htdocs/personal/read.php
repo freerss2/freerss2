@@ -76,6 +76,7 @@ if ($req_type == 'group' && $req_id == 'all') {
 }
 
 $no_subscr_msg = "";
+$feed_rtl = false;
 if($req_type == 'watch') {
   $req_feed_id = null;
   $curr_watch_id = '';
@@ -121,6 +122,7 @@ if($req_type == 'watch') {
     $html_url = $rss_info['htmlUrl'];
     $xmlUrl = $rss_info['xmlUrl'];
     $rss_group = $rss_info['group'];
+    $feed_rtl = $rss_info['rtl'];
     $download_enabled = $rss_info['download_enabled'];
     $curr_feed_id = $req_feed_id;
   } else {
@@ -160,7 +162,7 @@ $prev_page = $displayed_page > 1;
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link href="../style/bootstrap_5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
 
     <!-- Fontawesome -->
     <link rel="stylesheet" href="../style/fontawesome/css/all.css">
@@ -176,7 +178,7 @@ $prev_page = $displayed_page > 1;
     <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="../style/bootstrap_5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
     <!-- Option 2: Separate Popper and Bootstrap JS -->
     <!--
@@ -311,6 +313,11 @@ echo
   "</script>";
 echo '<H3 class="vertical-middle">';
 
+$mark_read_and_next = 
+  '<button type="button"
+      class="btn btn-light btn-sm big-icon-button"
+      title="Mark all articles on this page as \'read\', excluding bookmarked ones"
+      onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>';
 if ($req_type == 'subscr') {
   if ($no_subscr_msg)
   {
@@ -324,12 +331,12 @@ if ($req_type == 'subscr') {
     
   } else {
   echo 
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>'.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevFeed()"><i class="fas fa-chevron-left"></i></button>'.
+  $mark_read_and_next.
+  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevFeed()" title="Go to previos feed"><i class="fas fa-chevron-left"></i></button>'.
   '<a role="button" class="btn btn-light btn-sm big-icon-button" data-bs-toggle="collapse" href="#feedSettings" aria-expanded="false" aria-controls="feedSettings">
     <i class="far fa-edit"></i>
   </a>'.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextFeed()"><i class="fas fa-chevron-right"></i></button>'.
+  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextFeed()" title="Go to next feed"><i class="fas fa-chevron-right"></i></button>'.
   "&nbsp;
   <span style='vertical-align: bottom;'>
     <i class='fas fa-rss'></i>
@@ -341,25 +348,24 @@ if ($req_type == 'subscr') {
   }
 } elseif ($req_type == 'watch') {
   echo 
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>'.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevWatch()"><i class="fas fa-chevron-left"></i></button>';
+  $mark_read_and_next.
+  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevWatch()" title="Go to previos watch"><i class="fas fa-chevron-left"></i></button>';
   if (! $rss_app->isReservedWatch($req_id)) {
     echo '<a role="button" class="btn btn-light btn-sm big-icon-button" href="edit_filter.php?watch_id='.$req_id.'"> <i class="far fa-edit"></i> </a>';
   }
-  echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextWatch()"><i class="fas fa-chevron-right"></i></button>';
+  echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextWatch()" title="Go to next watch"><i class="fas fa-chevron-right"></i></button>';
  echo '<i class="fas fa-filter"></i>&nbsp;'.$watch_title;
 } elseif ($req_type == 'group') {
   echo 
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>'.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevGroup()"><i class="fas fa-chevron-left"></i></button>';
+  $mark_read_and_next.
+  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevGroup()" title="Go to previos feeds group"><i class="fas fa-chevron-left"></i></button>';
   if($req_id != 'all') {
     echo '<button role="button" class="btn btn-light btn-sm big-icon-button" onclick="editGroup(\''.$req_id.'\')"> <i class="far fa-edit"></i> </button>';
   }
-  echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextGroup()"><i class="fas fa-chevron-right"></i></button>';
+  echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextGroup()" title="Go to next feeds group"><i class="fas fa-chevron-right"></i></button>';
  echo '<i class="far fa-newspaper"></i>&nbsp;'.$req_id;
 } else {
-  echo 
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>';
+  echo $mark_read_and_next;
  echo $watch_title;
 }
   echo "</H3>";
@@ -379,6 +385,12 @@ if ($req_type == 'subscr') {
         </div>
         <label id="feed-enabled" '.$enabled_class.'>Enabled</label>
         <label id="feed-disabled" '.$disabled_class.'>Disabled</label>
+      </div>
+      <div class="d-grid gap-2 d-md-block mb-3 short-input">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" '.($feed_rtl?'checked':'').' id="rtl_feed" onclick="setFeedParam(\'rtl_feed\', \'rtl\', \''.$curr_feed_id.'\');">
+          <label class="form-check-label" for="rtl_feed">RTL (Right-To-Left) Language</label>
+        </div>
       </div>
       <div class="d-grid gap-2 d-md-block short-input" >
         <div class="input-group mb-3">

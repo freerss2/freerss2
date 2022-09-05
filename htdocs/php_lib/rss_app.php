@@ -7,21 +7,16 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.8h';
+$APP_VERSION = '2.0.1.6.8j';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
-# /*                                      *\
-#   Application main functionality
-# \*                                      */
+# /*                                     *\
+#   RSS App functionality implementation
+# \*                                     */
 
-define('PASSWORD_CHARSET',
-  '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.,-+!:@');
 
-define('API_KEY_CHARSET',
-  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
-define('PAGE_RANGE', 10);
 
 class RssApp {
   private $db;
@@ -30,6 +25,21 @@ class RssApp {
   private $builtin_watches = array('all', 'today', 'older', 'bookmarked', 'unfiltered');
   private $reserved_watches;
 
+  const PASSWORD_CHARSET =
+      '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.,-+!:@';
+
+  const API_KEY_CHARSET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  const POSTS_SELECT = "SELECT ".
+      "p.`link`, p.`title`, p.`author`, p.`categories`, ".
+      "DATE_FORMAT(p.`timestamp`, '%e %b %Y') AS 'dateStr', ".
+      "CONVERT(p.`description` USING utf8) as description, ".
+      "p.`fd_postid`, p.`fd_feedid`, p.`guid`, p.`read`, p.`flagged`, ".
+      "p.`gr_original_id`, s.`rtl` ".
+      "FROM `tbl_posts` p, `tbl_subscr` s ".
+      "WHERE p.`user_id` = :user_id AND p.`user_id` = s.`user_id` AND p.`fd_feedid` = s.`fd_feedid` ";
+
+  const PAGE_RANGE = 10;
 
   /**
    * Constructor
@@ -110,7 +120,7 @@ class RssApp {
       return "Error: email already in use";
     }
     // generate password
-    $password = random_str(10, PASSWORD_CHARSET);
+    $password = random_str(10, RssApp::PASSWORD_CHARSET);
     // calculate MD5 checksum for password
     $checksum = md5($password);
     $query3 = "INSERT INTO `tbl_users` ".
@@ -655,7 +665,7 @@ ORDER BY a.`timestamp` DESC";
   **/
   public function getSubscrForExport() {
     $bindings = array("user_id" => $this->user_id);
-    $query = "SELECT `group`, `text`, `title`, `htmlUrl`, `xmlUrl`, `index_in_gr`".
+    $query = "SELECT `group`, `text`, `title`, `htmlUrl`, `xmlUrl`, `index_in_gr`, `rtl` ".
       "FROM `tbl_subscr` WHERE `user_id`=:user_id ".
       "ORDER BY `group`, `index_in_gr`";
     return $this->db->fetchQueryRows($query, $bindings);
@@ -688,6 +698,9 @@ ORDER BY a.`timestamp` DESC";
         'htmlUrl' => urlencode($rec['htmlUrl']),
         'xmlUrl'  => urlencode($rec['xmlUrl'])
       );
+      if ($rec['rtl']) {
+        $rss['rtl'] = urlencode($rec['rtl']);
+      }
       $outline = new XmlSingleTag('outline', 3, $rss);
       $opml_group->array_push($outline->toStr());
       $last_group = $group;
@@ -1428,15 +1441,8 @@ WHERE `user_id` = :user_id
   **/
   public function findItems($pattern) {
     list($show_articles, $order_articles) = $this->settingsForRetrieve();
-    $query = "SELECT ".
-      "`link`, `title`, `author`, `categories`, ".
-      "DATE_FORMAT(`timestamp`, '%e %b %Y') AS 'dateStr', ".
-      "CONVERT(`description` USING utf8) as description, ".
-      "`fd_postid`, `fd_feedid`, `guid`, `read`, `flagged`, ".
-      "`gr_original_id`, `fd_feedid` ".
-      "FROM `tbl_posts` ".
-      "WHERE `user_id` = :user_id AND ".
-      "(`title` LIKE :pattern OR `description` LIKE :pattern)";
+    $query = RssApp::POSTS_SELECT .
+      "AND (p.`title` LIKE :pattern OR p.`description` LIKE :pattern)";
     $query .= " ORDER BY ".(('time' === $order_articles) ? "`timestamp` DESC" : "`title`");
     $bindings = array('user_id' => $this->user_id, 'pattern' => "%$pattern%");
     $items = $this->db->fetchQueryRows($query, $bindings);
@@ -1458,17 +1464,11 @@ WHERE `user_id` = :user_id
     );
     if ('read'   === $show_articles) { $bindings['read'] = 1; }
     if ('unread' === $show_articles) { $bindings['read'] = 0; }
-    $query = "SELECT ".
-      "`link`, `title`, `author`, `categories`, ".
-      "DATE_FORMAT(`timestamp`, '%e %b %Y') AS 'dateStr', ".
-      "CONVERT(`description` USING utf8) as description, ".
-      "`fd_postid`, `guid`, `read`, `flagged`, `gr_original_id`, `fd_feedid` ".
-      "FROM `tbl_posts` ".
-      "WHERE `user_id` = :user_id AND `fd_feedid` IN ".
-      "(SELECT `fd_feedid` FROM `tbl_subscr` WHERE ".
+    $query = RssApp::POSTS_SELECT .
+      "AND p.`fd_feedid` IN (SELECT `fd_feedid` FROM `tbl_subscr` WHERE ".
       "`user_id` = :user_id AND `group` = :group)";
     if (array_key_exists('read', $bindings)) {
-      $query .= " AND `read` = :read";
+      $query .= " AND p.`read` = :read";
     }
     $query .= " ORDER BY ".(('time' === $order_articles) ? "`timestamp` DESC" : "`title`");
     $items = $this->db->fetchQueryRows($query, $bindings);
@@ -1496,15 +1496,10 @@ WHERE `user_id` = :user_id
     );
     if ('read'   === $show_articles) { $bindings['read'] = 1; }
     if ('unread' === $show_articles) { $bindings['read'] = 0; }
-    $query2 = "SELECT ".
-      "`link`, `title`, `author`, `categories`, ".
-      "DATE_FORMAT(`timestamp`, '%e %b %Y') AS 'dateStr', ".
-      "CONVERT(`description` USING utf8) as description, ".
-      "`fd_postid`, `guid`, `read`, `flagged`, `gr_original_id` ".
-      "FROM `tbl_posts` ".
-      "WHERE `user_id` = :user_id AND `fd_feedid` = :fd_feedid";
+    $query2 = RssApp::POSTS_SELECT .
+      "AND p.`fd_feedid` = :fd_feedid";
     if (array_key_exists('read', $bindings)) {
-      $query2 .= " AND `read` = :read";
+      $query2 .= " AND p.`read` = :read";
     }
     $query2 .= " ORDER BY ".(('time' === $order_articles) ? "`timestamp` DESC" : "`title`");
     $items = $this->db->fetchQueryRows($query2, $bindings);
@@ -1548,7 +1543,7 @@ WHERE `user_id` = :user_id
   public function retrieveWatchItems($watch_id) {
     list($show_articles, $order_articles) = $this->settingsForRetrieve();
     $watch_title = ucfirst($watch_id);
-    $where = array('`user_id` = :user_id');
+    $where = array();
     $bindings = array('user_id' => $this->user_id);
     # check built-in watches
     if ($watch_id == 'all' || $watch_id == 'trash') {
@@ -1572,15 +1567,12 @@ WHERE `user_id` = :user_id
     if ('read'   === $show_articles) { $bindings['read'] = 1; }
     if ('unread' === $show_articles) { $bindings['read'] = 0; }
     if (array_key_exists('read', $bindings)) {
-      $where[] = "`read` = :read";
+      $where[] = "p.`read` = :read";
     }
-    $query = "SELECT ".
-      "`link`, `title`, `author`, `categories`, ".
-      "DATE_FORMAT(`timestamp`, '%e %b %Y') AS 'dateStr', ".
-      "CONVERT(`description` USING utf8) as description, ".
-      "`fd_postid`, `guid`, `read`, `flagged`, `fd_feedid` ".
-      "FROM `tbl_posts` ".
-      "WHERE ". implode(' AND ', $where);
+    $query = RssApp::POSTS_SELECT;
+    if ($where) {
+      $query .= " AND ". implode(' AND ', $where);
+    }
     $query .= " ORDER BY ".(('time' === $order_articles) ? "`timestamp` DESC" : "`title`");
     $items = $this->db->fetchQueryRows($query, $bindings);
     # add 'feed_info' to items - `xmlUrl` `title` `fd_feedid`
@@ -1646,8 +1638,8 @@ WHERE `user_id` = :user_id
               and "select..." when this range does not cover 1 .. maxpage
   **/
   public function getPagesRange($maxpage, $page_num) {
-    $low = max(($page_num - PAGE_RANGE + 1), 1);
-    $high = min(($page_num + PAGE_RANGE), $maxpage);
+    $low = max(($page_num - RssApp::PAGE_RANGE + 1), 1);
+    $high = min(($page_num + RssApp::PAGE_RANGE), $maxpage);
     $result = range($low, $high);
     if ($low > 1 || $high < $maxpage) { array_push($result, "select:..."); }
     return $result;
@@ -1752,6 +1744,7 @@ WHERE `user_id` = :user_id
         );
         $link_quoted = urlencode($item['link']);
         $item_title = html_entity_decode(preg_replace('/(#\d+;)/', '&${1}', $item['title']));
+        $rtl = $item['rtl'] ? 'dir="rtl"' : '';
 
         # build tooltip text:
         $tooltip = array( '[published: '.$item['dateStr'].']');
@@ -1771,13 +1764,13 @@ WHERE `user_id` = :user_id
            <i class="far fa-star '.$flagged_state['unflagged'].'" style="color:gray;" id="unflagged_'.$fd_postid.'" onclick="changeArticleFlaggedState(\''.$fd_postid.'\', \'on\')"></i>&nbsp;
          </span>
         </span>
-      <button class="accordion-button collapsed item-header-bar" type="button" data-bs-toggle="collapse"
+      <button '.$rtl.' class="accordion-button collapsed item-header-bar" type="button" data-bs-toggle="collapse"
           data-bs-target="#collapse_'.$fd_postid.'" aria-expanded="false" aria-controls="collapse_'.$fd_postid.'"
           title="'.$tooltip.'"
           onclick="onArticleHeadingClick(event, \'heading_'.$fd_postid.'\')">
         &nbsp;
         <span class="'.($read? '':'bold-element').' no-text-overflow">'.$item_title.'</span>
-        <span class="post-time-info">'.$item['passedTime'].'</span>
+        <span class="post-time-info" dir="ltr">'.$item['passedTime'].'</span>
       </button>
     </h2>
     <div id="collapse_'.$fd_postid.'" class="accordion-collapse collapse" aria-labelledby="heading_'.$fd_postid.'" data-bs-parent="#rss_items">
@@ -1797,7 +1790,7 @@ WHERE `user_id` = :user_id
              <li><a class="dropdown-item" href="javascript:changeArticle(\''.$fd_postid.'\')">Move to ...</a></li>
            </ul>
          </div>
-         <h5>
+         <h5 '.$rtl.'>
            <a href="'.$item['link'].'" target="_blank" >
             '.$item_title.'
            </a>
@@ -2119,7 +2112,8 @@ WHERE `user_id` = :user_id
         $title = urldecode($feed['title']);
         $htmlUrl = urldecode($feed['htmlUrl']);
         $xmlUrl = urldecode($feed['xmlUrl']);
-        $result = $this->insertNewFeed($group_name, $text, $title, $htmlUrl, $xmlUrl);
+        $rtl = urldecode($feed['rtl'] ? 1 : 0);
+        $result = $this->insertNewFeed($group_name, $text, $title, $htmlUrl, $xmlUrl, $rtl);
         if ($result) {
           $errors []= $result;
         }
@@ -2158,7 +2152,7 @@ WHERE `user_id` = :user_id
    * @param $xml_url: feed XML URL
    * @return: error (if any)
   **/
-  public function insertNewFeed($group, $text, $title, $html_url, $xml_url) {
+  public function insertNewFeed($group, $text, $title, $html_url, $xml_url, $rtl) {
     $feed_id = _digest_hex($xml_url);
     $bindings = array(
       'user_id'   => $this->user_id,
@@ -2167,12 +2161,13 @@ WHERE `user_id` = :user_id
       'html_url'  => $html_url,
       'title'     => $title,
       'text'      => $text,
+      'rtl'       => $rtl,
       'feed_id'   => $feed_id
     );
     $query = "INSERT INTO `tbl_subscr` ".
-      "(`user_id`, `group`, `fd_feedid`, `text`, `title`, `xmlUrl`, `htmlUrl`, `index_in_gr`, `download_enabled`) ".
+      "(`user_id`, `group`, `fd_feedid`, `text`, `title`, `xmlUrl`, `htmlUrl`, `index_in_gr`, `download_enabled`, `rtl`) ".
       "VALUES ".
-      "(:user_id,  :group,  :feed_id,    :text,  :title,  :xml_url, :html_url, 0, 1)";
+      "(:user_id,  :group,  :feed_id,    :text,  :title,  :xml_url, :html_url, 0, 1, :rtl)";
     $this->db->execQuery($query, $bindings);
     return "";
   }
@@ -2234,7 +2229,7 @@ WHERE `user_id` = :user_id
    * @param $set_title: set feed title
    * @param $delete: when non-empty - delete articles and feed itself
   **/
-  public function updateFeed($feed_id, $set_enable=null, $set_xml_url=null, $set_title=null, $set_group=null, $delete=null) {
+  public function updateFeed($feed_id, $set_enable=null, $set_xml_url=null, $set_title=null, $set_group=null, $delete=null, $rtl=null) {
     $bindings = array(
         'user_id'   => $this->user_id,
         'feed_id'   => $feed_id
@@ -2243,6 +2238,12 @@ WHERE `user_id` = :user_id
       $query = "UPDATE `tbl_subscr` SET `download_enabled`=:set_enable ".
           "WHERE `user_id`=:user_id AND `fd_feedid`=:feed_id";
       $bindings['set_enable'] = intval($set_enable);
+      $this->db->execQuery($query, $bindings);
+    }
+    if ($rtl === '1' || $rtl === '0') {
+      $query = "UPDATE `tbl_subscr` SET `rtl`=:rtl ".
+          "WHERE `user_id`=:user_id AND `fd_feedid`=:feed_id";
+      $bindings['rtl'] = intval($rtl);
       $this->db->execQuery($query, $bindings);
     }
     if ($set_xml_url) {

@@ -983,15 +983,20 @@ function setFeedParam(dom_id, db_field, feed_id) {
   var elm = document.getElementById(dom_id);
   if (! elm) { return; }
   var new_value = elm.value;
-  if (! new_value) {
-    err="empty value";
-    console.log(err);
-    alert(err);
-    return;
+  if (elm.type == 'checkbox') {
+    new_value = elm.checked ? 1:0;
+  } else {
+    if (! new_value) {
+      err="empty value";
+      console.log(err);
+      alert(err);
+      return;
+    }
   }
   // send new state to server
   var url = '/api/feeds/change/?feed_id='+feed_id+
     '&'+db_field+'='+encodeURIComponent(new_value);
+    console.log(url);
   httpGetAsync(url, function(buf){
     console.log(buf);
     window.location.reload();

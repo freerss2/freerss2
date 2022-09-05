@@ -1,7 +1,7 @@
 <?php
   /* - - - - - - - - - - - - *\
      Change feed state:
-     enable/disable, XMLURL, title, delete
+     enable/disable, XMLURL, title, delete, rtl
   \* - - - - - - - - - - - - */
   session_start();
 
@@ -29,6 +29,7 @@
   }
 
   $enable = $_GET['enable'];
+  $rtl = $_GET['rtl'];
   $xml_url = $_GET['xmlUrl'];
   $title = $_GET['title'];
   $group = $_GET['group'];
@@ -40,6 +41,11 @@
   if ($enable === '1' || $enable === '0') {
     $rss_app->updateFeed($feed_id, $enable);
     echo "updated feed 'enable' state to $enable\n";
+    $done = 1;
+  }
+  if ($rtl === '1' || $rtl === '0') {
+    $rss_app->updateFeed($feed_id, null, null, null, null, null, $rtl);
+    echo "updated feed 'rtl' to $rtl\n";
     $done = 1;
   }
   if ($xml_url) {

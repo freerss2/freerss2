@@ -30,6 +30,7 @@ class DbApp extends DbSql {
       'group'       => 'TEXT',
       'index_in_gr' => 'INTEGER', # index for subscr forced re-order by user
       'download_enabled' => 'INTEGER', # download enable flag
+      'rtl'         => 'INTEGER DEFAULT 0'  # Right-To-Left language
     ),
     'tbl_watches'   => array( # tags AKA watches AKA newspapers - set of records with specific keyword
       'user_id'     => 'INTEGER NOT NULL',

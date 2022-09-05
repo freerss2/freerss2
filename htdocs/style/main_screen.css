@@ -1,4 +1,4 @@
-﻿
+
 /**
  * Personal pages (summary/read) settings
 **/
@@ -109,6 +109,16 @@
   width: 93%;
 }
 
+
+
+.item-header-bar .no-text-overflow {
+    padding-right: 125px;
+}
+
+.accordion-body > h5 {  
+    padding-right: 60px;
+}
+
 @media screen and (max-width: 1024px) {
 
 .item-header-bar {
@@ -120,7 +130,17 @@
   width: 86%;
 }
 
+.item-header-bar .no-text-overflow {
+    padding-right: 125px;
 }
+
+.accordion-body > h5 {  
+    padding-right: 60px;
+}
+
+}
+
+
 
 @media screen and (max-width: 450px) {
 
@@ -131,6 +151,14 @@
   padding-right: 0.3rem;
   margin-left: 5em;
   width: 75%;
+}
+
+.item-header-bar .no-text-overflow {
+    padding-right: 0;
+}
+
+.accordion-body > h5 {  
+    padding-right: 0;
 }
 
 }
