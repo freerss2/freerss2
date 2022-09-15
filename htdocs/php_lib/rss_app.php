@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.8j';
+$APP_VERSION = '2.0.1.6.9';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -1685,6 +1685,21 @@ WHERE `user_id` = :user_id
     return '';
   } // warnRssInactivity
 
+
+  /**
+   * Get information about article by ID
+   * @return: dictionary with keys
+   *   'title', 'link', 'categories', 'author', fd_feedid, decription...
+  **/
+  public function getItem($item_id) {
+    $keys = array('link', 'title', 'author', 'categories', 'timestamp', 'description', 'fd_feedid', 'gr_original_id');
+    $query = 'SELECT `'.implode('`, `', $keys).'` ' .
+      'FROM `tbl_posts` ' .
+      'WHERE `user_id` = :user_id AND `fd_postid` = :fd_postid';
+    $bindings = array('user_id'=>$this->user_id, 'fd_postid'=>$item_id);
+    return $this->db->fetchSingleRow($query, $bindings);
+  }
+
   /**
    * Generate code for item (article) edit
    * @param $item_id: article ID
@@ -1808,7 +1823,16 @@ WHERE `user_id` = :user_id
       if($item['author']) {
         echo '<span class="badge bg-info text-dark">'.$item['author'].'</span>&nbsp;';
       }
-      echo '<span class="badge bg-secondary">'.$item['categories'].'</span><br>
+      echo '<span class="badge bg-secondary">'.$item['categories'].'</span>';
+      $slash_pos = strpos($item_title, ' / ');
+      if ( $slash_pos ) {
+        # if $item_title contains ' / ' - create KinoPoisk/IMDb search button
+        $search_link = '/api/articles/search/?plugin=kinopoisk&item_id='.$fd_postid;
+        # The result should replace HTML content of button with ID = search_$fd_postid
+        echo '&nbsp; &nbsp;<span id="search_'.$fd_postid.'">'.
+          '<button type="button" onclick="startMovieRatingSearch(\''.$fd_postid.'\');" title="Search for movie ratings" class="btn btn-info btn-sm">Movie rating...</button></span>';
+      }
+      echo '<br>
       '.$item['description'].'
     </div>
     </div>

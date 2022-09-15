@@ -1003,6 +1003,28 @@ function setFeedParam(dom_id, db_field, feed_id) {
   });
 }
 
+// start movie rating search
+// @param article_id: context article ID
+function startMovieRatingSearch(article_id) {
+  // replace button content with "Loading..." banner
+  var element_id = 'search_' + article_id;
+  var dom_obj = document.getElementById(element_id);
+  dom_obj.outerHTML = '<span id="'+element_id+'" class="badge bg-secondary">Loading...</span>';
+  // send API request
+  // On API reply: non-empty - place instead of banner
+  // on empty - place banner "Failed"
+  var url = '/api/articles/search/?plugin=kinopoisk&item_id=' + article_id;
+  httpGetAsync(url, function(buf){
+    console.log(buf);
+    var dom_obj = document.getElementById(element_id);
+    if (buf) {
+      dom_obj.outerHTML = '<span>'+buf+'</span>';
+    } else {
+      dom_obj.outerHTML = '<span class="badge badge-warning">Failed :-(</span>';
+    }
+  });
+}
+
 // enable feed: change enable/disable presentation
 // and send "enable" request to server
 function enableFeed(feed_id, enable_state) {
