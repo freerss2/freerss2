@@ -51,7 +51,7 @@
 
   $article = $rss_app->getItem($item_id);
   $title = $article['title'];
-  $movie_info = explode(' / ', 
+  $movie_info = explode(' / ',
     str_replace('(', ' / ', str_replace(')', ' / ', $title)));
   # first two items are titles and third is a year
   if (! $movie_info) {
@@ -59,6 +59,9 @@
     exit(0);
   }
   $searcher = new MovieRatingKinopoiskUnoff('kp_unofficial');
-  $result = $searcher->get_rating_info($movie_info[0]);
+  $result = $searcher->get_rating_info($title);
+  if ( ! $result ) {
+    $result = '<i title="Not found :-(" class="far fa-eye-slash"></i>';
+  }
   echo $result;
 ?>

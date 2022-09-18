@@ -1009,7 +1009,8 @@ function startMovieRatingSearch(article_id) {
   // replace button content with "Loading..." banner
   var element_id = 'search_' + article_id;
   var dom_obj = document.getElementById(element_id);
-  dom_obj.outerHTML = '<span id="'+element_id+'" class="badge bg-secondary">Loading...</span>';
+  dom_obj.outerHTML = '<span id="'+element_id+'" >'+
+    '<img style="max-width:7rem;" src="../img/loading-progress-s.gif"></span>';
   // send API request
   // On API reply: non-empty - place instead of banner
   // on empty - place banner "Failed"

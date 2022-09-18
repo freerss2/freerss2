@@ -7,7 +7,7 @@ include "opml.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.9';
+$APP_VERSION = '2.0.1.6.9a';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 

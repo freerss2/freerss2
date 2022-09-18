@@ -11,7 +11,7 @@ include "movie_rating_conf.php";
 class MovieRatingProvider {
 
     public function __construct($name) {
-        $this->name = $name; 
+        $this->name = $name;
     }
 
     public function get_rating_info($pattern) {
@@ -37,7 +37,7 @@ class MovieRatingRutor extends MovieRatingProvider {
         # under this element see <a href="/torrent/886732">
         # download this link as https://rutor.org/torrent/886732
         # and finally get in this buffer line <a href="http://www.imdb.com/...
-        # 
+        #
         // Disable any errors reporting
         error_reporting(0);
         $search_url = $this->url . '/search/1/0/000/0/' . rawurlencode($pattern);
@@ -82,8 +82,24 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
         $this->api_key = KP_UNOFF_API_KEY;
     }
 
+    private function decode_html($s) {
+        return html_entity_decode(str_replace('#', '&#', $s));
+    }
+
+    # Possible pattern formats:
+    # single title
+    # title / alternative title (year)
+    # title / more / titles ... (year)
     public function get_rating_info($pattern) {
-        $search_res = $this->get_api_data('films', '/search-by-keyword?keyword=' . 
+        # check if $pattern contains ' / '
+        # if not - use it "as is" without double-checks
+        $info = explode(' / ', str_replace(' (', ' / ', preg_replace('/\).*/', '', $pattern)));
+        $year = '';
+        if ( is_numeric(end($info)) ) {
+            $year = array_pop($info);
+        }
+        $pattern = $info[0];
+        $search_res = $this->get_api_data('films', '/search-by-keyword?keyword=' .
                                           rawurlencode($pattern) . '&page=1');
         if (! $search_res) { return ''; }
 
@@ -91,10 +107,34 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
         $films = $search_data->films;
         if (! $films) { return ''; }
 
-        $kp_id = $films[0]->filmId;
-        $title = $films[0]->nameRu . ' / ' . $films[0]->nameEn .
-          ' ('.$films[0]->year.')';
-        $result = "<a title=\"$title\" href=\"https://www.kinopoisk.ru/film/$kp_id/\"><img loading=\"lazy\" src=\"http://www.kinopoisk.ru/rating/$kp_id.gif\"></a>";
+        # for all $films try to find better match
+        $found = false;
+        # If $info contains more than 1 element - compare nameRu / nameEn (year)
+        for ($i=0; $i < count($films); $i++) {
+            $film = $films[$i];
+            if ( ! $year) { $found = true; break; } # no comparison criteria - use first match
+            # compare film year and exit on match
+            if ( $year == $film->year && $info[0] == $film->nameRu) {
+              $found = true; break;
+            }
+        }
+        if ( ! $found ) { return ''; }
+        if ( count($info) > 1 ) {
+            # when $info contains alternative names - try to find full match
+            $found = false;
+            for ($i=1; $i < count($info); $i++ ) {
+                if ( $info[0] == $film->nameRu && $this->decode_html($info[$i]) == $film->nameEn ) {
+                    $found = true;
+                    break;
+                }
+            }
+            if ( ! $found ) { return ''; }
+        }
+        $kp_id = $film->filmId;
+        $title = $film->nameRu . ' / ' . $film->nameEn .
+          ' ('.$film->year.')';
+        $result = "<a target=\"_blank\" title=\"$title\" href=\"https://www.kinopoisk.ru/film/$kp_id/\"> ".
+          "<img loading=\"lazy\" src=\"http://www.kinopoisk.ru/rating/$kp_id.gif\"></a>";
         # try to get IMDb ratings
         $film_res = $this->get_api_data('films', '/'.$kp_id, 'v2.2');
         if (! $film_res) { return $result; }
@@ -113,7 +153,7 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
             $imdb_code = "";
           }
         }
-        return $imdb_code . $result;
+        return $result . $imdb_code;
     }
 
 # Use unofficial API
