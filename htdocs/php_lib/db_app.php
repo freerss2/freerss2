@@ -128,6 +128,14 @@ class DbApp extends DbSql {
       'is_deleted'       => 'INTEGER DEFAULT 0',
       'timestamp'        => 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP',
     ),
+    'tbl_site_to_feed' => array( # Converting HTML site to RSS
+      'user_id'     => 'INTEGER',
+      'fd_feedid' => 'TEXT',
+      'htmlUrl' => 'TEXT',
+      'global_pattern' => 'TEXT',
+      'item_pattern' => 'TEXT',
+      'mapping' => 'LONGTEXT'
+    ),
     'tbl_settings' => array( # UI settings
       'user_id'     => 'INTEGER',
       'param'   => 'TEXT', # parameter name

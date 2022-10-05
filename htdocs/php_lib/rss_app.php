@@ -4,6 +4,7 @@ include "db_conf.php";
 include "db_app.php";
 include "php_util.php";
 include "opml.php";
+include "site_to_feed.php";
 require_once "Spyc.php";
 
 
@@ -217,7 +218,6 @@ class RssApp {
           " `user_id`=:user_id AND `read`=1 AND `fd_feedid`=:fd_feedid ".
           " AND `timestamp` < $this->NOW - INTERVAL 2 DAY ".
           " ORDER BY `timestamp` ASC LIMIT ".($count-$mincount).") tt)";
-        # echo $query2."<BR>\n";
         $this->db->execQuery($query2, $bindings);
     }
     $this->setPersonalSetting('last_maintenance', time());
@@ -264,10 +264,9 @@ class RssApp {
    *          feed formal title
    *          feed site URL
   **/
-  public function readRssUpdate($rss_url, $rss_title) {
+  public function readRssUpdate($rss_url, $rss_title, $site_to_feed=null) {
 
     try {
-      // echo "reading '$rss_title': $rss_url<BR>\n";
 
       // Disable any errors reporting
       error_reporting(0);
@@ -278,50 +277,60 @@ class RssApp {
       if (! $rss_buffer) {
           return array("Nothing read from $rss_url", null, $rss_title);
       }
-      if ( strpos($rss_buffer, '<?xml') === false &&
-           strpos($rss_buffer, '<rss') === false) {
-          return array($rss_buffer, null, $rss_title);
-      }
-      # echo "read-in ".strlen($rss_buffer)." bytes<BR>\n";
-
-      // Disable any errors reporting
-      error_reporting(0);
-      $rss=simplexml_load_string($rss_buffer);
-      // Enable errors and warnings
-      error_reporting(E_ERROR | E_WARNING | E_PARSE);
-
-      if (! $rss) {
-        $rss_buffer = substr($rss_buffer, 0, 16);
-        return array("Failed parsing of content from $rss_url<BR>///$rss_buffer///\n", null, $rss_title);
-      }
-      $items = array();
-      $rss_title = $rss->channel->title;
-      $rss_link = $rss->channel->link;
-      $channel_items = $rss->channel ? $rss->channel->item : $rss->entry;
-      foreach ($channel_items as $item) {
-        $link = is_array($item->link)? $item->link[0] : $item->link;
-        if ($link && $link->attributes()) {
-          $link = $link->attributes()['href'];
+      # if $site_to_feed - convert $rss_buffer to $items
+      if ( $site_to_feed &&  $site_to_feed['item_pattern'] ) {
+        $global_pattern = $site_to_feed['global_pattern'];
+        $item_pattern = $site_to_feed['item_pattern'];
+        $mapping = $site_to_feed['mapping'];
+        $s = new SiteToFeed($rss_url, $item_pattern, $mapping, $global_pattern);
+        $r = $s->convert_to_rss($rss_buffer);
+        $items = $r['items'];
+      } else {
+        if ( strpos($rss_buffer, '<?xml') === false &&
+             strpos($rss_buffer, '<rss') === false) {
+            return array($rss_buffer, null, $rss_title);
         }
-        $link = is_array($link) ? $link['href'] : $link;
-        $fd_postid = $link ? $link : $item->id;
-        $pubDate = $item->pubDate ? $item->pubDate : $item->updated;
-        $pubDate = str_replace(' (Coordinated Universal Time)', '', $pubDate);
-        $content = $item->description ? $item->description : $item->summary;
-        if ( ! $content ) { $content = $item->content; }
-        $author = $item->author ? $item->author : '';
-        $new_item = array(
-          'link'       => $link,
-          'title'      => $item->title,
-          'author'     => $author,
-          'categories' => $item->category,
-          'dateStr'    => $pubDate,
-          'timestamp'  => strtotime($pubDate),
-          'description'=> $content,
-          'fd_postid'  => _guid_digest_hex($fd_postid),
-          'guid'       => $fd_postid );
-        // print_r($new_item);
-        array_push($items, $new_item);
+        # echo "read-in ".strlen($rss_buffer)." bytes<BR>\n";
+
+        // Disable any errors reporting
+        error_reporting(0);
+        $rss=simplexml_load_string($rss_buffer);
+        // Enable errors and warnings
+        error_reporting(E_ERROR | E_WARNING | E_PARSE);
+
+        if (! $rss) {
+          $rss_buffer = substr($rss_buffer, 0, 16);
+          return array("Failed parsing of content from $rss_url<BR>///$rss_buffer///\n", null, $rss_title);
+        }
+        $items = array();
+        $rss_title = $rss->channel->title;
+        $rss_link = $rss->channel->link;
+        $channel_items = $rss->channel ? $rss->channel->item : $rss->entry;
+        foreach ($channel_items as $item) {
+          $link = is_array($item->link)? $item->link[0] : $item->link;
+          if ($link && $link->attributes()) {
+            $link = $link->attributes()['href'];
+          }
+          $link = is_array($link) ? $link['href'] : $link;
+          $fd_postid = $link ? $link : $item->id;
+          $pubDate = $item->pubDate ? $item->pubDate : $item->updated;
+          $pubDate = str_replace(' (Coordinated Universal Time)', '', $pubDate);
+          $content = $item->description ? $item->description : $item->summary;
+          if ( ! $content ) { $content = $item->content; }
+          $author = $item->author ? $item->author : '';
+          $new_item = array(
+            'link'       => $link,
+            'title'      => $item->title,
+            'author'     => $author,
+            'categories' => $item->category,
+            'dateStr'    => $pubDate,
+            'timestamp'  => strtotime($pubDate),
+            'description'=> $content,
+            'fd_postid'  => _guid_digest_hex($fd_postid),
+            'guid'       => $fd_postid );
+          // print_r($new_item);
+          array_push($items, $new_item);
+        }
       }
       $error = "";
     }
@@ -409,13 +418,13 @@ class RssApp {
       $obj_cond = ' WHERE a.`type`=:type ';
     }
     $query = "SELECT a.* FROM (
-SELECT s1.`type`, s1.`id`, f.`title`, s1.`timestamp`, s1.`upd_status`, s1.`upd_log` 
-FROM `tbl_subscr_state`AS s1, `tbl_subscr` AS f 
-WHERE s1.`user_id`=:user_id AND s1.`id` = f.`fd_feedid` AND s1.`type`='subscr' 
+SELECT s1.`type`, s1.`id`, f.`title`, s1.`timestamp`, s1.`upd_status`, s1.`upd_log`
+FROM `tbl_subscr_state`AS s1, `tbl_subscr` AS f
+WHERE s1.`user_id`=:user_id AND s1.`id` = f.`fd_feedid` AND s1.`type`='subscr'
 UNION
-SELECT s2.`type`, s2.`id`, s2.`id`, s2.`timestamp`, s2.`upd_status`, s2.`upd_log` 
+SELECT s2.`type`, s2.`id`, s2.`id`, s2.`timestamp`, s2.`upd_status`, s2.`upd_log`
 FROM `tbl_subscr_state`AS s2
-WHERE s2.`user_id`=:user_id AND s2.`type`!='subscr' 
+WHERE s2.`user_id`=:user_id AND s2.`type`!='subscr'
 ) a $obj_cond
 ORDER BY a.`timestamp` DESC";
     return $this->db->fetchQueryRows($query, $bindings);
@@ -424,7 +433,7 @@ ORDER BY a.`timestamp` DESC";
   /**
    * Get next RSS after previously updated
    * @param $last_rss_id: last read RSS ID (null for initial call)
-   * @return: next RSS record (rss_id, rss_title, rss_url)
+   * @return: next RSS record (rss_id, rss_title, rss_url, site_to_feed)
    *          or null (on end of sequence)
   **/
   public function getNextRss($last_rss_id) {
@@ -432,11 +441,18 @@ ORDER BY a.`timestamp` DESC";
       # if $last_rss_id is null - return first record
       # try to find $last_rss_id in records and return next one
       # (or null if reached last record)
-      $where = array("user_id" => $this->user_id, "download_enabled" => "1");
-      $rss_records = $this->db->queryTableRecords('tbl_subscr', $where);
+    $query = 'SELECT
+      `tbl_subscr`.`fd_feedid`, `tbl_subscr`.`title`, `tbl_subscr`.`xmlUrl`, `tbl_subscr`.`htmlUrl`,
+      `tbl_site_to_feed`.`global_pattern`, `tbl_site_to_feed`.`item_pattern`, `tbl_site_to_feed`.`mapping`
+      FROM `tbl_subscr`
+      LEFT JOIN `tbl_site_to_feed`
+      ON `tbl_site_to_feed`.`user_id` = `tbl_subscr`.`user_id`
+      AND `tbl_site_to_feed`.`fd_feedid` = `tbl_subscr`.`fd_feedid`
+      WHERE `tbl_subscr`.`user_id` = :user_id AND `tbl_subscr`.`download_enabled` = 1';
+      $bindings = array("user_id" => $this->user_id);
+      $rss_records = $this->db->fetchQueryRows($query, $bindings);
       if ( ! $rss_records ) { return null; }
       if ( ! $last_rss_id ) { return $rss_records[0]; }
-      // echo ("search for $last_rss_id ...<BR>\n");
       $found = null;
       foreach ($rss_records as $rec) {
           if ($found) { return $rec; }
@@ -815,7 +831,6 @@ WHERE `user_id` = :user_id
        array('user_id'=>$this->user_id), 'sort_index');
     $plist[] = array('title'=>'trash', 'fd_watchid'=>'trash');
     foreach ($plist as $watch) {
-      # echo json_encode($watch)."<BR>\n";
       $rl_action = ($watch['fd_watchid'] == 'trash') ? 'mark_read' : 'set_tag';
       $prules = $this->db->queryTableRecords('tbl_rules',
         array('rl_act_arg'=>$watch['fd_watchid'],
@@ -1811,7 +1826,7 @@ WHERE `user_id` = :user_id
            </a>
          </h5>
 
-         <span class="badge bg-dark">'.$item['dateStr'].'</span>&nbsp;';
+         <span class="badge bg-light text-dark">'.$item['dateStr'].'</span>&nbsp;';
       if($item['feed_info']) {
         $feed_id = $item['fd_feedid'];
         $feed_title = $item['feed_info']['title'];
@@ -1830,7 +1845,7 @@ WHERE `user_id` = :user_id
         $search_link = '/api/articles/search/?plugin=kinopoisk&item_id='.$fd_postid;
         # The result should replace HTML content of button with ID = search_$fd_postid
         echo '&nbsp; &nbsp;<span id="search_'.$fd_postid.'">'.
-          '<button type="button" onclick="startMovieRatingSearch(\''.$fd_postid.'\');" title="Search for movie ratings" class="btn btn-info btn-sm">Movie rating...</button></span>';
+          '<button type="button" onclick="startMovieRatingSearch(\''.$fd_postid.'\');" title="Search for movie ratings" class="btn btn-dark btn-sm"><i class="fas fa-star-half-alt"></i></button></span>';
       }
       echo '<br>
       '.$item['description'].'

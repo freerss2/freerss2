@@ -43,9 +43,18 @@
       $read_rss_url = $next_rss['xmlUrl'];
       $rss_title = $next_rss['title'];
       $feed_id = $next_rss['fd_feedid'];
-      // echo "reading RSS $feed_id ...<BR>\n";
+      $site_to_feed = '';
+      if ( $next_rss['mapping'] ) {
+        # put in $read_rss_url site URL from next_rss
+        $read_rss_url = $next_rss['htmlUrl'];
+        $site_to_feed = array(
+          'global_pattern' => $next_rss['global_pattern'],
+          'item_pattern' => $next_rss['item_pattern'],
+          'mapping' => json_decode($next_rss['mapping'])
+        );
+      }
 
-      list($error, $items, $title, $link) = $rss_app->readRssUpdate($read_rss_url, $rss_title);
+      list($error, $items, $title, $link) = $rss_app->readRssUpdate($read_rss_url, $rss_title, $site_to_feed);
       if ($error) {
         // echo "ERROR: $error<BR>\n";
         $errors[] = $error;
