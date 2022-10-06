@@ -282,6 +282,10 @@ class RssApp {
         $global_pattern = $site_to_feed['global_pattern'];
         $item_pattern = $site_to_feed['item_pattern'];
         $mapping = $site_to_feed['mapping'];
+        $encoding = $site_to_feed['encoding'];
+        if ($encoding) {
+          $rss_buffer = mb_convert_encoding($rss_buffer, "utf-8", $encoding);
+        }
         $s = new SiteToFeed($rss_url, $item_pattern, $mapping, $global_pattern);
         $r = $s->convert_to_rss($rss_buffer);
         $items = $r['items'];
@@ -443,7 +447,7 @@ ORDER BY a.`timestamp` DESC";
       # (or null if reached last record)
     $query = 'SELECT
       `tbl_subscr`.`fd_feedid`, `tbl_subscr`.`title`, `tbl_subscr`.`xmlUrl`, `tbl_subscr`.`htmlUrl`,
-      `tbl_site_to_feed`.`global_pattern`, `tbl_site_to_feed`.`item_pattern`, `tbl_site_to_feed`.`mapping`
+      `tbl_site_to_feed`.`encoding`, `tbl_site_to_feed`.`global_pattern`, `tbl_site_to_feed`.`item_pattern`, `tbl_site_to_feed`.`mapping`
       FROM `tbl_subscr`
       LEFT JOIN `tbl_site_to_feed`
       ON `tbl_site_to_feed`.`user_id` = `tbl_subscr`.`user_id`

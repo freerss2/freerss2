@@ -132,6 +132,7 @@ class DbApp extends DbSql {
       'user_id'     => 'INTEGER',
       'fd_feedid' => 'TEXT',
       'htmlUrl' => 'TEXT',
+      'encoding' => 'TEXT',
       'global_pattern' => 'TEXT',
       'item_pattern' => 'TEXT',
       'mapping' => 'LONGTEXT'
@@ -169,10 +170,10 @@ class DbApp extends DbSql {
 
 
   # Automatically created tables (when missing)
-  private $basic_tables = array('tbl_users', 
+  private $basic_tables = array('tbl_users',
     'tbl_deleted_posts', 'tbl_posts', 'tbl_post_links',
     'tbl_subscr_state', 'tbl_subscr', 'tbl_settings', 'tbl_intl_en',
-    'tbl_avail_intl',
+    'tbl_avail_intl', 'tbl_site_to_feed',
     'tbl_watches', 'tbl_rules', 'tbl_rules_simple', 'tbl_rules_text');
 
   /**

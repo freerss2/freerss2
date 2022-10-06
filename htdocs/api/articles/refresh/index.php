@@ -48,6 +48,7 @@
         # put in $read_rss_url site URL from next_rss
         $read_rss_url = $next_rss['htmlUrl'];
         $site_to_feed = array(
+          'encoding' => $next_rss['encoding'],
           'global_pattern' => $next_rss['global_pattern'],
           'item_pattern' => $next_rss['item_pattern'],
           'mapping' => json_decode($next_rss['mapping'])
