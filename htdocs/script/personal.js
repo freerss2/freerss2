@@ -454,7 +454,7 @@ function triggerTitleSearch( selected_engine ) {
 function startTitleSearch(article_id) {
   var searchTitleDialog = document.getElementById('searchTitleDialog');
   var searchModal = new bootstrap.Modal(searchTitleDialog, {focus: false});
-  search_val = document.getElementById('heading_'+article_id).children[1].children[0].textContent;
+  search_val = document.getElementById('heading_'+article_id).children[1].children[1].textContent;
   search_input = document.getElementById('title-text-to-find');
   search_input.value = search_val;
   setArticlesContext(0);
@@ -808,7 +808,7 @@ function changeArticleReadStateVisual(article_id, change) {
   var heading_id = 'heading_'+article_id;
   var elm = document.getElementById(heading_id);
   if (elm) {
-    var sub_elm = elm.children[1].children[0];
+    var sub_elm = elm.children[1].children[1];
     domElementChangeBoldStyle(sub_elm, change);
     focusOnArticleById(heading_id, scroll_view=false);
   } else {

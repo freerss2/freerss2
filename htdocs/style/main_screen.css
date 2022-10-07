@@ -72,6 +72,12 @@
   padding-right: 16px;
 }
 
+.item-source {
+  width: 10rem;
+  min-width: 10rem;
+  margin-right: 0.5rem;
+}
+
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
 @media screen and (max-height: 450px) {
   .sidebar {padding-top: 15px;}
@@ -111,7 +117,7 @@
 
 
 
-.item-header-bar .no-text-overflow {
+.item-header-bar .item-title {
     padding-right: 125px;
 }
 
@@ -130,7 +136,7 @@
   width: 86%;
 }
 
-.item-header-bar .no-text-overflow {
+.item-header-bar .item-title {
     padding-right: 125px;
 }
 
@@ -153,7 +159,7 @@
   width: 75%;
 }
 
-.item-header-bar .no-text-overflow {
+.item-header-bar .item-title {
     padding-right: 0;
 }
 

@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.9a';
+$APP_VERSION = '2.0.1.6.9b';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -1776,9 +1776,16 @@ WHERE `user_id` = :user_id
           'flagged'   => $flagged ? '' : 'hidden-element',
           'unflagged' => $flagged ? 'hidden-element' : ''
         );
-        $link_quoted = urlencode($item['link']);
+
         $item_title = html_entity_decode(preg_replace('/(#\d+;)/', '&${1}', $item['title']));
         $rtl = $item['rtl'] ? 'dir="rtl"' : '';
+
+        $share_links = $this->generateShareLinks($item['link'], $item_title);
+        $share_links_code = [];
+        foreach ($share_links as $link) {
+          $share_links_code []= '<li><a class="dropdown-item" href="'.$link['href'].'" target="_blank">- '.$link['title'].'</a></li>';
+        }
+        $share_links_code = implode("\n", $share_links_code);
 
         # build tooltip text:
         $tooltip = array( '[published: '.$item['dateStr'].']');
@@ -1786,6 +1793,13 @@ WHERE `user_id` = :user_id
         if($item['watch_title']) { $tooltip []= '[watch: '.$item['watch_title'].']';}
         if($item['author']     ) { $tooltip []= '[author: '.$item['author'].']';}
         $tooltip = implode('; ', $tooltip);
+
+        $origin = array();
+        if($item['watch_title']) { $origin []= $item['watch_title']; }
+        if($item['feed_info']  ) { $origin []= $item['feed_info']['title']; }
+        if($item['author']     ) { $origin []= $item['author']; }
+        $origin = implode('&nbsp;*&nbsp;', $origin);
+
         echo '  <div class="accordion-item">
     <h2 class="accordion-header item-header" id="heading_'.$fd_postid.'">
         <span class="btn-group me-2 item-header-buttons" role="group">
@@ -1803,7 +1817,8 @@ WHERE `user_id` = :user_id
           title="'.$tooltip.'"
           onclick="onArticleHeadingClick(event, \'heading_'.$fd_postid.'\')">
         &nbsp;
-        <span class="'.($read? '':'bold-element').' no-text-overflow">'.$item_title.'</span>
+        <span class="hide-on-cellular no-text-overflow item-source">'.$origin.'</span>
+        <span class="'.($read? '':'bold-element').' no-text-overflow item-title">'.$item_title.'</span>
         <span class="post-time-info" dir="ltr">'.$item['passedTime'].'</span>
       </button>
     </h2>
@@ -1817,10 +1832,7 @@ WHERE `user_id` = :user_id
              <i class="fas fa-ellipsis-v"></i>
            </button>
            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton_'.$fd_postid.'">
-             <li><span class="dropdown-item-text">Share in:</span></li>
-             <li><a class="dropdown-item" href="https://www.facebook.com/sharer.php?u='.$link_quoted.'" target="_blank">- Facebook</a></li>
-             <li><a class="dropdown-item" href="https://www.livejournal.com/update.bml?event='.$link_quoted.'" target="_blank">- LiveJournal</a></li>
-             <li><a class="dropdown-item" href="https://twitter.com/intent/tweet?original_referer='.$link_quoted.'&text=From%20FreeRSS" target="_blank">- Twitter</a></li>
+             <li><span class="dropdown-item-text">Share in:</span></li>'.$share_links_code.'
              <li><a class="dropdown-item" href="javascript:changeArticle(\''.$fd_postid.'\')">Move to ...</a></li>
            </ul>
          </div>
@@ -1864,6 +1876,31 @@ WHERE `user_id` = :user_id
     echo '</div>';
   }
 
+  public function generateShareLinks($item_link, $item_title) {
+    /*
+      <a href="https://t.me/share/url?url='.$link_quoted.'&text='.urlencode($item_title).'" target="_blank">- Telegram</a>
+      <a href="https://www.facebook.com/sharer.php?u='.$link_quoted.'" target="_blank">- Facebook</a>
+      <a href="https://www.livejournal.com/update.bml?event='.$link_quoted.'" target="_blank">- LiveJournal</a>
+      <a href="https://twitter.com/intent/tweet?original_referer='.$link_quoted.'&text=From%20FreeRSS" target="_blank">- Twitter</a>
+    */
+    # TODO: read this data from conf-file
+    $SHARE_LINKS = array(
+      array('Telegram', 'https://t.me/share/url?url={link}&text={title}'),
+      array('Facebook', 'https://www.facebook.com/sharer.php?u={link}'),
+      array('LiveJournal', 'https://www.livejournal.com/update.bml?event={link}'),
+      array('Twitter', 'https://twitter.com/intent/tweet?original_referer={link}&text={title}')
+    );
+    $link_quoted = urlencode($item_link);
+    $title_quoted = urlencode($item_title);
+    $result = array();
+    foreach ($SHARE_LINKS as $share) {
+      $href = $share[1];
+      $href = str_replace('{link}', $link_quoted, $href);
+      $href = str_replace('{title}', $title_quoted, $href);
+      $result []= array('title'=>$share[0], 'href'=>$href);
+    }
+    return $result;
+  }
 
   /**
    * Prepare articles for displaying right now
