@@ -745,6 +745,19 @@ function onReadUnreadClick(event, article_id) {
   changeArticleReadState(article_id, 'toggle');
 }
 
+// Toggle current item "bookmarked" state (when curr. item could be identified)
+function toggleBookmarkCurrItem() {
+  // identify "current item"
+  var article_id = getActiveArticleId();
+  if (! article_id) { article_id = getFirstArticleId(); }
+  if (! article_id) { return; }
+  article_id = article_id.replace('heading_', '');
+  // if found - get its "bookmarked" state
+  var is_flagged = domElementGetVisibility('flagged_'+article_id);
+  var change = is_flagged ? 'off' : 'on';
+  changeArticleFlaggedState(article_id, change);
+}
+
 // Change article "flagged" state
 // @param article_id: context article ID
 // @param change: how to change article state (on/off/toggle)
@@ -754,10 +767,15 @@ function changeArticleFlaggedState(article_id, change) {
   domElementChangeVisibility('flagged_'+article_id, set_flagged);
   domElementChangeVisibility('unflagged_'+article_id, set_unflagged);
 
+  var heading_id = 'heading_'+article_id;
+  var item_header = document.getElementById(heading_id).children[1].children[1];
   if (set_flagged == 'off') {
-    var heading_id = 'heading_'+article_id;
     focusOnArticleById(heading_id, scroll_view=false);
+    // remove respective class (item-header-flagged) from title
+    item_header.classList.remove('item-header-flagged');
   } else {
+    // assign respective class (item-header-flagged) to title
+    item_header.classList.add('item-header-flagged');
     changeArticleReadStateVisual(article_id, 'off');
   }
   // send new state to server
@@ -1220,6 +1238,7 @@ function bindKeysForFeeds() {
       case 82: event_key = "r"; break;
       case 72: event_key = "h"; break;
       case 90: event_key = "z"; break;
+      case 66: event_key = "b"; break;
     }
     switch (event_key) {
       case "r":
@@ -1230,6 +1249,7 @@ function bindKeysForFeeds() {
         }
         break;
       case "h":
+        if (event.ctrlKey) { return; }
         if (event.altKey) {
           showUpdatingDialog();
           handled = true;
@@ -1237,11 +1257,19 @@ function bindKeysForFeeds() {
         }
         break;
       case "z":
+        if (event.altKey) { return; }
         if (event.ctrlKey) {
           handled = true;
           markReadAndNext();
         }
         break;
+      case "b":
+        if (event.altKey) { return; }
+        if (event.ctrlKey) {
+          handled = true;
+          toggleBookmarkCurrItem();
+        }
+       break;
       case "Down": // IE/Edge specific value
       case "ArrowDown":
         if (event.ctrlKey) {
@@ -1308,6 +1336,4 @@ function bindKeysForFeeds() {
       event.preventDefault();
     }
   }, true);
-
 }
-

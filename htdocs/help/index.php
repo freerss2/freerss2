@@ -135,6 +135,7 @@
         <tr><td>Alt/H</td><td>Return to app homepage</td></tr>
         <tr><td>Alt/R</td><td>Refresh articles from RSS sources</td></tr>
         <tr><td>Ctrl/Z</td><td>Mark all articles on current page as "read"</td></tr>
+        <tr><td>Ctrl/B</td><td>Set/unset "bookmark" for current article</td></tr>
       </table>
       <a name="WatchFilters"></a>
       <H1 id="WatchFilters"><i class="fas fa-filter"></i> Watches (Filters)</H1>

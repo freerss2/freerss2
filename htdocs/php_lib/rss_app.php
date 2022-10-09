@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.9b';
+$APP_VERSION = '2.0.1.6.9c';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -25,6 +25,13 @@ class RssApp {
   private $user_id;
   private $builtin_watches = array('all', 'today', 'older', 'bookmarked', 'unfiltered');
   private $reserved_watches;
+  # TODO: read this data from conf-file
+  private $SHARE_LINKS = array(
+      array('Telegram', 'https://t.me/share/url?url={link}&text={title}'),
+      array('Facebook', 'https://www.facebook.com/sharer.php?u={link}'),
+      array('LiveJournal', 'https://www.livejournal.com/update.bml?event={link}'),
+      array('Twitter', 'https://twitter.com/intent/tweet?original_referer={link}&text={title}')
+    );
 
   const PASSWORD_CHARSET =
       '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.,-+!:@';
@@ -1818,7 +1825,7 @@ WHERE `user_id` = :user_id
           onclick="onArticleHeadingClick(event, \'heading_'.$fd_postid.'\')">
         &nbsp;
         <span class="hide-on-cellular no-text-overflow item-source">'.$origin.'</span>
-        <span class="'.($read? '':'bold-element').' no-text-overflow item-title">'.$item_title.'</span>
+        <span class="'.($read? '':'bold-element').' '.($flagged? 'item-header-flagged' : '').' no-text-overflow item-title">'.$item_title.'</span>
         <span class="post-time-info" dir="ltr">'.$item['passedTime'].'</span>
       </button>
     </h2>
@@ -1877,23 +1884,10 @@ WHERE `user_id` = :user_id
   }
 
   public function generateShareLinks($item_link, $item_title) {
-    /*
-      <a href="https://t.me/share/url?url='.$link_quoted.'&text='.urlencode($item_title).'" target="_blank">- Telegram</a>
-      <a href="https://www.facebook.com/sharer.php?u='.$link_quoted.'" target="_blank">- Facebook</a>
-      <a href="https://www.livejournal.com/update.bml?event='.$link_quoted.'" target="_blank">- LiveJournal</a>
-      <a href="https://twitter.com/intent/tweet?original_referer='.$link_quoted.'&text=From%20FreeRSS" target="_blank">- Twitter</a>
-    */
-    # TODO: read this data from conf-file
-    $SHARE_LINKS = array(
-      array('Telegram', 'https://t.me/share/url?url={link}&text={title}'),
-      array('Facebook', 'https://www.facebook.com/sharer.php?u={link}'),
-      array('LiveJournal', 'https://www.livejournal.com/update.bml?event={link}'),
-      array('Twitter', 'https://twitter.com/intent/tweet?original_referer={link}&text={title}')
-    );
     $link_quoted = urlencode($item_link);
     $title_quoted = urlencode($item_title);
     $result = array();
-    foreach ($SHARE_LINKS as $share) {
+    foreach ($this->SHARE_LINKS as $share) {
       $href = $share[1];
       $href = str_replace('{link}', $link_quoted, $href);
       $href = str_replace('{title}', $title_quoted, $href);

@@ -7,7 +7,7 @@
   height: 100%;
   width: 0;
   position: fixed;
-  z-index: 1;
+  z-index: 100;
   top: 0;
   left: 0;
   background-color: #111;
@@ -73,8 +73,8 @@
 }
 
 .item-source {
-  width: 10rem;
-  min-width: 10rem;
+  width: 6rem;
+  min-width: 6rem;
   margin-right: 0.5rem;
 }
 
@@ -104,6 +104,10 @@
 
 .item-header {
   margin-bottom: 0.5rem;
+}
+
+.item-header-flagged {
+  color: #0c63e4;
 }
 
 .item-header-bar {
@@ -214,6 +218,11 @@
   width: 12em;
   display: inline-block;
   max-width: 75%;
+}
+
+.stat-help {
+  position: absolute;
+  right: 0.9rem;
 }
 
 .low-action-button {
