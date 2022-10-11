@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.9c';
+$APP_VERSION = '2.0.1.6.9cx';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -30,6 +30,8 @@ class RssApp {
       array('Telegram', 'https://t.me/share/url?url={link}&text={title}'),
       array('Facebook', 'https://www.facebook.com/sharer.php?u={link}'),
       array('LiveJournal', 'https://www.livejournal.com/update.bml?event={link}'),
+      array('GMail', 'https://mail.google.com/mail/u/0/?fs=1&tf=cm&to=somebody@email.com&su={title}&body={link}'),
+      array('WhatsApp', 'https://wa.me/?text={link}'),
       array('Twitter', 'https://twitter.com/intent/tweet?original_referer={link}&text={title}')
     );
 
@@ -1790,7 +1792,7 @@ WHERE `user_id` = :user_id
         $share_links = $this->generateShareLinks($item['link'], $item_title);
         $share_links_code = [];
         foreach ($share_links as $link) {
-          $share_links_code []= '<li><a class="dropdown-item" href="'.$link['href'].'" target="_blank">- '.$link['title'].'</a></li>';
+          $share_links_code []= '<li><a class="dropdown-item" href="'.$link['href'].'" target="_blank">&nbsp;&nbsp;<i class="fas fa-caret-right"></i>&nbsp;'.$link['title'].'</a></li>';
         }
         $share_links_code = implode("\n", $share_links_code);
 
@@ -1836,11 +1838,11 @@ WHERE `user_id` = :user_id
               <i class="fas fa-search"></i>
            </button>
            <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton_'.$fd_postid.'" data-bs-toggle="dropdown" aria-expanded="false">
-             <i class="fas fa-ellipsis-v"></i>
+             <i class="fas fa-share-square"></i>
            </button>
            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton_'.$fd_postid.'">
-             <li><span class="dropdown-item-text">Share in:</span></li>'.$share_links_code.'
-             <li><a class="dropdown-item" href="javascript:changeArticle(\''.$fd_postid.'\')">Move to ...</a></li>
+             <li><span class="dropdown-item-text"><i class="fas fa-share-alt"></i>&nbsp;Share with:</span></li>'.$share_links_code.'
+             <li><a class="dropdown-item" href="javascript:changeArticle(\''.$fd_postid.'\')"><i class="fas fa-tags"></i>&nbsp;Associate with ...</a></li>
            </ul>
          </div>
          <h5 '.$rtl.'>
