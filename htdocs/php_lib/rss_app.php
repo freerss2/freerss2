@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.9cx';
+$APP_VERSION = '2.0.1.6.9d';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -230,7 +230,7 @@ class RssApp {
         $this->db->execQuery($query2, $bindings);
     }
     $this->setPersonalSetting('last_maintenance', time());
-    return "Performed maintenance for $count feeds";
+    return "Performed maintenance - $count article(s) cleaned";
   }
 
   /**
@@ -1701,6 +1701,7 @@ WHERE `user_id` = :user_id
       <div class="collapse" id="collapseExample">
         <div class="card card-body">
           <ul class="list-group list-group-flush">
+            <li class="list-group-item"><a href="javascript:updateSettings(\'show_articles\', \'both\');"> <i class="fas fa-mail-bulk"></i> Show read/unread articles</a></li>
             <li class="list-group-item"><a href="javascript:refreshRss();"> <i class="fa fa-sync-alt"></i> Refresh the content</a></li>
             <li class="list-group-item"><a href="'.$feed_url.'" target="_blank"> <i class="fas fa-external-link-alt"></i> Check RSS channel status </a></li>
             <li class="list-group-item"><a href="javascript:deleteFeed(\''.$curr_feed_id.'\')"> <i class="far fa-trash-alt"></i> Delete feed as inactive</a></li>
@@ -1786,6 +1787,9 @@ WHERE `user_id` = :user_id
           'unflagged' => $flagged ? 'hidden-element' : ''
         );
 
+        if ( ! $item['title'] ) {
+          $item['title'] = '(no title)';
+        }
         $item_title = html_entity_decode(preg_replace('/(#\d+;)/', '&${1}', $item['title']));
         $rtl = $item['rtl'] ? 'dir="rtl"' : '';
 

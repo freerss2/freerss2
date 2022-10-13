@@ -59,7 +59,7 @@
 
     <title>Free RSS <?php if ( $statistics['update_required'] ) { echo " (*)"; } ?> </title>
   </head>
-  <body onload="setArticlesContext(0); <?php echo $promptForInit; ?>">
+  <body onload="setArticlesContext(0); initFocus(); <?php echo $promptForInit; ?>">
 
     <!-- Optional JavaScript; choose one of the two! -->
 

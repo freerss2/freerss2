@@ -40,6 +40,21 @@ function closeNav() {
   nav_visible = 0;
 }
 
+// ------------( focus on initial element on page )-----------------
+
+function initFocus() {
+    // get current page path
+    var page_path = window.location.href;
+    var elm = '';
+    // if it's a '/personal' - focus on "start reading" button
+    if (page_path.endsWith('/personal') || page_path.endsWith('/personal/')) {
+      elm = document.getElementsByClassName('openbtn')[0];
+    }
+    if (elm) {
+      elm.focus();
+    }
+}
+
 // ------------------( settings change callbacks )------------------
 
 // Callback for settings change
