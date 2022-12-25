@@ -47,6 +47,11 @@ function httpPost(theUrl, postData)
     return xmlHttp.responseText;
 }
 
+// fixing encoding of response
+function filterResponse(reply) {
+  return reply.replace(/^\uFEFF/gm, "").replace(/^\u00EF?\u00BB\u00BF/gm,"");
+}
+
 // ---------------------( building URL from form data )--------------------------
 
 // re-build form submit URL
@@ -155,3 +160,42 @@ function select_sub_string(element, begin, end)
 	}
 } // select_sub_string
 
+
+// bind keyboard key on given element to function
+// @param elm_id: ID of DOM element to accept keystroke
+// @param expected_key_name: expected key name
+// @param fn: function to be triggered on key match
+function bindKeyForElement(elm_id, expected_key_name, fn) {
+  var elm = document.getElementById(elm_id);
+  if (! elm) { return; }
+  elm.addEventListener("keydown", function (event) {
+      var event_key = event.key;
+      if (event_key == expected_key_name) { fn(); }
+    });
+}
+
+
+function setCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (encodeURIComponent(value) || "")  + expires + "; path=/";
+}
+
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return decodeURIComponent(c.substring(nameEQ.length,c.length));
+    }
+    return null;
+}
+
+function eraseCookie(name) {
+    document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}

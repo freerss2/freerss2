@@ -59,7 +59,7 @@
 
     <title>Free RSS <?php if ( $statistics['update_required'] ) { echo " (*)"; } ?> </title>
   </head>
-  <body onload="setArticlesContext(0); initFocus(); <?php echo $promptForInit; ?>">
+  <body onload="setArticlesContext(0); initInlineHelp(); initFocus(); <?php echo $promptForInit; ?>">
 
     <!-- Optional JavaScript; choose one of the two! -->
 
@@ -133,34 +133,34 @@
       </nav>
 
      <div class="card">
-       <h1>Hello <?php echo $statistics['user_name']; ?> and welcome to you personal area</h1>
+       <h1>Hello <?php echo $statistics['user_name']; ?>, and welcome to you personal area</h1>
        <div class="card-body">
-         <h5 class="card-title">Some info about your subscriptions</h5>
+         <h5 class="card-title">Subscriptions statistics</h5>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span class="stat-title"> <i class="fa fa-rss"></i> Total subscriptions  </span>
            <b><?php echo $statistics['total_subscriptions']; ?></b>
-           <i class="far fa-question-circle stat-help" 
-             title="Here counted all subcsriptions, including temporary disabled. The motivation for disabling some subscription is to avoid releating errors about feed unavailability. So, if the feed is under maintenance or reached end-of-life, but you still want to see some old articles received from it, - just mark it as 'disabled'."></i>
+           <i class="far fa-question-circle stat-help inline-help" 
+             title="Here counted all subcsriptions, including temporary disabled. The motivation for disabling some subscription is to avoid errors about feed unavailability. So, if the feed is under maintenance or reached end-of-life, but you still want to see some old articles received from it, - just mark it as 'disabled'."></i>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span class="stat-title"> <i class="fas fa-rss"></i> Active subscriptions </span>
            <b><?php echo $statistics['active_subscriptions']; ?></b>
-           <i class="far fa-question-circle stat-help" title="Active subcsriptions are subscriptions that participate in content updates"></i>
+           <i class="far fa-question-circle stat-help inline-help" title="Active subcsriptions are subscriptions that participate in content updates"></i>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span class="stat-title"> <i class="fas fa-envelope"></i> Unread articles      </span>
            <b><?php echo $statistics['unread_articles']; ?></b>
-           <i class="far fa-question-circle stat-help" title="Counted articles that not marked as 'read' (including bookmarked)"></i>
+           <i class="far fa-question-circle stat-help inline-help" title="Counted articles that not marked as 'read' (including bookmarked)"></i>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span class="stat-title"> <i class="far fa-star"></i> Bookmarked articles  </span>
            <b><?php echo $statistics['bookmarked_articles']; ?></b>
-           <i class="far fa-question-circle stat-help" title="Bookmarked articles are protected from accidential marking as 'read'"></i>
+           <i class="far fa-question-circle stat-help inline-help" title="Bookmarked articles are protected from accidential marking as 'read'"></i>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span style="width: 6em; display: inline-block;"> <i class="far fa-clock"></i> Updated </span>
            <b><?php echo $statistics['updated_at']; ?></b>
-           <i class="far fa-question-circle stat-help" title="Here displayed the timestamp from last updated article"></i>
+           <i class="far fa-question-circle stat-help inline-help" title="Here displayed the timestamp from last updated article"></i>
          </div>
 
          <div>
@@ -259,6 +259,8 @@
         </div>
       </div>
     </div>
+
+    <?php html_include('inline_help_dialog.html'); ?>
 
   </body>
 </html>

@@ -12,6 +12,21 @@ function showError(msg) {
   errorModal.show();
 }
 
+// initialize GUI elements on screen:
+// - set focus on 'login_email'
+// - bind "Enter" to "signIn()" for 'login_email' and 'login_password'
+// - bind "Enter" to "createAccount()" for 'email and 'name'
+function initLoginElements() {
+  setTimeout(function() {
+    bindKeyForElement('login_email', "Enter", signIn);
+    bindKeyForElement('login_password', "Enter", signIn);
+    bindKeyForElement('email', "Enter", createAccount);
+    bindKeyForElement('name', "Enter", createAccount);
+    var login_email = document.getElementById('login_email');
+    login_email.focus();
+  }, 200);
+}
+
 // send phase1 login info to back-end
 function signIn() {
   var elm1 = document.getElementById('login_email');
@@ -33,7 +48,7 @@ function signIn() {
       return;
   }
   // read temp_key from buf
-  var temp_key = buf.replace(/^\s+|\s+$/g, '');;
+  var temp_key = buf.replace(/^\s+|\s+$/g, '');
   // calculate MD5 from password, add temp_key and MD5 again
   var encripted_password = md5(temp_key+md5(password));
   // go to stage2

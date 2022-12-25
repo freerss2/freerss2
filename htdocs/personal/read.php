@@ -7,15 +7,17 @@
 
 <?php
   session_start();
-  if ( !$_SESSION || !$_SESSION['user_id'] ) {
-    header("Location: /login/"); /* Redirect browser */
-    exit();
-  }
 
   define('SOURCE_LEVEL', 1);
   $INCLUDE_PATH = str_repeat('../', SOURCE_LEVEL) . 'php_lib';
 
   include "$INCLUDE_PATH/rss_app.php";
+
+  if ( !$_SESSION || !$_SESSION['user_id'] ) {
+    header("Location: /login/"); /* Redirect browser */
+    exit();
+  }
+
 
   $rss_app = new RssApp();
   $user_id = $_SESSION['user_id'];  # take from login info
@@ -124,6 +126,7 @@ if($req_type == 'watch') {
     $rss_group = $rss_info['group'];
     $feed_rtl = $rss_info['rtl'];
     $download_enabled = $rss_info['download_enabled'];
+    $fts = $rss_info['mapping'] ? 1 : 0;
     $curr_feed_id = $req_feed_id;
   } else {
     $items = array();
@@ -170,6 +173,18 @@ $prev_page = $displayed_page > 1;
 
     <!-- App styles -->
     <link rel="stylesheet" href="../style/main_screen.css<?php echo $VER_SUFFIX;?>">
+    <style>
+    <?php
+      $keywords = $rss_app->getKeywords();
+      foreach($keywords as $rec) {
+        $class_name = $rec['class_name'];
+        $class_style = $rec['class_style'];
+        echo ".$class_name {\n";
+        echo "  $class_style\n";
+        echo "}\n";
+      }
+    ?>
+    </style>
 
     <title>Free RSS</title>
   </head>
@@ -318,6 +333,10 @@ $mark_read_and_next =
       class="btn btn-light btn-sm big-icon-button"
       title="Mark all articles on this page as \'read\', excluding bookmarked ones"
       onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>';
+$reload_button =
+  '<button id="reload_button" type="button"
+      class="btn btn-light btn-sm big-icon-button"
+      onclick="showUpdatingDialog(); window.location.reload();"> <i class="fa fa-redo-alt"></i> </button>';
 if ($req_type == 'subscr') {
   if ($no_subscr_msg)
   {
@@ -331,7 +350,7 @@ if ($req_type == 'subscr') {
     
   } else {
   echo 
-  $mark_read_and_next.
+  $mark_read_and_next. $reload_button.
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevFeed()" title="Go to previos feed"><i class="fas fa-chevron-left"></i></button>'.
   '<a role="button" class="btn btn-light btn-sm big-icon-button" data-bs-toggle="collapse" href="#feedSettings" aria-expanded="false" aria-controls="feedSettings">
     <i class="far fa-edit"></i>
@@ -348,7 +367,7 @@ if ($req_type == 'subscr') {
   }
 } elseif ($req_type == 'watch') {
   echo 
-  $mark_read_and_next.
+  $mark_read_and_next. $reload_button.
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevWatch()" title="Go to previos watch"><i class="fas fa-chevron-left"></i></button>';
   if (! $rss_app->isReservedWatch($req_id)) {
     echo '<a role="button" class="btn btn-light btn-sm big-icon-button" href="edit_filter.php?watch_id='.$req_id.'"> <i class="far fa-edit"></i> </a>';
@@ -357,7 +376,7 @@ if ($req_type == 'subscr') {
  echo '<i class="fas fa-filter"></i>&nbsp;'.$watch_title;
 } elseif ($req_type == 'group') {
   echo 
-  $mark_read_and_next.
+  $mark_read_and_next. $reload_button.
   '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevGroup()" title="Go to previos feeds group"><i class="fas fa-chevron-left"></i></button>';
   if($req_id != 'all') {
     echo '<button role="button" class="btn btn-light btn-sm big-icon-button" onclick="editGroup(\''.$req_id.'\')"> <i class="far fa-edit"></i> </button>';
@@ -365,13 +384,13 @@ if ($req_type == 'subscr') {
   echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextGroup()" title="Go to next feeds group"><i class="fas fa-chevron-right"></i></button>';
  echo '<i class="far fa-newspaper"></i>&nbsp;'.$req_id;
 } else {
-  echo $mark_read_and_next;
+  echo $mark_read_and_next. $reload_button;
  echo $watch_title;
 }
   echo "</H3>";
   echo
  '<div class="collapse '.$edit_feed.'" id="feedSettings">
-    <div class="card card-body mb-3">
+    <div class="card-body mb-3">
       <div class="btn-toolbar mb-3" role="toolbar" aria-label="Enable feed">
         <div class="btn-group me-2" role="group" aria-label="Enable/disable">
           <button type="button" class="btn btn-outline-primary"
@@ -394,16 +413,32 @@ if ($req_type == 'subscr') {
       </div>
       <div class="d-grid gap-2 d-md-block short-input" >
         <div class="input-group mb-3">
-          <span class="input-group-text" id="basic-addon1">RSS</span>
-          <input type="text" class="form-control" placeholder="Feed URL"
-              aria-label="RSS Feed URL" aria-describedby="basic-addon2"
-              id="xmlUrl" value="'.$xmlUrl.'">
-          <button class="btn btn-secondary" type="button"
+          <select class="form-select" onchange="changedFeedSourceType(this.value)" style="max-width: 30%;" id="sourceType">
+              <option '.($fts?'':'selected').' value="rss">RSS source</option>
+              <option '.($fts?'selected':'').' value="site_to_feed">Site-to-feed</option>
+          </select>
+
+          <input type="text" class="form-control '.($fts?'d-none':'d-block').'"
+              placeholder="Feed Source URL"
+              aria-label="RSS Source URL" aria-describedby="basic-addon2"
+              id="xmlUrl" value="'.$xmlUrl.'"
+          >
+          <button class="btn btn-outline-secondary '.($fts?'d-block':'d-none').'"
+              type="button"
+              id="edit-settings" style="display:none;min-width: 70%;"
+              onclick="openSiteToFeedEdit(\''.$curr_feed_id.'\', \'\');"
+          >
+                Define...
+          </button>
+          <button class="btn btn-secondary '.($fts?'d-none':'d-block').'"
+            type="button" id="save-url-button"
             onclick="setFeedParam(\'xmlUrl\', \'xmlUrl\', \''.$curr_feed_id.'\');">
             Save
           </button>
+
         </div>
       </div>
+
       <div class="d-grid gap-2 d-md-block short-input" >
         <div class="input-group mb-3">
           <span class="input-group-text" id="basic-addon1">Title</span>
@@ -455,7 +490,7 @@ if ($error) {
 }
 echo $rss_inactivity_warning;
 $items = $rss_app->prepareForDisplay($items);
-$rss_app->showItems($items);
+$rss_app->showItems($items, $mark_read_and_next);
 
 # ------------[ End dynamic content ]---------------
 
@@ -496,23 +531,7 @@ $rss_app->showItems($items);
 
     <!-- -- -- -- -- -- -- ( Modal windows ) -- -- -- -- -- -- -->
 
-    <div class="modal fade" id="confirmationDialog" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title alert alert-danger"><i class="fas fa-exclamation-triangle"></i>&nbsp;Please confirm</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" id="confirmation-body">
-            
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
-            <button type="button" class="btn btn-primary" id="confirmation-button">Ok</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <?php html_include('confirmation_dialog.html'); ?>
 
     <div class="modal" id="promptForInit" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
@@ -689,6 +708,8 @@ $rss_app->showItems($items);
         </div>
       </div>
     </div>
+
+    <?php html_include('edit_site_to_feed_dialog.html'); ?>
 
   </body>
 </html>

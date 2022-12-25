@@ -59,71 +59,73 @@
     <script src="../script/service.js<?php echo $VER_SUFFIX;?>" ></script>
     <script src="../script/personal.js<?php echo $VER_SUFFIX;?>" ></script>
 
+    <script>
+      var inputTypeRss = 1;
+    </script>
 
     <div id="main">
-     <nav class="navbar sticky-top navbar-dark bg-dark">
-       <button class="openbtn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
-       <span class="navbar-brand">&nbsp;<a href="/" class="navbar-brand">Free RSS</a></span>
-       <a class="btn btn-secondary btn-md" href="../help/#WatchFilters">
-           <i class="fas fa-question"></i>
-       </a>
+      <nav class="navbar sticky-top navbar-dark bg-dark">
+        <button class="openbtn" onclick="history.back()"><i class="fas fa-chevron-left"></i></button>
+        <span class="navbar-brand">&nbsp;<a href="/" class="navbar-brand">Free RSS</a></span>
+        <a class="btn btn-secondary btn-md" href="../help/#WatchFilters">
+          <i class="fas fa-question"></i>
+        </a>
 
-     </nav>
-     <div class="card">
-       <h1>Add new RSS channel subscription</h1>
-       <div class="card-body">
+      </nav>
+      <div class="card">
+        <h1>Add new RSS channel subscription</h1>
+        <div class="card-body">
 
-         <h5 class="form-check-label card-title" for="inputTypeSite">
-           Address <span class="indicate-required">(*)<span>
-         </h5>
-         <div class="form-check form-check-inline">
-           <input class="btn-check" type="radio" name="inputType" id="inputTypeSite">
-           <label class="btn btn-outline-secondary card-title" for="inputTypeSite">
-             Site
-           </label>
-         </div>
-         <div class="form-check form-check-inline">
-           <input class="btn-check" type="radio" name="inputType" id="inputTypeRss" checked>
-           <label class="btn btn-outline-secondary card-title" for="inputTypeRss">
-             RSS XML
-           </label>
-         </div>
-         <input type="text" class="form-control short-input" id="new-rss-xml-url" placeholder="Link to website or RSS XML (feed)">
-
-         <h5 class="card-title">RSS title (description) <span class="indicate-required">(*)<span></h5>
-         <input type="text" class="form-control short-input" id="new-rss-title" placeholder="Informal feed description">
-         <h5 class="card-title">Group (main topic) <span class="indicate-required">(*)<span></h5>
-         <div class="d-grid gap-2 d-md-block short-input" >
-           <div class="input-group">
-             <input type="text" class="form-control" id="new-rss-group"
-           value="<?php echo $groups[0]; ?>" placeholder="To which feeds group it should belong">
-
-           <?php
-             if ($groups) {
-               echo '<button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                data-bs-toggle="dropdown" aria-expanded="false"></button>
-               <ul class="dropdown-menu dropdown-menu-end">
-                 <li><span class="dropdown-item-text">Select from existing</span></li>';
-
-               $sel = 'active';
-               foreach ($groups as $group) {
-                 echo "<li><a class=\"dropdown-item $sel\" href=\"javascript:changeFeedGroup('$group');\">$group</a></li>";
-                 $sel = '';
-               }
-
-               echo '</ul>';
-             }
-           ?>
-
-           </div>
-         </div>
-         <BR>
-         <button type="button" class="btn btn-primary" onclick="createFeed();" style="min-width:8em;">
-           <i class="fas fa-rss-square"></i>
-            Add this RSS
-         </button>
-       </div>
-     </div>
+          <h5 class="form-check-label card-title" for="inputTypeSite">
+            Address <span class="indicate-required">(*)<span>
+          </h5>
+          <div class="input-group short-input mb-3">
+            <select class="form-select" onchange="changedFeedSourceType(this.value)" style="max-width: 30%;" id="sourceType">
+              <option value="site">Site</option>
+              <option selected value="rss">RSS source</option>
+              <option value="site_to_feed">Site-to-feed</option>
+            </select>
+            <input type="text" class="form-control" id="xmlUrl" 
+              placeholder="Link to website or RSS XML (feed)">
+            <button class="btn btn-outline-secondary" type="button" id="edit-settings" style="display:none;min-width: 70%;"
+              onclick="openSiteToFeedEdit('', document.getElementById('xmlUrl').value);" >
+                Define...
+            </button>
+          </div>
+          <h5 class="card-title">RSS title (description) <span class="indicate-required">(*)<span></h5>
+          <input type="text" class="form-control short-input mb-3" id="new-rss-title" placeholder="Informal feed description">
+          <h5 class="card-title">Group (main topic) <span class="indicate-required">(*)<span></h5>
+          <div class="d-grid gap-2 d-md-block short-input mb-3" >
+            <div class="input-group">
+              <input type="text" class="form-control" id="new-rss-group"
+            value="<?php echo $groups[0]; ?>" placeholder="To which feeds group it should belong">
+ 
+            <?php
+              if ($groups) {
+                echo '<button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                 data-bs-toggle="dropdown" aria-expanded="false"></button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><span class="dropdown-item-text">Select from existing</span></li>';
+ 
+                $sel = 'active';
+                foreach ($groups as $group) {
+                  echo "<li><a class=\"dropdown-item $sel\" href=\"javascript:changeFeedGroup('$group');\">$group</a></li>";
+                  $sel = '';
+                }
+ 
+                echo '</ul>';
+              }
+            ?>
+ 
+            </div>
+          </div>
+          <BR>
+          <button type="button" class="btn btn-primary" onclick="createFeed();" style="min-width:8em;">
+            <i class="fas fa-rss-square"></i>
+             Add this RSS
+          </button>
+        </div>
+      </div>
 
     </div>
 
@@ -144,6 +146,7 @@
       </div>
     </div>
 
+    <?php html_include('edit_site_to_feed_dialog.html'); ?>
 
   </body>
 </html>

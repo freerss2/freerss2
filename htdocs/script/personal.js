@@ -55,6 +55,28 @@ function initFocus() {
     }
 }
 
+// ------( initialize callbacks for inline-help elements )----------
+
+function initInlineHelp() {
+    var elements = document.getElementsByClassName('inline-help');
+    for (var i=0; i<elements.length; i++) {
+        var elm = elements[i];
+        elm.onclick = openInlineHelp;
+    }
+}
+
+function openInlineHelp(event) {
+     var context_elm = event.target;
+     // Open help window
+     var elm_d = document.getElementById('inlineHelpDialog');
+     if (! elm_d) { return; }
+     var inlineHelpDialog = new bootstrap.Modal(elm_d, {focus: true});
+     var help_msg = context_elm.title;
+     var help_for_elm = document.getElementById('inlineHelpContent');
+     if (help_for_elm) { help_for_elm.textContent = help_msg; }
+     inlineHelpDialog.show();
+}
+
 // ------------------( settings change callbacks )------------------
 
 // Callback for settings change
@@ -224,6 +246,7 @@ function deleteWatch(watch_id) {
       function() {
         var api_url = build_api_url('/api/watch/delete/?watch_id=' + watch_id);
         var reply = httpGet(api_url);
+        reply = filterResponse(reply);
         if ( reply.startsWith('Error') ) {
             showError(reply);
             return;
@@ -236,10 +259,11 @@ function deleteWatch(watch_id) {
 
 // save watch name
 function saveWatchName(watch_id) {
-  var elm = document.getElementById('watch_name');
-  if (! elm) { return; }
-  new_watch_name = elm.value;
-  if (! new_watch_name) { return; }
+  var new_watch_name = extract_and_prepare('watch_name');
+  if (! new_watch_name) {
+    showError("Error: missing watch name");
+    return;
+  }
   var api_url = build_api_url('/api/watch/')
   if (watch_id) {
     api_url += 'update/?watch_id=' + watch_id + '&name=' + new_watch_name;
@@ -247,6 +271,7 @@ function saveWatchName(watch_id) {
     api_url += 'create/?name=' + new_watch_name;
   }
   var reply = httpGet(api_url);
+  reply = filterResponse(reply);
   if ( reply.startsWith('Error') ) {
       showError(reply);
       return;
@@ -268,6 +293,7 @@ function moveWatch(watch_id, delta) {
   showUpdatingDialog();
   console.log(api_url);
   httpGetAsync(api_url, function(reply){
+    reply = filterResponse(reply);
     // reload on completion
     if ( reply.startsWith('Error') ) {
       showError(reply);
@@ -287,6 +313,7 @@ function moveRuleToWatch(rule_id, watch_id) {
   showUpdatingDialog();
   console.log('Move rule '+rule_id+' to watch '+watch_id);
   httpGetAsync(api_url, function(reply){
+    reply = filterResponse(reply);
     // reload on completion
     if ( reply.startsWith('Error') ) {
       showError(reply);
@@ -303,6 +330,136 @@ function promptForInit() {
   promptForInit.show();
 }
 
+// edit SiteToFeed configuration
+function openSiteToFeedEdit(feed_id, site_addr) {
+  var siteToFeedEditModal = new bootstrap.Modal(document.getElementById('editSiteToFeedDialog'), {focus: true});
+  var addr_elm = document.getElementById('site-address');
+  addr_elm.value = site_addr;
+  siteToFeedEditModal.show();
+  setTimeout(function() { addr_elm.focus(); }, 500);
+  if (feed_id) {
+    // send API query for respective site-to-feed data
+    // where `tbl_site_to_feed`.`fd_feedid` equals to feed_id
+    // encoding, global_pattern, item_pattern, mapping(title,link,content)
+    httpGetAsync('/api/site_to_feed/get?feed_id='+feed_id, function(reply){
+      reply = filterResponse(reply);
+      if (reply && reply[0] == '{') {
+        reply = JSON.parse(reply);
+        var db2web = [
+          ['htmlUrl', 'site-address'],
+          ['encoding ', 'site-encoding'],
+          ['global_pattern ', 'global_pattern'],
+          ['item_pattern', 'item_pattern'],
+          ['title', 'item-title-template'],
+          ['link', 'item-link-template'],
+          ['content', 'item-content-template']
+        ];
+        for (var i=0; i<db2web.length; i++) {
+          document.getElementById(db2web[i][1]).value = reply[db2web[i][0]];
+        }
+      }
+    });
+  }
+}
+
+// Extract DOM element and prepare it for sending to REST API
+// @param element_id: DOM element ID
+// @return: element value encoded as URI component (safe for transfer)
+function extract_and_prepare(element_id) {
+  var elm = document.getElementById(element_id);
+  if ( ! elm ) { return ''; }
+  return encodeURIComponent(elm.value);
+}
+
+// site-to-feed dialog: reload site code
+// Read content from given URL and place it in text-box
+function siteToFeedReload() {
+  var elm = document.getElementById('site-code');
+  if (elm) { elm.value = 'Reloading...'; }
+  var site_address = extract_and_prepare('site-address');
+  // send request
+  httpGetAsync('/api/site_to_feed/query/?site_address='+site_address,
+      function(reply){
+        console.log(reply);
+        // place result in 'site-code'
+        var elm = document.getElementById('site-code');
+        if (elm) { elm.value = reply; }
+      }
+  );
+}
+
+function siteToFeedExtract() {
+  var elm = document.getElementById('extracted-data');
+  if (elm) { elm.value = 'Reloading...'; }
+  var site_address = extract_and_prepare('site-address');
+  var global_pattern = extract_and_prepare('global_pattern');
+  var item_pattern = extract_and_prepare('item_pattern');
+  httpGetAsync('/api/site_to_feed/query/?site_address='+site_address+
+      '&global_pattern='+global_pattern+'&item_pattern='+item_pattern,
+      function(reply){
+        console.log(reply);
+        // place result in 'site-code'
+        var elm = document.getElementById('extracted-data');
+        if (elm) { elm.value = reply; }
+      }
+  );
+}
+
+function siteToFeedPreview() {
+  var elm = document.getElementById('items-preview');
+  if (elm) { elm.innerHTML = 'Reloading...'; }
+  var site_address = extract_and_prepare('site-address');
+  var global_pattern = extract_and_prepare('global_pattern');
+  var item_pattern = extract_and_prepare('item_pattern');
+  var item_title = extract_and_prepare('item-title-template');
+  var item_link = extract_and_prepare('item-link-template');
+  var item_content = extract_and_prepare('item-content-template');
+  httpGetAsync('/api/site_to_feed/query/?site_address='+site_address+
+      '&global_pattern='+global_pattern+'&item_pattern='+item_pattern+
+      '&item_title='+item_title+'&item_link='+item_link+
+      '&item_content='+item_content,
+      function(reply){
+        // place result in 'site-code'
+        var elm = document.getElementById('items-preview');
+        if (elm) { elm.innerHTML = reply; }
+      }
+  );
+}
+
+
+function siteToFeedSave() {
+  // Get inputs and send request
+  var site_address = extract_and_prepare('site-address');
+  var global_pattern = extract_and_prepare('global_pattern');
+  var item_pattern = extract_and_prepare('item_pattern');
+  var item_title = extract_and_prepare('item-title-template');
+  var item_link = extract_and_prepare('item-link-template');
+  var item_content = extract_and_prepare('item-content-template');
+  var rss_title = extract_and_prepare('new-rss-title');
+  var rss_group = extract_and_prepare('new-rss-group');
+  if (! rss_title ) { return; }
+  if (! rss_group ) { return; }
+  // Get original feed ID (if any) and pass it to API as input
+  // When feed_id is empty, it will be generated from site_address
+  var curr_url = window.location;
+  var url = new URL(curr_url);
+  var feed_id = url.searchParams.get('id');
+  httpGetAsync('/api/site_to_feed/set/?feed_id='+feed_id+
+      '&site_address='+site_address+
+      '&global_pattern='+global_pattern+'&item_pattern='+item_pattern+
+      '&item_title='+item_title+'&item_link='+item_link+
+      '&item_content='+item_content+
+      '&rss_title='+rss_title+
+      '&rss_group='+rss_group,
+      function(reply){
+        console.log(reply);
+        // TODO: go to feed page (?)
+        showUpdatingDialog();
+        window.location.href = '/personal/';
+      }
+  );
+}
+
 // rerun watch filters
 function rerunFilters() {
   // show modal "please wait"
@@ -310,13 +467,13 @@ function rerunFilters() {
   refreshModal.show();
   // run API for reapplying filters
   httpGetAsync('/api/watch/rerun/', function(reply){
+    reply = filterResponse(reply);
     refreshModal.hide();
     // go to homepage on completion
     if ( reply.startsWith('Error') ) {
       showError(reply);
       return;
     }
-    console.log(reply);
     // TODO: why reload?
     showUpdatingDialog();
     window.location.href = '/personal/';
@@ -332,11 +489,11 @@ function deleteRule(watch_id, rule_id) {
         api_url = build_api_url(
           '/api/watch/rule/delete?watch_id=' + watch_id + '&rule_id=' + rule_id);
         var reply = httpGet(api_url);
+        reply = filterResponse(reply);
         if ( reply.startsWith('Error') ) {
           showError(reply);
           return;
         }
-        console.log(reply);
         window.location.reload();
       }
   );
@@ -346,17 +503,15 @@ function deleteRule(watch_id, rule_id) {
 // @param watch_id: watch where to add rule
 // (rule name taken from input box)
 function addRule(watch_id) {
-  var elm = document.getElementById('new_rule');
-  if (! elm) { return; }
-  new_rule_name = elm.value;
+  var new_rule_name = extract_and_prepare('new_rule');
   api_url = build_api_url(
     '/api/watch/rule/add?watch_id=' + watch_id + '&rule_name=' + new_rule_name);
   var reply = httpGet(api_url);
+  reply = filterResponse(reply);
   if (reply.startsWith('Error')) {
     showError(reply);
     return;
   }
-  console.log(reply);
   window.location.reload();
 }
 
@@ -406,14 +561,13 @@ function saveRule(watch_id, rule_id) {
     'watch_id': watch_id, 'rule_id': rule_id, 'rule_name': rule_name,
     'group_limitation': group_limitation,
     'where': rule};
-  console.log(JSON.stringify(result));
   var post_url = '/api/watch/rule/update/';
   reply = httpPost(post_url, JSON.stringify(result));
+  reply = filterResponse(reply);
   if (reply.startsWith('Error')) {
     showError(reply);
     return;
   }
-  console.log(reply);
   window.location.reload();
 }
 
@@ -471,12 +625,14 @@ function startTitleSearch(article_id) {
   var searchModal = new bootstrap.Modal(searchTitleDialog, {focus: false});
   search_val = document.getElementById('heading_'+article_id).children[1].children[1].textContent;
   search_input = document.getElementById('title-text-to-find');
+  if (!search_input) { return; }
   search_input.value = search_val;
   setArticlesContext(0);
   searchTitleDialog.addEventListener(
       'hidden.bs.modal', function (event) { setArticlesContext(1); });
   setTimeout(function() {
     var search_input = document.getElementById('title-text-to-find');
+    if (!search_input) { return; }
     // try to select irrelevant part (if any)
     var i0 = search_input.value.indexOf(' / ');
     var i1 = search_input.value.length;
@@ -486,6 +642,8 @@ function startTitleSearch(article_id) {
     if (i0>=0) {
       select_sub_string(search_input, i0, i1);
     }
+    // bind "CR" event to "find" button push
+    bindKeyForElement('title-text-to-find', "Enter", function(){ triggerTitleSearch(''); } );
     search_input.focus();
   }, 200);
   searchModal.show();
@@ -500,6 +658,8 @@ function openPageSelectDialog() {
       'hidden.bs.modal', function (event) { setArticlesContext(1); });
   setTimeout(function() {
     document.getElementById('page-number').focus();
+    // bind "CR" event to "goToInputPage()"
+    bindKeyForElement('page-number', "Enter", goToInputPage );
   }, 200);
   pageSelectModal.show();
 }
@@ -522,11 +682,19 @@ function goToInputPage() {
 function startSearch() {
   var searchDialog = document.getElementById('searchDialog');
   var searchModal = new bootstrap.Modal(searchDialog, {focus: false});
+  // disable keyboard shortcuts relevant in "articles view" mode
   setArticlesContext(0);
+  // enable "articles view" mode on exit event
   searchDialog.addEventListener(
       'hidden.bs.modal', function (event) { setArticlesContext(1); });
+  // focus on text input
   setTimeout(function() {
-    document.getElementById('text-to-find').focus();
+    var search_input = document.getElementById('text-to-find');
+    if (!search_input) { return; }
+    search_input.focus();
+
+    // bind "CR" event to "find" button push
+    bindKeyForElement('text-to-find', "Enter", triggerSearch);
   }, 200);
   searchModal.show();
 }
@@ -535,13 +703,139 @@ function startSearch() {
 function triggerSearch() {
   var elm = document.getElementById('text-to-find');
   if (! elm || !elm.value) { return; }
-  var tofind = elm.value;
-  // console.log('trigger search for: '+tofind);
+  var tofind = encodeURIComponent(elm.value);
   var new_url = app_url_no_args().replace(/read.php/, '')
     + 'read.php?type=watch&id=search&pattern=' + tofind;
   showUpdatingDialog();
   window.location.href = new_url;
 }
+
+
+var highlight_settings = {};
+
+// Initialize highlight settings
+function initHighlightSettings( rec ) {
+  highlight_settings = rec;
+}
+
+// Change highlight setting
+function changeHighlightSetting( setting_name, setting_value ) {
+  // for string - save, for boolean - just toggle
+  var STRING_SETTINGS = ['fg_color', 'bg_color', 'keyword'];
+  if (STRING_SETTINGS.includes(setting_name)) {
+    highlight_settings[setting_name] = setting_value;
+  } else {
+    highlight_settings[setting_name] = ! highlight_settings[setting_name];
+  }
+  // Always update the preview
+  updateHighlightPreview();
+}
+
+// Calculate style for highlighted keyword editor
+// using stored colors and other selected parameters
+// @return: string defining highlight style
+function getHighlightStyle() {
+  var result = [];
+  if ( highlight_settings['fg_color'] )  { result.push("color: " + highlight_settings['fg_color']); }
+  if ( highlight_settings['bg_color'] )  { result.push("background-color: " + highlight_settings['bg_color']); }
+  if ( highlight_settings['bold']     )  { result.push("font-weight: bold"); }
+  if ( highlight_settings['italic']   )  { result.push("font-style: italic"); }
+  if ( highlight_settings['underscore']) { result.push("text-decoration: underline"); }
+  return result.join('; ');
+
+}
+
+// calclulate new style_preview and apply it to "preview" text
+function updateHighlightPreview() {
+  var style = getHighlightStyle();
+  var keyword = highlight_settings['keyword'] ? highlight_settings['keyword'] : '=???=';
+  var elm = document.getElementById('style_preview');
+  elm.outerHTML = '<span id="style_preview" style="'+style+'">'+keyword+'</span>';
+}
+
+// callback for color enable/disable checkbox
+// @param checkbox_id: 'use_'+color type (bg_color/fg_color)
+function disableColorSelect(checkbox_id, color_elm_id) {
+  var e_elm = document.getElementById(checkbox_id);
+  var c_elm = document.getElementById(color_elm_id);
+  c_elm.disabled = e_elm.checked ? '' : 'true';
+  // when color is enabled - take its value from respective "input" or clean it
+  var var_name = checkbox_id.replace('use_', '');
+  highlight_settings[var_name] = e_elm.checked ? c_elm.value : '';
+}
+
+// callback for cloning highlight definition
+function cloneHighlight(original_keyword) {
+  // show "busy" banner
+  var refreshModal = new bootstrap.Modal(document.getElementById('updatingDialog'), {focus: true});
+  refreshModal.show();
+
+  // create a copy of original keyword settings and open editor for new instance
+  // send all parameters to API
+  var url = '/api/highlight/clone/?original_keyword='+encodeURIComponent(original_keyword);
+  httpGetAsync(url, function(reply){
+    reply = filterResponse(reply);
+    refreshModal.hide();
+    // if API fails - display error and exit
+    if ( reply.startsWith('Error') ) {
+        showError(reply);
+        return;
+    }
+    // on success - reload editor page with new name as argument
+    showUpdatingDialog();
+    window.location.href = '/personal/edit_highlight.php?keyword_id=' +
+       reply + '#edit';
+  });
+}
+
+// callback for deleting highlight definition
+function deleteHighligt(original_keyword) {
+  // delete after confirmation and open page without any arguments
+  askConfirmation("This keyword highlight will be <b>deleted</b>, are you sure?",
+      function() {
+        var api_url = '/api/highlight/delete/?keyword=' + encodeURIComponent(original_keyword);
+        var reply = httpGet(api_url);
+        reply = filterResponse(reply);
+        if ( reply.startsWith('Error') ) {
+            showError(reply);
+            return;
+        }
+        showUpdatingDialog();
+        window.location.href = '/personal/edit_highlight.php';
+      }
+  );
+}
+
+// callback for save new/updated keyword highlight definition
+function saveHighlight(original_keyword) {
+  // show "busy" banner
+  var refreshModal = new bootstrap.Modal(document.getElementById('updatingDialog'), {focus: true});
+  refreshModal.show();
+
+  // send all parameters to API
+  var url = '/api/highlight/save/?original_keyword='+encodeURIComponent(original_keyword)+
+    '&keyword='+encodeURIComponent(highlight_settings['keyword'])+
+    '&fg_color='+encodeURIComponent(highlight_settings['fg_color'])+
+    '&bg_color='+encodeURIComponent(highlight_settings['bg_color'])+
+    '&bold='+(highlight_settings['bold']?1:0)+
+    '&italic='+(highlight_settings['italic']?1:0)+
+    '&underscore='+(highlight_settings['underscore']?1:0);
+  httpGetAsync(url, function(reply){
+    refreshModal.hide();
+    // if API fails - display error and exit
+    reply = filterResponse(reply);
+    if ( reply.startsWith('Error') ) {
+        showError(reply);
+        return;
+    }
+    // on success - reload editor page with new keyword
+    showUpdatingDialog();
+    window.location.href = '/personal/edit_highlight.php?keyword_id='+
+        encodeURIComponent(highlight_settings['keyword']) + '#edit';
+  });
+}
+
+// -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 // Show "Updating" banner for background processing
 function showUpdatingDialog() {
@@ -564,6 +858,14 @@ function changeArticle(article_id) {
       'hidden.bs.modal', function (event) { setArticlesContext(1); });
   editArticleModal.show();
 
+  setTimeout(function() {
+    var new_label = document.getElementById('new_label');
+    if (!new_label) { return; }
+    // bind in 'new_label' key "Enter" to "saveArticleChanges"
+    bindKeyForElement('new_label', "Enter", saveArticleChanges );
+    // focus on 'new_label'
+    new_label.focus();
+  }, 200);
   var url = '/api/articles/edit/?item_id='+article_id;
   // send query to get article editing code
   httpGetAsync(url, function(buf){
@@ -583,7 +885,6 @@ function refreshRss() {
   var url = '/api/articles/refresh/';
   httpGetAsync(url, function(buf){
     refreshModal.hide();
-    console.log(buf);
     setTimeout(function() {
     completeRefreshRss(buf)}, 200);
   });
@@ -613,28 +914,67 @@ function changeFeedGroup(group_select_val='') {
   new_group_elm.value = group_select_val;
 }
 
+// callback for change RSS source type
+function changedFeedSourceType(new_type) {
+  var new_rss_xml_url = document.getElementById('xmlUrl');
+  var edit_settings = document.getElementById('edit-settings');
+  var save_url_button = document.getElementById('save-url-button');
+
+  var enable_input = 1;
+  switch(new_type) {
+      case "site":         inputTypeRss = 0;
+        break;
+      case "rss":          inputTypeRss = 1;
+        break;
+      case "site_to_feed": inputTypeRss = 0;
+        enable_input = 0;
+        break;
+      default:      break;
+  }
+  set_bootstrap_visibility(new_rss_xml_url, enable_input);
+  set_bootstrap_visibility(edit_settings, ! enable_input);
+  set_bootstrap_visibility(save_url_button, enable_input);
+}
+
+// For DOM object remove old class and add new class
+function replace_elment_class(elm, old_cls, new_cls) {
+  if (! elm) { return; }
+  elm.classList.add(new_cls);
+  elm.classList.remove(old_cls);
+}
+
+// Using Boostrap5 classes change DOM element visibility on/off
+function set_bootstrap_visibility(elm, is_visible) {
+  if (! elm) { return; }
+  replace_elment_class(elm,
+      is_visible ? 'd-none' : 'd-block',
+      is_visible ? 'd-block' : 'd-none');
+}
+
 // callback for create (add) new feed
 function createFeed() {
-  var input_type = document.getElementById('inputTypeRss');
-  var xml_elm = document.getElementById('new-rss-xml-url');
-  var title_elm = document.getElementById('new-rss-title');
-  var group_elm = document.getElementById('new-rss-group');
-  if (! xml_elm || ! xml_elm.value) { return; }
-  if (! title_elm || ! title_elm.value) { return; }
-  if (! group_elm || ! group_elm.value) { return; }
-  var rss_xml = xml_elm.value;
-  var rss_title = title_elm.value;
-  var rss_group = group_elm.value;
+  var rss_xml = extract_and_prepare('xmlUrl');
+  var rss_title = extract_and_prepare('new-rss-title');
+  var rss_group = extract_and_prepare('new-rss-group');
+  if (! rss_xml ) { return; }
+  if (! rss_title ) { return; }
+  if (! rss_group ) { return; }
+
+  // check 'sourceType' element
+  // and if it's '2' (site-to-feed) - pass respective option to API
+  var source_type_elm = document.getElementById('sourceType');
+  source_type = (source_type_elm.selectedIndex == 2) ? 'site-to-feed' : 'rss';
 
   // show "busy" banner
   var createFeedModal = new bootstrap.Modal(document.getElementById('updatingDialog'), {focus: true});
   createFeedModal.show();
   var url = '/api/feeds/create/?title=' + rss_title +
     '&group=' + rss_group +
-    '&xml_url=' + encodeURIComponent(rss_xml) +
-    '&input_type_rss=' + input_type.checked;
+    '&xml_url=' + rss_xml +
+    '&input_type_rss=' + inputTypeRss +
+    '&source_type=' + source_type;
   httpGetAsync(url, function(buf){
-    // console.log(buf);
+    buf = filterResponse(buf);
     if (buf.startsWith("ERROR")) {
       var elm = document.getElementById('modal-message');
       if (elm) {
@@ -813,6 +1153,7 @@ function changeArticleReadState(article_id, change) {
   var url = '/api/articles/change_item_state/?item_id='+article_id+
     '&change_read='+set_read;
   httpGetAsync(url, function(buf){
+    buf = filterResponse(buf);
     if ( buf.startsWith('Error') ) {
       console.log(buf);
       showUpdatingDialog();
@@ -875,9 +1216,7 @@ function saveArticleChanges() {
   var article_id = elm.attributes['dest_id'].value;
   // call API and reload page on completion
   var url = '/api/articles/change_item_state/?item_id='+article_id+'&labels='+new_labels+'&watch_id='+new_watch_id;
-  console.log(url);
   httpGetAsync(url, function(buf){
-    console.log(buf);
     // reload page on completion
     window.location.reload();
   });
@@ -891,7 +1230,6 @@ function markReadAndNext() {
   // send "mark read" for those IDs
   var url = '/api/articles/mark_items_read/?ids='+ids.join(",");
   httpGetAsync(url, function(buf){
-    console.log(buf);
     // reload page on completion
     window.location.reload();
   });
@@ -1022,7 +1360,7 @@ function setFeedParam(dom_id, db_field, feed_id) {
     if (! new_value) {
       err="empty value";
       console.log(err);
-      alert(err);
+      alert(err); // <<< What is it?
       return;
     }
   }
@@ -1031,7 +1369,6 @@ function setFeedParam(dom_id, db_field, feed_id) {
     '&'+db_field+'='+encodeURIComponent(new_value);
     console.log(url);
   httpGetAsync(url, function(buf){
-    console.log(buf);
     window.location.reload();
   });
 }
@@ -1119,7 +1456,7 @@ function editGroup(group_id) {
 
 // move feed in group up/down (when possible)
 function moveFeed(id, delta) {
-  // get all feeds by class name 
+  // get all feeds by class name
   var feeds = document.getElementsByClassName('feed-in-group');
   // find feed index by id
   var feed_idx = -1;
@@ -1287,6 +1624,7 @@ function bindKeysForFeeds() {
        break;
       case "Down": // IE/Edge specific value
       case "ArrowDown":
+        if (event.shiftKey) { return; }
         if (event.ctrlKey) {
           // mark current article as read
           // go to next article
@@ -1304,6 +1642,7 @@ function bindKeysForFeeds() {
         break;
       case "Up": // IE/Edge specific value
       case "ArrowUp":
+        if (event.shiftKey) { return; }
         if (event.ctrlKey) {
           console.log('"Ctrl up arrow" key press.');
         } else {
@@ -1312,9 +1651,9 @@ function bindKeysForFeeds() {
           if (! done) { return; }
         }
         break;
-        break;
       case "Left": // IE/Edge specific value
       case "ArrowLeft":
+        if (event.shiftKey) { return; }
         if (event.altKey) { return; }
         if (event.ctrlKey) {
           if     (req_type == 'subscr') { goToPrevFeed();  handled = true; }
@@ -1326,6 +1665,7 @@ function bindKeysForFeeds() {
         break;
       case "Right": // IE/Edge specific value
       case "ArrowRight":
+        if (event.shiftKey) { return; }
         if (event.altKey) { return; }
         if (event.ctrlKey) {
           if     (req_type == 'subscr') { goToNextFeed();  handled = true; }
@@ -1334,13 +1674,6 @@ function bindKeysForFeeds() {
         } else {
           openCurrentArticle(); handled = true;
         }
-        break;
-      case "Enter":
-        console.log('"enter" or "return" key press.');
-        break;
-      case "Esc": // IE/Edge specific value
-      case "Escape":
-        console.log('"esc" key press.');
         break;
       default:
         return; // Quit when this doesn't handle the key event.

@@ -56,7 +56,7 @@ if ($_GET['logout']) {
   </style>
 
   </head>
-  <body>
+  <body onload="initLoginElements();">
 
     <!-- Optional JavaScript; choose one of the two! -->
 

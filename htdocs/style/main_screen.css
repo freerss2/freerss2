@@ -123,6 +123,8 @@
 
 .item-header-bar .item-title {
     padding-right: 125px;
+    padding-left: 3px;
+    border-left: 1px solid rgba(0,0,0,.125);
 }
 
 .accordion-body > h5 {  
@@ -142,6 +144,8 @@
 
 .item-header-bar .item-title {
     padding-right: 125px;
+    padding-left: 3px;
+    border-left: 1px solid rgba(0,0,0,.125);
 }
 
 .accordion-body > h5 {  

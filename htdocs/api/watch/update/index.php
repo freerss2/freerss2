@@ -25,9 +25,9 @@
   // TODO: develop API args parser
 
   $watch_id = $_GET['watch_id'];
-  if (! $watch_id) { echo "missing watch_id arg"; exit(1); }
+  if (! $watch_id) { echo "Error: missing watch_id arg"; exit(1); }
   $name     = $_GET['name'];
-  if (! $name) { echo "missing name arg"; exit(1); }
+  if (! $name) { echo "Error: missing name arg"; exit(1); }
 
   $err = $rss_app->saveWatchName($watch_id, $name);
   echo $err;

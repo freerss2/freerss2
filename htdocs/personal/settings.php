@@ -24,7 +24,7 @@
   $admin_elements = ($user_id == 1);
 
   $subscr_tree = $rss_app->getAllSubscrTree();
-  
+
   $personal_settings = $rss_app->getAllPersonalSettings();
   $page_size = $personal_settings['page_size'] ? max($personal_settings['page_size'], 5) : 20;
   $reminder_hours = $personal_settings['reminder_hours'] ? max($personal_settings['reminder_hours'], 1) : 2;
@@ -58,7 +58,7 @@
 
     <title>Free RSS - Settings</title>
   </head>
-  <body onload="setArticlesContext(0); <?php echo $onload; ?>" data-bs-spy="scroll" data-bs-target="#navbar-settings" data-bs-offset="0" tabindex="0" >
+  <body onload="setArticlesContext(0); initInlineHelp(); <?php echo $onload; ?>" data-bs-spy="scroll" data-bs-target="#navbar-settings" data-bs-offset="0" tabindex="0" >
 
     <!-- Optional JavaScript; choose one of the two! -->
 
@@ -85,7 +85,7 @@
 
       </nav>
      <div style="position:relative;">
-      <nav id="navbar-settings" class="navbar navbar-light bg-light px-3 " style="position: sticky; top: 0; z-index: 1022;">        
+      <nav id="navbar-settings" class="navbar navbar-light bg-light px-3 " style="position: sticky; top: 0; z-index: 1022;">
         <ul class="nav nav-pills">
           <li class="nav-item" title="Scroll up">
             <a class="nav-link" href="#"><i class="fas fa-arrow-up"></i></a>
@@ -105,38 +105,63 @@
           <li class="nav-item" title="Support">
             <a class="nav-link" href="#support"><i class="far fa-question-circle"></i></a>
           </li>
-        </ul>       
+        </ul>
       </nav>
 
      <div class="card mb-3" id="preferences">
        <h1>&nbsp;<i class="fas fa-user-cog"></i>&nbsp;Preferences</h1>
        <div class="card-body">
-         <h5 class="card-title">Reminder for articles refresh after...</h5>
-         <div class="input-group mb-3" style="max-width:30em;">
+         <h5 class="card-title">
+           <i class="far fa-question-circle inline-help"
+            title="The refresh process is not automatic - it require interaction with user. FreeRSS will prompt for refresh by displaying red indicator on 'refresh' button. It's possible to define frequency of such updates (in hours)"></i>&nbsp;
+           Reminder for articles refresh after...
+         </h5>
+         <div class="input-group mb-3 short-input">
            <span class="input-group-text">hours</span>
-           <input type="number" min="1" max="24" class="form-control" id="reminder-hours" value="<?php echo $reminder_hours; ?>">
-           <button class="btn btn-secondary" type="button" id="submit1" onclick="updateSettingsFrom('reminder_hours', 'reminder-hours')">
+           <input type="number" min="1" max="24" class="form-control"
+            id="reminder-hours" value="<?php echo $reminder_hours; ?>"
+           >
+           <button class="btn btn-secondary" type="button" id="submit1"
+            onclick="updateSettingsFrom('reminder_hours', 'reminder-hours')"
+           >
              Save
            </button>
          </div>
-         <h5 class="card-title">How many articles to leave on cleanup</h5>
-         <div class="input-group mb-3" style="max-width:30em;">
+         <h5 class="card-title">
+           <i class="far fa-question-circle inline-help"
+            title="FreeRSS allows to define retension policy for articles, marked as 'read'. You can ensure that at least this amount of latest read articles remain in system and available for global search."></i>&nbsp;
+           How many articles to leave on cleanup
+         </h5>
+         <div class="input-group mb-3 short-input">
            <span class="input-group-text">articles</span>
-           <input type="number" min="10" max="200" step="10" class="form-control" id="retention-leave-articles" value="<?php echo $retention_leave_articles; ?>">
-           <button class="btn btn-secondary" type="button" id="submit2" onclick="updateSettingsFrom('retention_leave_articles', 'retention-leave-articles')">
+           <input type="number" min="10" max="200" step="10" class="form-control"
+            id="retention-leave-articles" value="<?php echo $retention_leave_articles; ?>"
+           >
+           <button class="btn btn-secondary" type="button" id="submit2"
+            onclick="updateSettingsFrom('retention_leave_articles', 'retention-leave-articles')"
+           >
              Save
            </button>
          </div>
-         <h5 class="card-title">Page size</h5>
-         <div class="input-group mb-3" style="max-width:30em;">
+
+         <h5 class="card-title">
+           <i class="far fa-question-circle inline-help"
+            title="When selected view contains too much articles, this information is splitted into pages. It is possible to define size of such page, depending ob currently used screen (like desktop or smartphone)"></i>&nbsp;
+           Page size
+         </h5>
+         <div class="input-group mb-3 short-input">
            <span class="input-group-text">articles</span>
            <input type="number" min="5" max="100" class="form-control" id="page-size" value="<?php echo $page_size; ?>">
            <button class="btn btn-secondary" type="button" id="submit3" onclick="updateSettingsFrom('page_size', 'page-size')">
              Save
            </button>
          </div>
-         <h5 class="card-title">Start reading from page</h5>
-         <select class="form-select" id="start-page" style="max-width:30em;" onchange="updateSettings('start_page', this.value)">
+         <h5 class="card-title">
+           <i class="far fa-question-circle inline-help"
+            title="After refresh it's possible to jump into any page: group of feeds, specific feed, filtered 'watch'. Just select an option from available pages."></i>&nbsp;
+           Start reading from page
+         </h5>
+         <select class="form-select short-input" id="start-page" onchange="updateSettings('start_page', this.value)">
             <?php
               foreach ($subscr_tree as $row) {
                 $name = $row[1];
@@ -175,7 +200,13 @@
          <a type="button" class="btn btn-primary mb-3" href="/personal/edit_filter.php" style="min-width:18em;">
            <div class="row">
              <i class="fa fa-filter col-2 col-xs-1 settings-icon"></i>
-             <span class="col-10 col-sm-9">Edit Filters (Watches)</span>
+             <span class="col-10 col-sm-9">Content Filters (Watches)</span>
+           </div>
+         </a> <br>
+         <a type="button" class="btn btn-primary mb-3" href="/personal/edit_highlight.php" style="min-width:18em;">
+           <div class="row">
+             <i class="fas fa-highlighter col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Keyword Highlights</span>
            </div>
          </a> <br>
          <!-- TODO: hide when no any RSS -->
@@ -282,7 +313,18 @@
      <div class="card mb-3" id="support">
        <h1>&nbsp;<i class="far fa-question-circle"></i>&nbsp;Support</h1>
        <div class="card-body">
-         <h5 class="card-title">Application version: <?php echo $APP_VERSION; ?> </h5>
+         <h5 class="card-title">Version: <?php echo $APP_VERSION; ?> </h5>
+       </div>
+       <div class="card-body">
+         <h5 class="card-title">Android app: <?php echo generate_qr_code("https://freerss2.freecluster.eu/android/FreeRSS2.apk"); ?> </h5>
+       </div>
+       <div class="card-body">
+         <a type="button" class="btn btn-primary mb-3" href="/android/FreeRSS2.apk" target="_blank" style="min-width:18em;">
+           <div class="row">
+             <i class="fas fa-download col-2 col-xs-1 settings-icon"></i>
+             <span class="col-10 col-sm-9">Download apk here</span>
+           </div>
+         </a> <br>
        </div>
        <div class="card-body">
          <a type="button" class="btn btn-primary mb-3" href="https://github.com/freerss2/freerss2/issues/new" target="_blank" style="min-width:18em;">
@@ -354,6 +396,7 @@
       </div>
     </div>
 
+    <?php html_include('inline_help_dialog.html'); ?>
 
   </body>
 </html>

@@ -35,6 +35,19 @@
 
   $feed_id = null;
   $errors = array();
+
+  // Get last "update" event timestamp
+  // and exit with error if such event was less than 5 minutes ago
+  // else - generate event "Info" "update" for 'group' 'all'
+  $last_upd = $rss_app->getEventRecord('group', 'all');
+  if ($last_upd && $last_upd['timestamp']) {
+    if ( _date_to_passed_seconds($last_upd['timestamp']) < 60*5 ) {
+        echo "Error: last update was initiated at ".$last_upd['timestamp'];
+        exit(0);
+    }
+  }
+  $rss_app->registerAppEvent('group', 'all', 'Info', 'Update');
+
   list ($enabled, $unread, $flagged) = $rss_app->getStatistics('group', 'all');
   $updated = 0;
   do {

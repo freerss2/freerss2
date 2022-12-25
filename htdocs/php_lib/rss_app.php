@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.9d';
+$APP_VERSION = '2.0.1.6.9n';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -25,6 +25,7 @@ class RssApp {
   private $user_id;
   private $builtin_watches = array('all', 'today', 'older', 'bookmarked', 'unfiltered');
   private $reserved_watches;
+  private $keywords = null;
   # TODO: read this data from conf-file
   private $SHARE_LINKS = array(
       array('Telegram', 'https://t.me/share/url?url={link}&text={title}'),
@@ -57,18 +58,26 @@ class RssApp {
   public function __construct() {
     global $db_conf; # defined in db_conf.php
 
-    $this->NOW = $db_conf['time_skew'] ?
-      "ADDTIME(NOW(),'".$db_conf['time_skew']."')" : 'NOW()';
     $this->db = new DbApp($db_conf);
     $this->user_id = null;
     $this->reserved_watches = $this->builtin_watches;
     $this->reserved_watches[] = 'search';
     $this->reserved_watches[] = 'trash';
     $this->reserved_watches[] = '= new =';
+    // generate MySQL timestamp from PHP current time
+    // $timestamp = date('Y-m-d H:i:s');
+    //   STR_TO_DATE( '$timestamp', '%Y-%m-%d %H:%i:%s')
+    $this->initCurrTime();
   }
 
   public function dumpDb($filename) {
     return $this->db->dumpDb($filename);
+  }
+
+  // init $this->NOW with current timestamp in MySQL format
+  public function initCurrTime() {
+    $timestamp = date('Y-m-d H:i:s');
+    $this->NOW = "STR_TO_DATE( '$timestamp', '%Y-%m-%d %H:%i:%s')";
   }
 
   /**
@@ -249,8 +258,9 @@ class RssApp {
     foreach (explode('>', $page_code) as $html_tag) {
       if (stripos($html_tag, 'rss') === false) { continue; }
       if (stripos($html_tag, 'href=') === false) { continue; }
+      $html_tag = str_replace("/>", "", $html_tag.'>');
       preg_match('/href=([^>< ]+)/', $html_tag, $matches);
-      $xml_url = trim($matches[1], '\'"');
+      $xml_url = trim($matches[1], '"'."'");
       $xml_url_info = parse_url($xml_url);
       if (! array_key_exists('host', $xml_url_info)) {
         $url_info = parse_url($site_url);
@@ -297,7 +307,8 @@ class RssApp {
         }
         $s = new SiteToFeed($rss_url, $item_pattern, $mapping, $global_pattern);
         $r = $s->convert_to_rss($rss_buffer);
-        $items = $r['items'];
+        # make sure it's non-empty structure
+        $items = $r ? $r['items'] : array();
       } else {
         if ( strpos($rss_buffer, '<?xml') === false &&
              strpos($rss_buffer, '<rss') === false) {
@@ -330,6 +341,10 @@ class RssApp {
           $pubDate = str_replace(' (Coordinated Universal Time)', '', $pubDate);
           $content = $item->description ? $item->description : $item->summary;
           if ( ! $content ) { $content = $item->content; }
+          if (strpos($content, '<![CDATA[') !== false) {
+            $content = str_replace('<![CDATA[', '', $content);
+            $content = str_replace(']]>', '', $content);
+          }
           $author = $item->author ? $item->author : '';
           $new_item = array(
             'link'       => $link,
@@ -364,6 +379,7 @@ class RssApp {
    * @param $log: free text describing the event
   **/
   public function registerAppEvent($obj_type, $obj_id, $status, $log) {
+    $this->initCurrTime();
     $bindings = array(
         'user_id'    => $this->user_id,
         'type'       => $obj_type,
@@ -474,6 +490,146 @@ ORDER BY a.`timestamp` DESC";
       }
       return null;
   } // getNextRss
+
+
+  /**
+   * Get site-to-feed definition from DB
+   * @param feed_id: feed ID
+   * @return: record (empty if not found)
+  **/
+  public function getSiteToFeed($feed_id) {
+    $query = "SELECT * ".
+      "FROM `tbl_site_to_feed` " .
+      "WHERE `user_id`=:user_id AND `fd_feedid`=:feed_id";
+    $bindings = array( 'user_id' => $this->user_id, 'feed_id' => $feed_id );
+    $rec = $this->db->fetchSingleRow($query, $bindings);
+    $mapping = $rec['mapping'];
+    unset($rec['mapping']);
+    $mapping = json_decode($mapping, true);
+
+    return array_merge($rec, $mapping);
+  }
+
+  /**
+   * Query site content for site-to-feed dialog
+   * @param $site_address: site URL
+   * @return: site content or error message
+  **/
+  public function querySiteToFeedContent($site_address) {
+    // Disable any errors reporting
+    error_reporting(0);
+    $content = file_get_contents($site_address);
+    error_reporting(E_ERROR | E_WARNING | E_PARSE);
+    // Enable errors and warnings
+
+    return $content;
+  }
+
+  /**
+   * Extract site content for site-to-feed dialog
+   * @param $site_address: site URL
+   * @param $global_pattern: global search pattern (must be with {%} inside)
+   * @param $item_pattern: repeated items search pattern (also with {%} inside)
+   * @return: parsed site content or error message
+  **/
+  public function extractSiteToFeedContent($site_address, $global_pattern, $item_pattern) {
+    $content = $this->querySiteToFeedContent($site_address);
+    $mapping = array();
+    $s = new SiteToFeed($site_address, $item_pattern, $mapping, $global_pattern);
+    $items = $s->content_to_items($content);
+    $result = array();
+    # Get parsed parameters per item and
+    # return representation as {%1} = '', {%2} = '', ...
+    for ($i=0; $i<count($items); $i++) {
+      $parameters = $items[$i];
+      $repr = array();
+      for ($j=1; $j<count($parameters); $j++) {
+        $repr []= '{%'.$j.'} = '. $parameters[$j];
+      }
+      $result []= implode("\n", $repr);
+    }
+    return implode("\n\n----------------\n", $result);
+  }
+
+  /**
+   * Extract site-to-feed preview (full HTML)
+   * @param $site_address: site URL
+   * @param $global_pattern: global search pattern (must be with {%} inside)
+   * @param $item_pattern: repeated items search pattern (also with {%} inside)
+   * @param $item_title: item title template
+   * @param $item_link: item link template
+   * @param $item_content: item content template
+   * @return: parsed site content or error message
+  **/
+  public function extractSiteToFeedPreview(
+    $site_address, $global_pattern, $item_pattern, $item_title, $item_link, $item_content) {
+    // 1. get site content
+    $content = $this->querySiteToFeedContent($site_address);
+    // 2. extract records
+    $mapping = (object) array(
+      'link'=>$item_link, 'title'=>$item_title, 'content'=>$item_content);
+    $s = new SiteToFeed($site_address, $item_pattern, $mapping, $global_pattern);
+    $repr = $s->convert_to_rss($content);
+    $items = $repr ? $repr['items'] : array();
+    // 3. return joined records as single HTML buffer
+    $result = array();
+    foreach ($items as $article) {
+      $link = $article['link'];
+      $title = $article['title'];
+      $content = $article['content'];
+      $result []= "<h3><a href='$link'>$title</a></h3>$content";
+    }
+    return implode("<BR>--------<BR>\n", $result);
+  }
+
+  /**
+   * save site-to-feed definition
+   * @param $feed_id: feed ID (for edited existing feed)
+   * @param $site_address: site URL
+   * @param $global_pattern: global search pattern (must be with {%} inside)
+   * @param $item_pattern: repeated items search pattern (also with {%} inside)
+   * @param $item_title: item title template
+   * @param $item_link: item link template
+   * @param $item_content: item content template
+   * @param $rss_title: RSS title
+   * @param $rss_group: to which RSS group it should belong
+   * @return: error message (if any)
+  **/
+  public function saveSiteToFeed(
+      $feed_id, $site_address, $global_pattern,
+      $item_pattern, $item_title, $item_link, $item_content,
+      $rss_title, $rss_group) {
+    if (! $feed_id || strval($feed_id) == 'null') {
+      // if no feed_id - create new feed
+      $this->insertNewFeed($rss_group, $rss_title, $rss_title, $site_address, $site_address, 0);
+      $feed_id = _digest_hex($site_address);
+    }
+    // clean old record if exist
+    $bindings0 = array('user_id'=>$this->user_id, 'fd_feedid'=>$feed_id);
+    $query0 = "DELETE FROM `tbl_site_to_feed` WHERE `user_id`=:user_id AND `fd_feedid`=:fd_feedid";
+    $this->db->execQuery($query0, $bindings0);
+
+    $query1 = "INSERT INTO `tbl_site_to_feed`(
+      `user_id`,
+      `fd_feedid`,
+      `htmlUrl`,
+      `global_pattern`,
+      `item_pattern`,
+      `mapping`
+    ) VALUES (
+      :user_id, :fd_feedid, :htmlUrl, :global_pattern, :item_pattern, :mapping)";
+    $mapping = json_encode(array(
+        "title" => $item_title,
+        "link" => $item_link,
+        "content" => $item_content
+    ));
+    $bindings1 = array('user_id'=>$this->user_id, 'fd_feedid'=>$feed_id,
+      'htmlUrl'=>$site_address, 'global_pattern'=>$global_pattern, 'item_pattern'=>$item_pattern,
+      'mapping'=>$mapping);
+    $this->db->execQuery($query1, $bindings1);
+
+    return "";
+  }
 
   /**
    * Get list of subscription groups
@@ -1108,6 +1264,9 @@ WHERE `user_id` = :user_id
    * @return: error message (if any)
   **/
   public function saveWatchName($watch_id, $name) {
+    if ($this->isReservedWatch(strtolower($name))) {
+      return "Error: reserved watch name";
+    }
     // Check that such name is not in use by OTHER watches
     $query0 = "SELECT COUNT(1) FROM `tbl_watches` WHERE LOWER(`title`)=LOWER(:name) AND `user_id`=:user_id AND `fd_watchid`!=:watch_id";
     $bindings = array('name'=>$name, 'user_id'=>$this->user_id, 'watch_id'=>$watch_id);
@@ -1476,6 +1635,7 @@ WHERE `user_id` = :user_id
     $items = $this->db->fetchQueryRows($query, $bindings);
     $result = $this->addWatchesInfo($items);
     $result = $this->addFeedInfo($result);
+    $result = $this->markKeywordsInItems($result);
     return $result;
   }
 
@@ -1502,6 +1662,7 @@ WHERE `user_id` = :user_id
     $items = $this->db->fetchQueryRows($query, $bindings);
     $result = $this->addWatchesInfo($items);
     $result = $this->addFeedInfo($result);
+    $result = $this->markKeywordsInItems($result);
     return $result;
   }
 
@@ -1513,8 +1674,10 @@ WHERE `user_id` = :user_id
   public function retrieveRssItems($feed_id) {
     list($show_articles, $order_articles) = $this->settingsForRetrieve();
     # Read info about feed
-    $query1 = "SELECT * FROM `tbl_subscr` ".
-      "WHERE `fd_feedid` = :fd_feedid AND `user_id` = :user_id";
+    $query1 = "SELECT s.*, stf.`mapping` FROM `tbl_subscr` s ".
+      "LEFT JOIN `tbl_site_to_feed` stf ".
+      "ON stf.user_id = s.`user_id` AND stf.fd_feedid = s.fd_feedid ".
+      "WHERE s.`fd_feedid` = :fd_feedid AND s.`user_id` = :user_id";
     $rss_info = $this->db->fetchSingleRow($query1,
       array('fd_feedid' => $feed_id, 'user_id' => $this->user_id));
 
@@ -1533,6 +1696,8 @@ WHERE `user_id` = :user_id
     $items = $this->db->fetchQueryRows($query2, $bindings);
     # read info about user-defined watches and add 'watch_title'
     $result = $this->addWatchesInfo($items);
+    $result = $this->addFeedInfo($items);
+    $result = $this->markKeywordsInItems($result);
     return array($rss_info, $result);
   } // retrieveRssItems
 
@@ -1605,6 +1770,7 @@ WHERE `user_id` = :user_id
     $items = $this->db->fetchQueryRows($query, $bindings);
     # add 'feed_info' to items - `xmlUrl` `title` `fd_feedid`
     $result = $this->addFeedInfo($items);
+    $result = $this->markKeywordsInItems($result);
 
     return array($watch_title, $result);
   }
@@ -1626,6 +1792,188 @@ WHERE `user_id` = :user_id
       $result[] = $item;
     }
     return $result;
+  }
+
+
+  /* *\
+  )   ( -------- Keyword Highlighting ----------
+  \* */
+
+  /**
+   * This feature allows user to define personal preferences for keywords highlighting in newsfeeds
+   * The highlighting is applyed dynamically when article title and content sent to browser
+   * Article title/content remains in database unchanged, as it was downloaded from RSS feed
+   * Highlighting defined by setting keyword foreground and/or background color,
+   * plus text decoration (bold, italic, underscore)
+   * User is fully responsibile for selection of readable and meaningful color combinations
+   * Highlight definitions could be created, cloned, updated and deleted
+   * Unselected values for boolean parameters stored as NULL, for colors - as empty string
+  **/
+
+  /**
+   * Highlight in article title/description keywords (if any)
+   * @param $items: list of article records
+   * @return: same list with highlighted keywords inside
+  **/
+  public function markKeywordsInItems($items) {
+    $result = array();
+    foreach ($items as $item) {
+      $item['title'] = $this->markKeywordsInStr($item['title']);
+      $item['description'] = $this->markKeywordsInStr($item['description']);
+      $result[] = $item;
+    }
+    return $result;
+  }
+
+  /**
+   * Mark keywords in given string
+   * @param: $str: string to check
+   * @return: string with <span> tags around keywords
+   *     <span> will have class="freerss2_kw_NNN"
+   **/
+  public function markKeywordsInStr($str) {
+    # get a list of keywords
+    $keywords = $this->getKeywords();
+    foreach($keywords as $rec) {
+      $keyword = $rec['keyword'];
+      $p = stripos($str, $keyword);
+      if (stripos($str, $keyword) === false) { continue; }
+      # for each keyword - if match:
+      # replace all keyword instances with <span class="">keyword</span>
+      $class_name = $rec['class_name'];
+      $str = str_ireplace($keyword, "<span class=\"$class_name\">$keyword</span>", $str);
+    }
+    return $str;
+  }
+
+  /**
+   * Read list of keywords and their highlight definitions
+   * @return: list of records with 'keyword', 'class_name' and 'class_style'
+  **/
+  public function getKeywords() {
+    # if already initialized - return the content
+    if ( ! is_null($this->keywords) ) { return $this->keywords; }
+    $cond = array('user_id' => $this->user_id);
+    $highlights = $this->db->queryTableRecords('tbl_highlight', $cond, 'keyword');
+    $this->keywords = array();
+    $i = 0;
+    foreach ($highlights as $rec) {
+      $i++;
+      $rec['class_name'] = "freerss2_kw_$i";
+      $rec['class_style'] = buildStyleDefinition($rec);
+      $this->keywords []= $rec;
+    }
+    return $this->keywords;
+  }
+
+  /**
+   * Delete in database all settings for given keyword
+   * @param $keyword: keyword to be deleted
+  **/
+  public function deleteHighlight($keyword) {
+    $query = "DELETE FROM `tbl_highlight` WHERE `user_id`=:user_id AND `keyword`=:keyword";
+    $bindings = array('user_id' => $this->user_id, 'keyword' => $keyword);
+    $this->db->execQuery($query, $bindings);
+    return "";
+  }
+
+  /**
+   * Clone highlight definition by adding '_copy'
+   * @param $original_keyword: from which keyword make a copy
+   * @return: error message with 'Error' at the beginning or new keyword
+  **/
+  public function cloneHighlight($original_keyword) {
+    // generate new keyword
+    $keyword = $original_keyword . "_copy";
+    $query1 = "SELECT COUNT(*) FROM `tbl_highlight`
+        WHERE `user_id`=:user_id AND BINARY `keyword`=:keyword";
+    $bindings = array('user_id' => $this->user_id, 'keyword' => $keyword);
+    $exist = $this->db->fetchSingleResult($query1, $bindings);
+    if ($exist) { return "Error: keyword '$keyword' already exists"; }
+    // clone record
+    $query2 = "SELECT `fg_color`, `bg_color`, `bold`, `italic`, `underscore` ".
+        "FROM `tbl_highlight` ".
+        "WHERE `user_id`=:user_id AND BINARY `keyword`=:keyword";
+    $bindings2 = array('user_id' => $this->user_id, 'keyword' => $original_keyword);
+    $rec = $this->db->fetchSingleRow($query2, $bindings2);
+    $rec['keyword'] = $keyword;
+    $query3 ="INSERT INTO `tbl_highlight` ".
+      "(`user_id`, `keyword`, `fg_color`, `bg_color`, `bold`, `italic`, `underscore`) ".
+      "VALUES (:user_id, :keyword, :fg_color, :bg_color, :bold, :italic, :underscore)";
+    $bindings3 = $this->alignHighlightForStorage(array(
+        'user_id' => $this->user_id,
+        'keyword' => $keyword,
+        'fg_color' => $rec['fg_color'],
+        'bg_color' => $rec['bg_color'],
+        'bold' => $rec['bold'],
+        'italic' => $rec['italic'],
+        'underscore' => $rec['underscore']
+      ));
+    $this->db->execQuery($query3, $bindings3);
+    // return new keyword
+    return urlencode($keyword);
+  }
+
+  /**
+   * Save new/updated keyword highlight definition
+   * @param $original_keyword: (if not empty) modify this keyword definition
+   * @param $keyword: new/updated keyword text
+   * @param $fg_color: foreground color (or nothing)
+   * @param $bg_color: background color (or nothing)
+   * @param $bold: bold flag
+   * @param $italic: italic flag
+   * @param $underscore: underscore flag
+   * @return: error message (if any)
+  **/
+  public function saveHighlight($original_keyword, $keyword, $fg_color, $bg_color, $bold, $italic, $underscore) {
+    if (!$keyword) { return "Error: missing keyword"; }
+    if (!$fg_color && !$bg_color && !$bold && !$italic && !$underscore) { return "Error: nothing selected"; }
+    // when creating or renaming - make sure the destination is not exist
+    if($keyword != $original_keyword) {
+      $query1 = "SELECT COUNT(*) FROM `tbl_highlight`
+        WHERE `user_id`=:user_id AND BINARY `keyword`=:keyword";
+      $bindings = array('user_id' => $this->user_id, 'keyword' => $keyword);
+      $exist = $this->db->fetchSingleResult($query1, $bindings);
+      if ($exist) { return "Error: keyword '$keyword' already exists"; }
+    }
+    // delete existing record
+    if ($original_keyword) {
+      $query2 = "DELETE FROM `tbl_highlight`
+        WHERE `user_id`=:user_id AND BINARY `keyword`=:keyword";
+      $bindings = array('user_id' => $this->user_id, 'keyword' => $original_keyword);
+      $this->db->execQuery($query2, $bindings);
+    }
+    // insert new one
+    $query3 ="INSERT INTO `tbl_highlight` ".
+      "(`user_id`, `keyword`, `fg_color`, `bg_color`, `bold`, `italic`, `underscore`) ".
+      "VALUES (:user_id, :keyword, :fg_color, :bg_color, :bold, :italic, :underscore)";
+    $bindings3 = $this->alignHighlightForStorage(array(
+        'user_id' => $this->user_id,
+        'keyword' => $keyword,
+        'fg_color' => $fg_color,
+        'bg_color' => $bg_color,
+        'bold' => $bold,
+        'italic' => $italic,
+        'underscore' => $underscore
+      ));
+    $this->db->execQuery($query3, $bindings3);
+    return "";  # Ok
+  }
+
+  /**
+   * Align "keyword highlight" record before storing in database:
+   * when color is "null" convert it to empty string
+   * values of bold/italic/underscore convert to either 1 or null
+   * @param $rec: dictionary with highlight definition
+   * @return: updated dictionary
+  **/
+  public function alignHighlightForStorage($rec) {
+    if ( $rec['fg_color'] == 'null' ) { $rec['fg_color'] = ''; }
+    if ( $rec['bg_color'] == 'null' ) { $rec['bg_color'] = ''; }
+    $rec['bold']       = $rec['bold']       ? 1 : null;
+    $rec['italic']     = $rec['italic']     ? 1 : null;
+    $rec['underscore'] = $rec['underscore'] ? 1 : null;
+    return $rec;
   }
 
   /* *\
@@ -1771,8 +2119,9 @@ WHERE `user_id` = :user_id
   /**
    * Show items as grid of accordion elements
    * @param $items: list of item records to be shown on this page
+   * @param $mark_read_and_next: action button for marking whole page as read
   **/
-  public function showItems($items) {
+  public function showItems($items, $mark_read_and_next) {
     echo '<div class="accordion accordion-flush" id="rss_items">';
     foreach ($items as $item) {
         $fd_postid = $item['fd_postid'];
@@ -1882,10 +2231,15 @@ WHERE `user_id` = :user_id
     </div>
   </div>';
     }
+    echo '<H3 style="padding-left: 16px;">';
+    if ($items) {
+      echo $mark_read_and_next;
+    }
     echo '
       <button id="reload_button" type="button" class="btn btn-outline-primary" onclick="showUpdatingDialog(); window.location.reload();">
       <i class="fa fa-redo-alt"></i> Reload page
     </button>';
+    echo '</H3>';
     echo '</div>';
   }
 
@@ -2257,14 +2611,27 @@ WHERE `user_id` = :user_id
    * @param $xml_url: feed XML URL
    * @param $title: feed title (when empty - take from feed)
    * @param $group: feed group
+   * @param $source_type: either 'site-to-feed' or 'rss'
    * @return: error (if any), feed ID, title
   **/
-  public function createFeed($xml_url, $title, $group) {
+  public function createFeed($xml_url, $title, $group, $source_type) {
     // if inputs are wrong or duplicated - return error
     if (!$xml_url) {
       return array("Empty input", null, '');
     }
     $feed_id = _digest_hex($xml_url);
+
+    $where = array('user_id'=>$this->user_id, 'fd_feedid'=>$feed_id);
+    if ($source_type == 'rss') {
+      # Clean any site-to-feed data for this feed_id
+      $this->db->deleteTableRecords('tbl_site_to_feed', $where);
+    } else {
+      # Make sure associated site-to-feed setting already saved
+      $exist = $this->db->queryTableRecords('tbl_site_to_feed', $where);
+      if (!$exist || !$exist[0]) {
+          return "Error: missing site-to-feed settings for this site";
+      }
+    }
 
     $query1 = "SELECT COUNT(1) FROM `tbl_subscr` WHERE ".
       "`user_id`=:user_id AND ".
@@ -2362,4 +2729,18 @@ WHERE `user_id` = :user_id
 
 } // RssApp
 
+/**
+ * Build style definition from record with fields:
+ *   fg_color, bg_color, bold, underscore, italic
+ * @return: string that could be used as CSS style definition
+**/
+function buildStyleDefinition($rec) {
+  $result = array();
+  if ( $rec['fg_color'] )  { $result []= "color: ".$rec['fg_color']; }
+  if ( $rec['bg_color'] )  { $result []= "background-color: ".$rec['bg_color']; }
+  if ( $rec['bold']     )  { $result []= "font-weight: bold"; }
+  if ( $rec['italic']   )  { $result []= "font-style: italic"; }
+  if ( $rec['underscore']) { $result []= "text-decoration: underline"; }
+  return implode('; ', $result);
+}
 ?>

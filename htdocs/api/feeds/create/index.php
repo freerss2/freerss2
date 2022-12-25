@@ -30,6 +30,7 @@
   $group = $_GET['group'];
   if (! $group) { echo "missing group arg"; exit(1); }
   $input_type_rss = $_GET['input_type_rss'] == 'true';
+  $source_type = $_GET['source_type'];
 
   if (! $input_type_rss) {
     $result = $rss_app->findRssForSite($xml_url);
@@ -42,7 +43,7 @@
       $title = $result['title'];
     }
   }
-  list ($error, $feed_id, $title) = $rss_app->createFeed($xml_url, $title, $group);
+  list ($error, $feed_id, $title) = $rss_app->createFeed($xml_url, $title, $group, $source_type);
   if ($error) {
     echo mb_strimwidth("ERROR: $error", 0, 240, "...");;
     exit(1);

@@ -34,33 +34,19 @@ class SiteToFeed {
         $this->global_pattern = $global_pattern;
     }
 
-    /* Convert site content to RSS
-    ** When nothing found - return empty result
-    */
+    /**
+     * Convert site content to RSS
+     * @param $content: site content
+     * @return: dictionary with 'feed' and 'items' while each item
+     * is a valid FreeRSS article structure
+     * When nothing found - return empty result
+    **/
     public function convert_to_rss($content) {
-        $content = str_replace("\n", ' ', $content);
-        # Get match if global_pattern defined
-        if ($this->global_pattern) {
-          $global_pattern = $this->convert_pattern_to_regex($this->global_pattern, 1);
-          preg_match($global_pattern, $content, $matches);
-          if ($matches) {
-            $content = $matches[1];
-          }
-        }
-        $result = array('feed' => $this->site, 'items' => array());
-        # Search for articles
-        $item_pattern = $this->convert_pattern_to_regex($this->item_pattern, 0);
-        $items = array();
-        do {
-            preg_match($item_pattern, $content, $item_match);
-            if ($item_match) {
-              $content = str_replace($item_match[0], '', $content);
-              $items []= $item_match;
-            }
-        } while( $item_match );
+        $items = $this->content_to_items($content);
         if (! $items) {
             return '';
         }
+        $result = array('feed' => $this->site, 'items' => array());
         for ($i=0; $i<count($items); $i++) {
            $item = $items[$i];
            # Build the title, link and content according to $this->result_mapping
@@ -80,6 +66,35 @@ class SiteToFeed {
              ));
         }
         return $result;
+    }
+
+    /**
+     * Convert site content to individual data items
+     * according to patterns
+     * @param $content: site content
+     * @return: array of records with matching elements placed in order of appearense
+    **/
+    public function content_to_items($content) {
+        $content = str_replace("\n", ' ', $content);
+        # Get match if global_pattern defined
+        if ($this->global_pattern) {
+          $global_pattern = $this->convert_pattern_to_regex($this->global_pattern, 1);
+          preg_match($global_pattern, $content, $matches);
+          if ($matches) {
+            $content = $matches[1];
+          }
+        }
+        # Search for articles
+        $item_pattern = $this->convert_pattern_to_regex($this->item_pattern, 0);
+        $items = array();
+        do {
+            preg_match($item_pattern, $content, $item_match);
+            if ($item_match) {
+              $content = str_replace($item_match[0], '', $content);
+              $items []= $item_match;
+            }
+        } while( $item_match );
+        return $items;
     }
 
     /* Convert pattern with wildcards {*} and content {%} to regex

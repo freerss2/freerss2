@@ -151,6 +151,15 @@ class DbApp extends DbSql {
       'name_en'   => 'TEXT',    # language name in English
       'name_self' => 'TEXT',    # language self-name
       'rtl'       => 'INTEGER', # 1 - for Right-To-Left language
+    ),
+    'tbl_highlight'    => array(   # highlight keywords
+      'user_id'     => 'INTEGER',
+      'keyword'     => 'TEXT',  # String to be searched and emphasized
+      'fg_color'    => 'TEXT',  # Code for foreground color (empty for nothing)
+      'bg_color'    => 'TEXT',  # Code for background color (empty for nothing)
+      'bold'        => 'INTEGER',  # Flag for bold (empty for nothing)
+      'italic'      => 'INTEGER',  # Flag for italic (empty for nothing)
+      'underscore'  => 'INTEGER'   # Flag for underscore (empty for nothing)
     )
   );
 
@@ -231,6 +240,19 @@ class DbApp extends DbSql {
       $this->reportError("unsupported table '$table_name'");
       return array();
   }
+
+  /**
+   * Delete table records matching 'WHERE' condition
+   * @param $table_name: in which table to search
+   * @param $where: condition for search (take all when omitted)
+  **/
+  public function deleteTableRecords($table_name, $where=null) {
+      $where_cond = $this->buildWhere($where);
+      $query = "DELETE FROM $table_name";
+      if ($where_cond) { $query .= "WHERE $where_cond"; }
+      $this->execQuery($query);
+  }
+
 }
 
 ?>

@@ -127,4 +127,48 @@ function remove_utf8_bom($text)
   return $text;
 }
 
+/**
+ * Include HTML to current document "AS IS"
+ * @param: $file_name: file to be included from "includes" area
+**/
+function html_include($file_name) {
+  readfile(__DIR__ . '/../html_include/' . $file_name);
+}
+
+/**
+ * Debug print to local log-file
+ * @param $msg: message/object to be printed
+**/
+function debug_log($msg) {
+  $date = date_create();
+  $call_function = debug_backtrace()[1];
+  if ($call_function) {
+    $call_function = 'in ' . $call_function['function'];
+  } else {
+    $call_function = '';
+  }
+  $log_msg =
+    '[' . date_format($date,"Y/m/d H:i:s") . '] '.
+    debug_backtrace()[0]['file'] . ':' .
+    debug_backtrace()[0]['line'] . $call_function . ' - ' .
+    $msg;
+  # echo $log_msg;
+  $url = $_SERVER['REQUEST_URI'];
+  $level = substr_count(rtrim($url, '/'), '/');
+  $log_file = str_repeat('../', $level) . 'data/debug.log';
+  file_put_contents($log_file, $log_msg.PHP_EOL , FILE_APPEND | LOCK_EX);
+}
+
+define("QR_CODE_API", 'https://chart.googleapis.com/chart?');
+/**
+ * Generate QR-code from URL
+ * @param $url: text to be encoded
+ * @return: code for HTML IMAGE
+**/
+function generate_qr_code($url) {
+  return '<img src="'.
+    QR_CODE_API.'chs=155x155&cht=qr&chl='.rawurlencode($url).
+    '" />';
+}
+
 ?>

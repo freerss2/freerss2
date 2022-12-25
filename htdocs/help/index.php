@@ -81,6 +81,9 @@
           <li class="nav-item" title="Watches (Filters)">
             <a class="nav-link" href="#WatchFilters"><i class="fas fa-filter"></i></a>
           </li>
+          <li class="nav-item" title="Keywords highlighting">
+            <a class="nav-link" href="#highlighting"><i class="fas fa-highlighter"></i></a>
+          </li>
           <li class="nav-item" title="Technical details and source code">
             <a class="nav-link" href="#code"><i class="far fa-file-code"></i></a>
           </li>
@@ -93,12 +96,14 @@
       <a name="motivation"></a>
       <H1 id="motivation"><i class="far fa-handshake"></i> Motivation</H1>
       <p>During last years every one realized the importance of correct information sources. When we say "correct", we are not talking about the quality of one media or blog, but about a variety of opinions. Only by studying the maximum interpretations range for the same event, one can make a balanced assessment of reality. FreeRSS, like other news aggregators, provides you such technical capability in friendly and modern-style way. It is up to you to decide whether to remain among the people subject to conspiracy theories and brainwashing, or to take your first step towards informational freedom.</p>
+
       <a name="about"></a>
       <H1 id="about"><i class="far fa-address-card"></i> About</H1>
       <p>Free RSS2 is a successor to <a href="http://felixl.coolpage.biz/free_rss/" target="_blank">Free RSS1 project</a>. It helps to keep in touch with news, published on your favorite sites.</p>
       <p>You don't need to travel over list of bookmarks, trying to find something new and really interesting. RSS opens for everyone a new world, free of annoying ads, banners and irrelevant topics.</p>
       <p>But even RSS is not ideal - sometime on the same news channel you can receive all topics as a mix: sport, politics, finance, entertainment... And several channels can cover the same topics in parallel. Naturally, you want to get all news of the same subject together, regardless of origin, while news about irrelevant topics should be simply muted.<p>
       <p>This is the goal of Free RSS project: collect articles from different sites, filter-out unwanted content (by tags or keywords), and group the rest in handy "newspapers" - each on specific subject</p>
+
       <a name="terminology"></a>
       <H1 id="terminology"><i class="fas fa-list-ol"></i> Terminology</H1>
       <p>Term "Feed" is a short of "RSS Feed". This way we'll refer a link where news could be downloaded, and also the articles, received from it</p>
@@ -106,14 +111,17 @@
       <p>Articles are very similar to emails: it has title, origin and body. In addition, some articles could be marked with tags. Article titles allow to get a general idea of the content. By clicking on title, one can dive into the article content, or even follow the link and open original site in separate window.</p>
       <p>For better management, the feeds could be arranged in "groups" by their origin, like: news, blogs, humor, general.</p>
       <p>In addition, it is possible to create own "rules" for marking article with unobvious topic. For example, news-related site can publish some updates about finance, leisure, politics, entertainment, crime... The article tag (if exist) may serve as a pattern for creating respective rule, like: "mark as music if title match *concert* or tag = performers". Articles that have received such a classification will be displayed in so-called "watch" named "music". Also it's possible to define rules for removing articles, related to irrelevant topic ("trash" watch).</p>
+
       <a name="requirements"></a>
       <H1 id="requirements"><i class="fas fa-clipboard-list"></i> Requirements</H1>
       <p>Free RSS uses a browser-based GUI with design adaptive for screen-size. You can connect to this service from any place in the world, using any web browser, on any platform: desktop, mobile, tablet, smart-TV. Naturally, it should be a modern browser with HTML5 support and enabled dynamic content. Due to lack of compatibility, full functionality on IE and other MS browsers is not guaranteed.</p>
+
       <a name="start"></a>
       <H1 id="start"><i class="fas fa-running"></i> Getting started</H1>
       <p>There are two possible ways for filling-up personal list of subscriptions: import from OPML file or enter their links one-by-one.</p>
       <p>If you know what's OPML - just go to "settings" and upload your OPML file. Please be careful - this operation removes all existing feeds definitions, so it could be used for recovery, but should not repeated in regular circumstances.</p>
       <p>Now let's learn how to add single RSS subscription to FreeRSS reader. First, you've to copy the feed URL to clipboard. Then select from application menu "Add new RSS" and paste the URL in first textbox. You can add some informal title, but it's not critical: the original title will be read from RSS, and you can always rename it. The "group" selection is also optional, but it could be nice to place new RSS under right origin.</p>
+
       <a name="read"></a>
       <H1 id="read"><i class="far fa-newspaper"></i> Reading newspaper</H1>
       <p>There are 4 possible ways to start reading the articles:<ol><li>By clicking "New articles" link after feeds refresh<li>By selecting desired "newspaper" in left menu (after pressing respective button)<li>By clicking on "Start reading" button on home screen - you can customize which page should open there<li>By clicking "last page" on home screen.</ol></p>
@@ -137,11 +145,20 @@
         <tr><td>Ctrl/Z</td><td>Mark all articles on current page as "read"</td></tr>
         <tr><td>Ctrl/B</td><td>Set/unset "bookmark" for current article</td></tr>
       </table>
+
       <a name="WatchFilters"></a>
       <H1 id="WatchFilters"><i class="fas fa-filter"></i> Watches (Filters)</H1>
       <p>Sometime it's not enough to get a bunch of articles as a single newspaper. Such mix is really hard to read, even by passing over their titles. Much more convenient could be some classification by topics. FreeRSS2 has almost unique feature that allows you to customize your own "watches" by definition of logical rules, or "filters". The filter is a boolean sentence that describes which articles should be tagged for this watch. In addition you can define a condition for built-in "trash" watch. Articles, matching "trash" condition, will be marked as "already read" and wouldn't appear in default view.</p>
       <p>Watch is defined by one or more rules. Each rule is a set of conditions, comparing article parameters with wanted/unwanted pattern. Comparison could be exact "equals"/"not equals" or approximate "match"/"not match". Wildcard fields for match condition designated with "asterisk", for example: "<i>*audiobook*</i>" means "anything that contains <i>audiobook</i> inside". Conditions could be conjuncted by "OR", while sequence of "OR" conditions could be joined with more sequences by "AND". This way one can define set of matching patterns and at the same time - some exclusions. For example: "title matches *book* OR categories matches *book* AND title not matches *audiobook*".</p>
       <p>Full list of article attributes, used in rules: <ul><li>title<li>link<li>categories<li>description</ul></p>
+
+      <a name="highlighting"></a>
+      <H1 id="highlighting"><i class="fas fa-highlighter"></i> Keywords highlighting</H1>
+      <p>This feature allows to define personal preferences for keywords highlighting in newsfeeds. The highlighting is applyed dynamically when article title and content sent to browser. Article title/content remains in database unchanged, as it was downloaded from RSS feed. This means that any change in highlighting settings are applied immediately to all displayed articles.</p>
+      <p>Highlighting define keyword <span style="color:red">foreground</span> and/or <span style="background-color:yellow">background</span> <span style="background-color:yellow;color:red">color</span>, plus text decoration (<b>bold</b>, <i>italic</i>, <u>underscore</u>).</p>
+      <p>User is fully responsibile for selection of readable and meaningful color combinations.</p>
+      <p>Highlight definitions could be created, cloned, updated and deleted in respective settings screen.</p>
+
       <a name="code"></a>
       <H1 id="code"><i class="far fa-file-code"></i> Technical details and source code</H1>
       <p>This is a FREE Open Source project. All code (excluding hosting-specific credentials) is available online on <a href="https://github.com/freerss2/freerss2" target="_blank">GitHub</a></p>
