@@ -490,7 +490,7 @@ if ($error) {
 }
 echo $rss_inactivity_warning;
 $items = $rss_app->prepareForDisplay($items);
-$rss_app->showItems($items, $mark_read_and_next);
+$rss_app->showItems($items, $mark_read_and_next . $reload_button);
 
 # ------------[ End dynamic content ]---------------
 

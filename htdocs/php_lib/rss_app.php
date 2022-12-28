@@ -2119,9 +2119,9 @@ WHERE `user_id` = :user_id
   /**
    * Show items as grid of accordion elements
    * @param $items: list of item records to be shown on this page
-   * @param $mark_read_and_next: action button for marking whole page as read
+   * @param $action_buttons: action buttons at the bottom of list
   **/
-  public function showItems($items, $mark_read_and_next) {
+  public function showItems($items, $action_buttons) {
     echo '<div class="accordion accordion-flush" id="rss_items">';
     foreach ($items as $item) {
         $fd_postid = $item['fd_postid'];
@@ -2231,15 +2231,9 @@ WHERE `user_id` = :user_id
     </div>
   </div>';
     }
-    echo '<H3 style="padding-left: 16px;">';
     if ($items) {
-      echo $mark_read_and_next;
+      echo '<H3 style="padding-left: 16px;">' . $action_buttons . '</H3>';
     }
-    echo '
-      <button id="reload_button" type="button" class="btn btn-outline-primary" onclick="showUpdatingDialog(); window.location.reload();">
-      <i class="fa fa-redo-alt"></i> Reload page
-    </button>';
-    echo '</H3>';
     echo '</div>';
   }
 
