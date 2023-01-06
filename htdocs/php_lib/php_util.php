@@ -154,7 +154,7 @@ function debug_log($msg) {
     $msg;
   # echo $log_msg;
   $url = $_SERVER['REQUEST_URI'];
-  $level = substr_count(rtrim($url, '/'), '/');
+  $level = substr_count(rtrim(parse_url($url)['path'], '/'), '/');
   $log_file = str_repeat('../', $level) . 'data/debug.log';
   file_put_contents($log_file, $log_msg.PHP_EOL , FILE_APPEND | LOCK_EX);
 }
