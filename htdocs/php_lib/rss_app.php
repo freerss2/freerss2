@@ -1425,8 +1425,9 @@ WHERE `user_id` = :user_id
     if (! $rule) { return "Not found rule $rule_id<BR>\n"; }
     # show rule name with "rename" button and "move to watch..." selector
     $rule_title = $rule['title'];
-    $result[] = "<div class=\"card-body\">";
-    $result[] = "<div class=\"input-group mb-3\">";
+    $result[] = "<div class=\"card mb-3\">";
+    $result[] = "<div class=\"card-title\">";
+    $result[] = "<div class=\"input-group\">";
     $result[] = "  <span class=\"input-group-text\">Rule</span>";
     $result[] = "  <input type=\"text\" readonly class=\"form-control rule-title-ro\" id=\"$rule_id\" style=\"min-width:8rem;\" value=\"$rule_title\" placeholder=\"Unique rule name\">";
     $result[] = "    <button class=\"btn btn-outline-secondary\" type=\"button\" onclick=\"openRuleEdit('$watch_id', '$rule_id');\"><i class=\"far fa-edit\"></i></button>";
@@ -1440,6 +1441,8 @@ WHERE `user_id` = :user_id
     }
     $result[] = "    </ul>";
     $result[] = "</div>";
+    $result[] = "</div>";
+    $result[] = "<div class=\"card-body\">";
     # show group limitation
     # take group name from rule where[0] if it looks like
     # `fd_feedid` IN (SELECT `fd_feedid` FROM `tbl_subscr` WHERE `group` = 'Warez')
@@ -1450,7 +1453,7 @@ WHERE `user_id` = :user_id
       $where = array_slice($where, 1);
     }
     $group_limitation = ('any' === $rule_group)? 'For feeds from any group' : "For feeds from group $rule_group";
-    $result[] = "<span class=\"rule_where_cond badge rounded-pill bg-secondary\">$group_limitation</span>";
+    $result[] = "<span class=\"rule_where_cond badge rounded-pill bg-secondary mb-3\">$group_limitation</span>";
     # show sequence of "OR" conditions
     $first_AND = True;
     foreach ($where as $cond_line) {
@@ -1472,6 +1475,7 @@ WHERE `user_id` = :user_id
       }
       $result[] = "</p>";
     }
+    $result[] = "</div>";
     $result[] = "</div>";
     return implode("\n", $result);
   }
