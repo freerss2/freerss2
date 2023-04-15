@@ -29,7 +29,7 @@
   if (! $title) { echo "missing title arg"; exit(1); }
   $group = $_GET['group'];
   if (! $group) { echo "missing group arg"; exit(1); }
-  $input_type_rss = $_GET['input_type_rss'] == 'true';
+  $input_type_rss = $_GET['input_type_rss'] == 'true' || $_GET['input_type_rss'] == 1;
   $source_type = $_GET['source_type'];
 
   if (! $input_type_rss) {
