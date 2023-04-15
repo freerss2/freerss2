@@ -436,6 +436,9 @@ function siteToFeedSave() {
   var item_link = extract_and_prepare('item-link-template');
   var item_content = extract_and_prepare('item-content-template');
   var rss_title = extract_and_prepare('new-rss-title');
+  if (! rss_title ) {
+    rss_title = extract_and_prepare('rss_title');
+  }
   var rss_group = extract_and_prepare('new-rss-group');
   if (! rss_title ) { return; }
   if (! rss_group ) { return; }
