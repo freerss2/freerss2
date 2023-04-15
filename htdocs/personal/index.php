@@ -8,13 +8,17 @@
 <?php
   session_start();
 
+  define('SOURCE_LEVEL', 1);
+  $INCLUDE_PATH = str_repeat('../', SOURCE_LEVEL) . 'php_lib';
+
   if ( !$_SESSION || !$_SESSION['user_id'] ) {
+    $_SESSION = array(
+      'return_link' =>
+      (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"
+    );
     header("Location: /login/"); /* Redirect browser */
     exit();
   }
-
-  define('SOURCE_LEVEL', 1);
-  $INCLUDE_PATH = str_repeat('../', SOURCE_LEVEL) . 'php_lib';
 
   include "$INCLUDE_PATH/rss_app.php";
 
@@ -59,7 +63,7 @@
 
     <title>Free RSS <?php if ( $statistics['update_required'] ) { echo " (*)"; } ?> </title>
   </head>
-  <body onload="setArticlesContext(0); initInlineHelp(); initFocus(); <?php echo $promptForInit; ?>">
+  <body onload="setArticlesContext(0); initInlineHelp(); initFocus(); setLoginAuthToken(); <?php echo $promptForInit; ?>">
 
     <!-- Optional JavaScript; choose one of the two! -->
 

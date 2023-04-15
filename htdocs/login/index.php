@@ -56,7 +56,7 @@ if ($_GET['logout']) {
   </style>
 
   </head>
-  <body onload="initLoginElements();">
+  <body onload="initLoginElements(); checkAuthToken();">
 
     <!-- Optional JavaScript; choose one of the two! -->
 

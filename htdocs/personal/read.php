@@ -14,6 +14,10 @@
   include "$INCLUDE_PATH/rss_app.php";
 
   if ( !$_SESSION || !$_SESSION['user_id'] ) {
+    $_SESSION = array(
+      'return_link' =>
+      (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"
+    );
     header("Location: /login/"); /* Redirect browser */
     exit();
   }
@@ -37,9 +41,7 @@
   # Add new RSS or import OPML
   $promptForInit = $empty_subscr ? 'promptForInit();' : '';
 
-  $actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") .
-     "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-  $rss_app->saveLastLink($actual_link);
+  $rss_app->saveLastLink();
 
 # ------------[ Get articles for display ]---------------
 
@@ -188,7 +190,7 @@ $prev_page = $displayed_page > 1;
 
     <title>Free RSS</title>
   </head>
-  <body onload="<?php echo $promptForInit; echo $edit_group; ?>">
+  <body onload="setLoginAuthToken(); <?php echo $promptForInit; echo $edit_group; ?>">
 
     <!-- Optional JavaScript; choose one of the two! -->
 

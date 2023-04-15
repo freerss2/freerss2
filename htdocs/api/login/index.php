@@ -2,12 +2,15 @@
   /* - - - - - - - - - - - - *\
      Login:
      first and second stage
+     On 2nd stage return either
+     Error: <ERROR>
+       or
+     Location: <new location>
   \* - - - - - - - - - - - - */
   session_start();
 
   define('SOURCE_LEVEL', 2);
   $INCLUDE_PATH = str_repeat('../', SOURCE_LEVEL) . 'php_lib';
-
   include "$INCLUDE_PATH/rss_app.php";
 
   $rss_app = new RssApp();
@@ -17,7 +20,20 @@
     echo "Error: missing function argument";
     exit(1);
   }
-  
+
+  if ($function == 'check_auth_token') {
+    $err = $rss_app->check_auth_token($_GET['auth_token'], $_SERVER['REMOTE_ADDR']);
+    if  ( $err ) {
+      echo "Error: $err";
+      exit(1);
+    }
+    // imitate login completion
+    $rss_app->setUserId($_SESSION['user_id']);
+    // read from session last redirect url
+    $last_page = $rss_app->getPersonalSetting('last_page');
+    echo "Location:  $last_page";
+    exit(0);
+  }
   // get login, fetch record (if exist)
   $login = $_GET['login'];
   if (! $login) {
@@ -50,7 +66,10 @@
       echo "Error: login failed";
       exit(1);
     }
-    echo $_SESSION['user_id'];
+    // get auth token
+    $auth_token = $rss_app->get_auth_token($_SESSION['user_id'], '');
+    // return redirect URL with this token
+    echo "Location: /personal/?auth_token=$auth_token";
     exit(0);
   }
 

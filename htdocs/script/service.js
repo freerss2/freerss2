@@ -174,6 +174,13 @@ function bindKeyForElement(elm_id, expected_key_name, fn) {
     });
 }
 
+// If URL contains auth_token=NNNN, save it in localStorage as "authToken"
+function setLoginAuthToken() {
+  var url = new URL(window.location.href);
+  var auth_token = url.searchParams.get("auth_token");
+  if (! auth_token) { return; }
+  window.localStorage.setItem('authToken', auth_token);
+}
 
 function setCookie(name,value,days) {
     var expires = "";

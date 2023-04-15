@@ -9,6 +9,12 @@ include "db_sql.php";
 class DbApp extends DbSql {
 
   private $DB_SCHEMA = array( # database structure
+    'tbl_auth_tokens' => array(
+      'user_id'     => 'INTEGER',
+      'token'       => 'TEXT',
+      'source'      => 'TEXT',
+      'expiration'  => "TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00'"
+    ),
     'tbl_users'     => array(
       'user_id'     => 'INTEGER',
       'full_name'   => 'TEXT',
@@ -249,7 +255,7 @@ class DbApp extends DbSql {
   public function deleteTableRecords($table_name, $where=null) {
       $where_cond = $this->buildWhere($where);
       $query = "DELETE FROM $table_name";
-      if ($where_cond) { $query .= "WHERE $where_cond"; }
+      if ($where_cond) { $query .= " WHERE $where_cond"; }
       $this->execQuery($query);
   }
 

@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.6.9n';
+$APP_VERSION = '2.0.1.7.0';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -16,7 +16,7 @@ $VER_SUFFIX = "?v=$APP_VERSION";
 #   RSS App functionality implementation
 # \*                                     */
 
-
+define('TOKEN_LENGTH', 16);
 
 
 class RssApp {
@@ -157,6 +157,50 @@ class RssApp {
       "Please note that passwords aren't stored in application database<BR>\n".
       "We respect your privacy and only compare checksums.";
     return $message;
+  }
+
+  /**
+   * Create/fetch token associated with this user
+   * This function should be called only from successful login routine!
+   * @param user_id: logged user ID
+   * @param $client_addr: login client info
+   * @return: generated auth token associated with this user
+  **/
+  public function get_auth_token($user_id, $client_addr) {
+    $query0 = "SELECT t.token FROM tbl_auth_tokens t WHERE t.user_id = :user_id";
+    $bindings = array(':user_id' => $user_id);
+    $row = $this->db->fetchSingleRow($query0, $bindings);
+    if ( $row ) {
+      return $row['token'];
+    }
+    $auth_token = random_str(TOKEN_LENGTH);
+    $query1 = "INSERT INTO tbl_auth_tokens (user_id, token, source, expiration)
+      VALUES (:user_id, :auth_token, :source, DATE_ADD(NOW(), INTERVAL 90 DAY))";
+    $this->db->execQuery($query1, array(
+      ':user_id'        => $user_id,
+      ':auth_token'     => $auth_token,
+      ':source'         => $client_addr));
+    return $auth_token;
+  }
+
+  /**
+   * check auth_token from local storage
+   * @param $auth_token: token value
+   * @param $client_addr: client address
+   * @return: string result - Error or empty string
+  **/
+  public function check_auth_token($auth_token, $client_addr) {
+    $query = "SELECT t.user_id, t.expiration
+      FROM tbl_auth_tokens t
+      WHERE t.token = :token";
+    $bindings = array(':token' => $auth_token);
+    $row = $this->db->fetchSingleRow($query, $bindings);
+    if ( ! $row ) {
+      return "Error: invalid token";
+    }
+    // TODO: check expiration
+    $_SESSION['user_id'] = $row['user_id'];
+    return '';
   }
 
   /**
@@ -1845,7 +1889,21 @@ WHERE `user_id` = :user_id
       # for each keyword - if match:
       # replace all keyword instances with <span class="">keyword</span>
       $class_name = $rec['class_name'];
+
+      $tag_matches = array();
+      $index = 0;
+      do {
+        preg_match('#(<[^<>]+>)#is', $str, $matches);
+        if ( ! $matches ) { break; }
+        $tag = $matches[0];
+        $tag_matches[$index] = $tag;
+        $str = str_replace($tag, "([$index])", $str);
+        $index ++;
+      } while(1);
       $str = str_ireplace($keyword, "<span class=\"$class_name\">$keyword</span>", $str);
+      foreach($tag_matches as $index=>$tag) {
+        $str = str_replace("([$index])", $tag, $str);
+      }
     }
     return $str;
   }
@@ -2362,8 +2420,14 @@ WHERE `user_id` = :user_id
    * Save given link to recover on next application start
    * @param $actual_link: current page full URL
   **/
-  public function saveLastLink($actual_link) {
-    $this->setPersonalSetting('last_page', $actual_link);
+  public function saveLastLink() {
+    if ( ! $this->user_id ) { return; }
+    $req_url = (empty($_SERVER['HTTPS']) ? 'http' : 'https') .
+      "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+    if ( strpos($req_url, '/api/') !== false ) { return; }
+    # store this URL in DB
+    # TODO: use safer REQUEST_URI without potential injections
+    $this->setPersonalSetting('last_page', $req_url);
   }
 
   /**

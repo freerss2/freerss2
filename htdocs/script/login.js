@@ -27,6 +27,24 @@ function initLoginElements() {
   }, 200);
 }
 
+// Check local storage for authToken
+// Redirect to sign-in completion on success
+function checkAuthToken() {
+    // read authToken
+    var authToken = localStorage['authToken'];
+    if ( ! authToken ) { return; }
+    // send request with token
+    var request_url = '../api/login/?function=check_auth_token&auth_token='+authToken;
+
+    var response = httpGet(request_url);
+    response = filterResponse(response);
+    response = filterResponse(response);
+    console.log(response);
+    if ( response.startsWith('Location: ') ) {
+        window.location.href = response.replace('Location: ', '');
+    }
+}
+
 // send phase1 login info to back-end
 function signIn() {
   var elm1 = document.getElementById('login_email');
@@ -35,7 +53,6 @@ function signIn() {
   if (! elm2 || !elm2.value) { return; }
   var email = elm1.value;
   var password = elm2.value;
-  // console.log('trigger search for: '+tofind);
   var curr_location = window.location.href;
   var base_url = curr_location.replace(/\?.*/, '');
   console.log('sending request...');
@@ -43,7 +60,6 @@ function signIn() {
   var buf = httpGet(new_url);
   if(buf.startsWith('Error:')) {
       console.log(buf);
-      // window.alert(buf);
       showError(buf);
       return;
   }
@@ -55,15 +71,19 @@ function signIn() {
   new_url = base_url +
     '../api/login/?function=second_stage&login=' + email +
     '&password=' + encripted_password;
-  var buf = httpGet(new_url);
+  var buf = filterResponse(httpGet(new_url));
+  buf = filterResponse(buf);
   if(buf.startsWith('Error:')) {
       console.log(buf);
       showError(buf);
       return;
   }
-  console.log(buf);
+  // if buf startsWith 'Location: ' - go to this location
   if (buf !== '0') {
     new_url = base_url + '../personal';
+    if (buf.startsWith("Location: ")) {
+      new_url = buf.replace("Location: ", "");
+    }
     console.log(new_url);
     window.location.href = new_url;
   }
