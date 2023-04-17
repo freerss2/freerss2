@@ -1,7 +1,6 @@
 <!--/ Project:   freerss        \--
   --| Author:    Felix Liberman |--
   --| Subsystem: UI             |--
-  --| Function:  login          |--
   --\ Function:  login          /-->
 
 <?php
@@ -56,7 +55,7 @@ if ($_GET['logout']) {
   </style>
 
   </head>
-  <body onload="initLoginElements(); checkAuthToken();">
+  <body onload="initLoginElements();">
 
     <!-- Optional JavaScript; choose one of the two! -->
 
@@ -73,7 +72,6 @@ if ($_GET['logout']) {
     <script src="../script/service.js<?php echo $VER_SUFFIX;?>" ></script>
     <script src="../script/md5.js<?php echo $VER_SUFFIX;?>" ></script>
     <script src="../script/login.js<?php echo $VER_SUFFIX;?>" ></script>
-
 
 <main class="form-signin">
 

@@ -6,6 +6,6 @@
     header("Location: /personal/"); /* Redirect browser */
     exit();
   } // else
-  header("Location: /login/"); /* Redirect browser */
+  header("Location: /login/connect.php"); /* Redirect browser */
   exit();
 ?>

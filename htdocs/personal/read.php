@@ -12,16 +12,14 @@
   $INCLUDE_PATH = str_repeat('../', SOURCE_LEVEL) . 'php_lib';
 
   include "$INCLUDE_PATH/rss_app.php";
-
   if ( !$_SESSION || !$_SESSION['user_id'] ) {
     $_SESSION = array(
       'return_link' =>
       (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"
     );
-    header("Location: /login/"); /* Redirect browser */
+    header("Location: /login/connect.php"); /* Redirect browser */
     exit();
   }
-
 
   $rss_app = new RssApp();
   $user_id = $_SESSION['user_id'];  # take from login info

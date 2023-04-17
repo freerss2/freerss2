@@ -32,7 +32,9 @@ function initLoginElements() {
 function checkAuthToken() {
     // read authToken
     var authToken = localStorage['authToken'];
-    if ( ! authToken ) { return; }
+    if ( ! authToken ) {
+      window.location.href = '/login';
+    }
     // send request with token
     var request_url = '../api/login/?function=check_auth_token&auth_token='+authToken;
 
@@ -40,9 +42,12 @@ function checkAuthToken() {
     response = filterResponse(response);
     response = filterResponse(response);
     console.log(response);
+
+    var new_url = '/login';
     if ( response.startsWith('Location: ') ) {
-        window.location.href = response.replace('Location: ', '');
+        new_url = response.replace('Location: ', '');
     }
+    window.location.href = new_url;
 }
 
 // send phase1 login info to back-end
