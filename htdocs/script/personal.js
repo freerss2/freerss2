@@ -32,12 +32,14 @@ function openNav() {
   document.getElementById("mySidebar").style.width = "250px";
   document.getElementById("main").style.marginLeft = "250px";
   nav_visible = 1;
+  document.getElementById("mySidebar").children[1].focus();
 }
 
 function closeNav() {
   document.getElementById("mySidebar").style.width = "0";
   document.getElementById("main").style.marginLeft= "0";
   nav_visible = 0;
+  initFocus();
 }
 
 // ------------( focus on initial element on page )-----------------
@@ -201,6 +203,36 @@ function build_api_url(url) {
   var curr_location = window.location.href;
   var base_url = curr_location.replace(/edit_filter\.php.*/, '');
   return base_url + '..' + url;
+}
+
+// Show system popup notification
+// @param n_title: notification title text
+// @param n_message: content text
+// @param n_action: action function on popup click/touch
+// @param n_hide_timeout: when specified - hide timeout in milliseconds
+function systemPopupNotification(n_title, n_message, n_action, n_hide_timeout=0) {
+  if ('Notification' in window) {
+    Notification.requestPermission().then(function(permission) {
+      if (permission === 'granted') {
+        // TODO: take icon path from some source outside this code
+        var notification = new Notification(n_title, {
+          body: n_message,
+          icon: 'https://freerss2.freecluster.eu/favicon.ico',
+        });
+
+        notification.onclick = function(event) {
+          event.preventDefault(); // prevent the browser from focusing the Notification's tab
+          console.log('The notification clicked');
+          n_action(n_title, n_message);
+        };
+
+        if (n_hide_timeout) {
+          setTimeout(notification.close.bind(notification), n_hide_timeout);
+        }
+      }
+    });
+  }
+
 }
 
 // Open single event dialog

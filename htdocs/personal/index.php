@@ -79,6 +79,16 @@
     <script src="../script/service.js<?php echo $VER_SUFFIX;?>" ></script>
     <script src="../script/personal.js<?php echo $VER_SUFFIX;?>" ></script>
 
+    <script>
+      var update_required = 
+          "<?php echo $statistics['update_required'] ?$statistics['update_required'] : '' ?>" ;
+      if ( update_required ) {
+        systemPopupNotification(
+          'FreeRSS2 notification', 
+          'Feeds update required', function(n,c) { refreshRss(); });
+      }
+    </script>
+
     <script> refreshMainPage(1); </script>
 
     <div id="mySidebar" class="sidebar">
