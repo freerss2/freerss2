@@ -85,7 +85,7 @@
       if ( update_required ) {
         systemPopupNotification(
           'FreeRSS2 notification', 
-          'Feeds update required', function(n,c) { refreshRss(); });
+          'Feeds update required', function(n,c) { refreshRss(); }, 30000);
       }
     </script>
 

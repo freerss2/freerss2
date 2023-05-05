@@ -210,7 +210,8 @@ $prev_page = $displayed_page > 1;
       if ( update_required ) {
         systemPopupNotification(
           'FreeRSS2 notification', 
-          'Feeds update required', function(n,c) { refreshRss(); });
+          'Feeds update required', function(n,c) { refreshRss(); },
+          30000);
       }
     </script>
     <script> setArticlesContext(1); bindKeysForFeeds(); </script>
@@ -719,6 +720,8 @@ $rss_app->showItems($items, $mark_read_and_next . $reload_button);
     </div>
 
     <?php html_include('edit_site_to_feed_dialog.html'); ?>
+
+    <textarea id="clipboardInput" style="display:none;"></textarea>
 
   </body>
 </html>

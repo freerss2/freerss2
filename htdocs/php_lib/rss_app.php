@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.7.0e';
+$APP_VERSION = '2.0.1.7.0f';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -2256,7 +2256,8 @@ WHERE `user_id` = :user_id
              <i class="fas fa-share-square"></i>
            </button>
            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton_'.$fd_postid.'">
-             <li><span class="dropdown-item-text"><i class="fas fa-share-alt"></i>&nbsp;Share with:</span></li>'.$share_links_code.'
+             <li><a class="dropdown-item" href="javascript:copyArticleToClipboard(\''.$fd_postid.'\')"><i class="far fa-clipboard"></i>&nbsp;Copy to Clipboard</a></li>
+             <li><span class="dropdown-item-text"><i class="fas fa-share-alt"></i>&nbsp;Share using:</span></li>'.$share_links_code.'
              <li><a class="dropdown-item" href="javascript:changeArticle(\''.$fd_postid.'\')"><i class="fas fa-tags"></i>&nbsp;Associate with ...</a></li>
            </ul>
          </div>
@@ -2299,6 +2300,8 @@ WHERE `user_id` = :user_id
     echo '</div>';
   }
 
+  // Generate sharing menu items (name and link URL)
+  // @return: list of records with 'title' and 'href' inside
   public function generateShareLinks($item_link, $item_title) {
     $link_quoted = urlencode($item_link);
     $title_quoted = urlencode($item_title);

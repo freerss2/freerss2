@@ -1570,6 +1570,36 @@ function changeClassVisibility( class_name, is_visible ) {
   }
 }
 
+// Callback for copying article info to clipboard
+// @param article_id: related article ID
+function copyArticleToClipboard(article_id) {
+    var elm = document.getElementById('collapse_'+article_id);
+    if (! elm) { return; }
+    var article_header = elm.children[0].children[1].children[0];
+    var article_link = article_header.href;
+    var article_title = article_header.outerText;
+    shareTextToClipboard(article_title+'\n'+article_link);
+}
+
+// Copy given text to clipboard
+// @param share_text: text to be shared
+function shareTextToClipboard(share_text) {
+
+  /* Get the text field object */
+  var copyText = document.getElementById("clipboardInput");
+  copyText.value = share_text;
+
+  /* Select the text in text field */
+  copyText.style.display = 'block';
+  copyText.select();
+  copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+  /* Copy the text inside the text field */
+  document.execCommand("copy");
+  copyText.style.display = 'none';
+}
+
+
 // Bind keyboard/touch events for feeds reading screen
 function bindKeysForFeeds() {
 
