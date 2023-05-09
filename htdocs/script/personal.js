@@ -101,14 +101,17 @@ function updateSettingsFrom(setting_name, setting_ID) {
 
 function refreshMainPage(initial) {
   var interactive_opened = nav_visible;
+  // do not refresh when nav-bar or interactive dialog is opened
   var elm1 = document.getElementById('searchDialog');
   var elm2 = document.getElementById('updatingDialog');
   if (elm1) { interactive_opened ||= elm1.style['display'] == 'block'; }
   if (elm2) { interactive_opened ||= elm2.style['display'] == 'block'; }
   if (initial || interactive_opened) {
+    // delay for 10 minutes next attempt to refresh
     setTimeout(refreshMainPage, 10*60*1000);
     return;
   }
+  // realod the page immediately
   window.location.reload();
 }
 
@@ -214,10 +217,9 @@ function systemPopupNotification(n_title, n_message, n_action, n_hide_timeout=0)
   if ('Notification' in window) {
     Notification.requestPermission().then(function(permission) {
       if (permission === 'granted') {
-        // TODO: take icon path from some source outside this code
         var notification = new Notification(n_title, {
           body: n_message,
-          icon: 'https://freerss2.freecluster.eu/favicon.ico',
+          icon: window.location.href.replace(/personal.*/, 'favicon.ico'),
         });
 
         notification.onclick = function(event) {
