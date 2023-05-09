@@ -82,7 +82,9 @@
     <script>
       var update_required = 
           "<?php echo $statistics['update_required'] ?$statistics['update_required'] : '' ?>" ;
-      if ( update_required ) {
+      var enable_push_reminders = 
+          <?php echo $statistics['enable_push_reminders'] ?> ;
+      if ( update_required && enable_push_reminders) {
         systemPopupNotification(
           'FreeRSS2 notification', 
           'Feeds update required', function(n,c) { refreshRss(); }, 30000);

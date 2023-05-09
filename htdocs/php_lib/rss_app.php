@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.7.0f';
+$APP_VERSION = '2.0.1.7.0g';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -2534,10 +2534,14 @@ WHERE `user_id` = :user_id
   /**
    * Get subscriptions summary statistics
    * @return: dictionary with fields
+   *         - user_name
    *         - total_subscriptions
    *         - active_subscriptions
    *         - unread_articles
    *         - bookmarked_articles
+   *         - updated_at
+   *         - update_required
+   *         - enable_push_reminders
    *         - last_page (or null)
   **/
   public function getSubscrSummary() {
@@ -2570,6 +2574,7 @@ WHERE `user_id` = :user_id
     $statistics['updated_at' ] = _date_to_passed_time($last_update);
     $delta = _date_to_passed_seconds($last_update);
     $statistics['update_required' ] = $delta > ($_S['hour'] * $reminder_hours);
+    $statistics['enable_push_reminders'] = $personal_settings['enable_push_reminders'] == 'true' ? 1 : 0;
     $statistics['last_page'           ] =
       $this->db->fetchSingleResult($query6, $bindings);
     return $statistics;

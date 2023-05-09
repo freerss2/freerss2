@@ -29,6 +29,7 @@
   $page_size = $personal_settings['page_size'] ? max($personal_settings['page_size'], 5) : 20;
   $reminder_hours = $personal_settings['reminder_hours'] ? max($personal_settings['reminder_hours'], 1) : 2;
   $retention_leave_articles = $personal_settings['retention_leave_articles'] ? max($personal_settings['retention_leave_articles'], 10) : 100;
+  $enable_push_reminders = $personal_settings['enable_push_reminders'] == 'true' ? 'checked' : '';
   $start_page = $personal_settings['start_page'] ? $personal_settings['start_page'] : 'group:All';
 
   $open_feature = $_GET['open'];  # supported: ?open=ImportModal
@@ -129,6 +130,20 @@
          </div>
          <h5 class="card-title">
            <i class="far fa-question-circle inline-help"
+            title="For browser version (desktop or mobile) it is possible to get system-level popup reminders for articles refresh. Such popup will appear in addition to main reminder on application toolbar. If such reminder is not relevant, you can disable it. Note, that push messages are not available for mobile application."></i>&nbsp;
+           Popup (push) reminder for articles refresh
+         </h5>
+         <div class="input-group mb-3 short-input">
+           <span class="input-group-text" style="width: 100%;">
+           <span class="form-check form-switch">
+           <input class="form-check-input" type="checkbox" role="switch" onchange="updateSettings('enable_push_reminders', this.checked)" id="enable-push-reminders" <?php echo $enable_push_reminders; ?>>
+             &nbsp;
+             <label class="form-check-label" for="enable-push-reminders">display reminders in messages tray</label>
+           </span>
+           </span>
+         </div>
+         <h5 class="card-title">
+           <i class="far fa-question-circle inline-help"
             title="FreeRSS allows to define retension policy for articles, marked as 'read'. You can ensure that at least this amount of latest read articles remain in system and available for global search."></i>&nbsp;
            How many articles to leave on cleanup
          </h5>
@@ -146,7 +161,7 @@
 
          <h5 class="card-title">
            <i class="far fa-question-circle inline-help"
-            title="When selected view contains too much articles, this information is splitted into pages. It is possible to define size of such page, depending ob currently used screen (like desktop or smartphone)"></i>&nbsp;
+            title="To simplify on-screen management the articles view is splitted into pages. It is possible to define size of such page, depending on currently used screen (like desktop or smartphone)"></i>&nbsp;
            Page size
          </h5>
          <div class="input-group mb-3 short-input">
