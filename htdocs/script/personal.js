@@ -214,6 +214,20 @@ function build_api_url(url) {
 // @param n_action: action function on popup click/touch
 // @param n_hide_timeout: when specified - hide timeout in milliseconds
 function systemPopupNotification(n_title, n_message, n_action, n_hide_timeout=0) {
+  // skip notification if it was already sent during last 3 minuts
+  var time_now = Math.floor(Date.now() / 1000);
+  var time_last_notification = getCookie('time_last_notification');
+  if (time_last_notification) {
+    if ( (time_now - time_last_notification) < (3 * 60) ) {
+      console.log("Notification skipped");
+      return;
+    }
+  }
+  // store last notification timestamp in cookies
+  setCookie('time_last_notification', time_now);
+  console.log('set cookie');
+
+  // show notification (if supported and permitted)
   if ('Notification' in window) {
     Notification.requestPermission().then(function(permission) {
       if (permission === 'granted') {
