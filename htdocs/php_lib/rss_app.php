@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.7.0g';
+$APP_VERSION = '2.0.1.7.0k';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 

@@ -233,7 +233,7 @@ function systemPopupNotification(n_title, n_message, n_action, n_hide_timeout=0)
       if (permission === 'granted') {
         var notification = new Notification(n_title, {
           body: n_message,
-          icon: window.location.href.replace(/personal.*/, 'favicon.ico'),
+          icon: window.location.href.replace(/personal.*/, '/img/FreeRSS2.png'),
         });
 
         notification.onclick = function(event) {
