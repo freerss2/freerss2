@@ -208,10 +208,14 @@
 
 .accordion-body > * img {
   max-width: 80vw;
+  width: auto;
+  height: auto;
 }
 
 .accordion-body > img {
   max-width: 80vw;
+  width: auto;
+  height: auto;
 }
 
 .vertical-middle {
