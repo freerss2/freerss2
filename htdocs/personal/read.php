@@ -29,7 +29,7 @@
 
   $groups = $rss_app->getSubscrGroups();
 
-  $statistics = $rss_app->getSubscrSummary();  
+  $statistics = $rss_app->getSubscrSummary();
 
   $empty_subscr = ! $statistics['total_subscriptions'];
   if ($empty_subscr) {
@@ -85,11 +85,12 @@ if($req_type == 'watch') {
   $curr_group_id = '';
   if ($req_id == 'search') {
     $watch_title = $req_id;
+    $watch_description = "results of search for \"$req_id\"";
     $pattern = $_GET['pattern'];
     $items = $rss_app->findItems($pattern);
   } else {
     $curr_watch_id = $req_id;
-    list($watch_title, $items) = $rss_app->retrieveWatchItems($req_id);
+    list($watch_title, $watch_description, $items) = $rss_app->retrieveWatchItems($req_id);
   }
 } elseif ($req_type == 'group') {
   $req_feed_id = null;
@@ -139,7 +140,7 @@ $articles_count = $items ? count($items) : 0;
 if ($articles_count >= 100) { $articles_count = '99+'; }
 
 // if specified page N - get specific page
-// else - take page 1 
+// else - take page 1
 $page_num = $_GET['page'];
 if (! $page_num) { $page_num = 1; }
 else             { $page_num = intval($page_num); }
@@ -205,13 +206,13 @@ $prev_page = $displayed_page > 1;
     <script src="../script/personal.js<?php echo $VER_SUFFIX;?>" ></script>
 
     <script>
-      var update_required = 
+      var update_required =
           "<?php echo $statistics['update_required'] ?$statistics['update_required'] : '' ?>" ;
-      var enable_push_reminders = 
+      var enable_push_reminders =
           <?php echo $statistics['enable_push_reminders'] ?> ;
       if ( update_required && enable_push_reminders ) {
         systemPopupNotification(
-          'FreeRSS2 notification', 
+          'FreeRSS2 notification',
           'Feeds update required', function(n,c) { refreshRss(); },
           30000);
       }
@@ -224,7 +225,7 @@ $prev_page = $displayed_page > 1;
       $link_base = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
       $pattern = '/\?.*/';
       $link_base = preg_replace($pattern, '', $link_base);
-      
+
       # each tree row contains: path, title, type and id
       foreach ($subscr_tree as $row) {
         $path = $row[0];
@@ -278,7 +279,7 @@ $prev_page = $displayed_page > 1;
 
       </div>
     </nav>
-    
+
 
 <?php
 
@@ -338,9 +339,17 @@ echo
           " var next_group_id = '$next_group_id'; ".
           " var req_type = '$req_type'; ".
   "</script>";
-echo '<H3 class="vertical-middle">';
+  /*  ----------( start title )----------- */
+if ($req_type == 'subscr' && $no_subscr_msg) {
+  $overflow_class = '';
+} else {
+  $overflow_class = 'no-text-overflow';
+}
+echo '<H3 class="vertical-middle '.$overflow_class.'">';
 
-$mark_read_and_next = 
+$group_edit_button = '';
+$watch_edit_button = '';
+$mark_read_and_next =
   '<button type="button"
       class="btn btn-light btn-sm big-icon-button"
       title="Mark all articles on this page as \'read\', excluding bookmarked ones"
@@ -349,60 +358,92 @@ $reload_button =
   '<button id="reload_button" type="button"
       class="btn btn-light btn-sm big-icon-button"
       onclick="showUpdatingDialog(); window.location.reload();"> <i class="fa fa-redo-alt"></i> </button>';
+  /* -------------( choose title content )------------ */
 if ($req_type == 'subscr') {
-  if ($no_subscr_msg)
-  {
-  echo
-  '<div class="alert alert-warning d-flex align-items-center" role="alert">
-    <div>
-      <i class="fas fa-exclamation-triangle"></i>&nbsp;  
-      '.$no_subscr_msg .'
-   </div>
-  </div>';
-    
+  if ($no_subscr_msg) {
+    echo
+    '<div class="alert alert-warning d-flex align-items-center" role="alert">
+      <div>
+        <i class="fas fa-exclamation-triangle"></i>&nbsp;
+        '.$no_subscr_msg .'
+     </div>
+    </div>';
+
   } else {
-  echo 
-  $mark_read_and_next. $reload_button.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevFeed()" title="Go to previos feed"><i class="fas fa-chevron-left"></i></button>'.
-  '<a role="button" class="btn btn-light btn-sm big-icon-button" data-bs-toggle="collapse" href="#feedSettings" aria-expanded="false" aria-controls="feedSettings">
-    <i class="far fa-edit"></i>
-  </a>'.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextFeed()" title="Go to next feed"><i class="fas fa-chevron-right"></i></button>'.
-  "&nbsp;
-  <span style='vertical-align: bottom;'>
-    <i class='fas fa-rss'></i>
-    <span id='articles_count' class='position-relative translate-middle badge rounded-pill bg-primary' style='font-size: x-small; top: -8px;'>
-      $articles_count
-    </span>
-  </span>
-   <a href='$html_url' target='_blank' class='rss-title'>$rss_title</a>";
+    $prev_feed_button =
+      '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevFeed()" title="Go to previos feed"><i class="fas fa-chevron-left"></i></button>';
+    $next_feed_button =
+      '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextFeed()" title="Go to next feed"><i class="fas fa-chevron-right"></i></button>';
+    $title_icon =
+      "<span style='vertical-align: bottom;'>
+         <i class='fas fa-rss'></i>
+         <span id='articles_count' class='position-relative translate-middle badge rounded-pill bg-primary' style='font-size: x-small; top: -8px;'>
+           $articles_count
+         </span>
+         </span>";
+    $title_button =
+      "<a role=\"button\" class='rss-title' data-bs-toggle=\"collapse\" href=\"#feedSettings\" aria-expanded=\"false\" aria-controls=\"feedSettings\">" .
+        $title_icon . $rss_title .
+      "</a>";
+    echo
+      $mark_read_and_next . $reload_button . $prev_feed_button . $next_feed_button . "&nbsp;" . $title_button;
   }
 } elseif ($req_type == 'watch') {
-  echo 
-  $mark_read_and_next. $reload_button.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevWatch()" title="Go to previos watch"><i class="fas fa-chevron-left"></i></button>';
+  /* create link to panel with watch description and button opening edit screen (or "built-in" comment) */
+  $prev_watch_button =
+    '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevWatch()" title="Go to previos watch"><i class="fas fa-chevron-left"></i></button>';
+  $next_watch_button =
+    '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextWatch()" title="Go to next watch"><i class="fas fa-chevron-right"></i></button>';
+  $title_button =
+    "<a role=\"button\" class='rss-title' data-bs-toggle=\"collapse\" href=\"#watchSettings\" aria-expanded=\"false\" aria-controls=\"watchSettings\">" .
+    '<i class="fas fa-filter"></i>&nbsp;'.$watch_title .
+    "</a>";
+  echo
+    $mark_read_and_next . $reload_button . $prev_watch_button . $next_watch_button . $title_button;
   if (! $rss_app->isReservedWatch($req_id)) {
-    echo '<a role="button" class="btn btn-light btn-sm big-icon-button" href="edit_filter.php?watch_id='.$req_id.'"> <i class="far fa-edit"></i> </a>';
+    $watch_edit_button =
+      '<div class="mb-3">' .
+      '<b>'.$watch_title.'</b> is a user-defined watch. It contains '.$watch_description.'. You can fine-tune this condition here: ' .
+      '<a role="button" class="btn btn-light btn-sm big-icon-button" href="edit_filter.php?watch_id='.$req_id.'"> <i class="far fa-edit"></i> </a>' .
+      '</div>';
+  } else {
+    $watch_edit_button =
+      '<div class="mb-3">' .
+      '<b>'.$watch_title.'</b> is a pre-defined watch for ' . $watch_description . 
+      '</div>';
   }
-  echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextWatch()" title="Go to next watch"><i class="fas fa-chevron-right"></i></button>';
- echo '<i class="fas fa-filter"></i>&nbsp;'.$watch_title;
 } elseif ($req_type == 'group') {
-  echo 
-  $mark_read_and_next. $reload_button.
-  '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevGroup()" title="Go to previos feeds group"><i class="fas fa-chevron-left"></i></button>';
+  /* create group-editing panel and open it on group title click */
+  $prev_group_button = 
+    '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToPrevGroup()" title="Go to previos feeds group"><i class="fas fa-chevron-left"></i></button>';
+  $next_group_button =
+    '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextGroup()" title="Go to next feeds group"><i class="fas fa-chevron-right"></i></button>';
+  $title_button =
+    "<a role=\"button\" class='rss-title' data-bs-toggle=\"collapse\" href=\"#groupSettings\" aria-expanded=\"false\" aria-controls=\"groupSettings\">" .
+      '<i class="far fa-newspaper"></i>&nbsp;'.
+      $req_id .
+    "</a>";
+  echo
+    $mark_read_and_next . $reload_button . $prev_group_button . $next_group_button . $title_button;
   if($req_id != 'all') {
-    echo '<button role="button" class="btn btn-light btn-sm big-icon-button" onclick="editGroup(\''.$req_id.'\')"> <i class="far fa-edit"></i> </button>';
+    $group_edit_button =
+      '<div class="mb-3">' .
+      'Use this button to customise the group: <button role="button" class="btn btn-light btn-sm big-icon-button" onclick="editGroup(\''.$req_id.'\')"> <i class="far fa-edit"></i> </button>' .
+      '</div>';
   }
-  echo '<button type="button" class="btn btn-light btn-sm big-icon-button" onclick="goToNextGroup()" title="Go to next feeds group"><i class="fas fa-chevron-right"></i></button>';
- echo '<i class="far fa-newspaper"></i>&nbsp;'.$req_id;
 } else {
   echo $mark_read_and_next. $reload_button;
- echo $watch_title;
+  echo $watch_title;
 }
   echo "</H3>";
+  /*  ----------( Dynamic panels under title )----------- */
   echo
  '<div class="collapse '.$edit_feed.'" id="feedSettings">
     <div class="card-body mb-3">
+      <div class="mb-3">
+        <p>This is a site "<a href="'.$html_url.'" target="_blank">'.$rss_title.'</a>" feed.
+        It\'s collected from site <a href="'.$xmlUrl.'" target="_blank">RSS</a>.</p>
+      </div>
       <div class="btn-toolbar mb-3" role="toolbar" aria-label="Enable feed">
         <div class="btn-group me-2" role="group" aria-label="Enable/disable">
           <button type="button" class="btn btn-outline-primary"
@@ -495,16 +536,33 @@ if ($req_type == 'subscr') {
       </div>
     </div>
   </div>';
+echo
+  '<div class="collapse" id="groupSettings">
+     <div class="card-body mb-3">
+       <p class="mb-3"><b>'.$req_id.'</b> is a group of feeds. Here you can browse articles, collected from similar sites.</p>
+       '.$group_edit_button.'
+     </div>
+   </div>';
+echo
+  '<div class="collapse" id="watchSettings">
+     <div class="card-body mb-3">
+       '.$watch_edit_button.'
+     </div>
+   </div>';
+  
 if ($error) {
     $error = mb_substr($error, 0, 15);
     echo "<B>ERROR: $error</B><BR>\n";
     exit(1);
 }
 echo $rss_inactivity_warning;
+# ------------[ End dynamic content ]---------------
+
+# ------------------( items )-------------------------
 $items = $rss_app->prepareForDisplay($items);
 $rss_app->showItems($items, $mark_read_and_next . $reload_button);
 
-# ------------[ End dynamic content ]---------------
+# ------------[ End of items ]---------------
 
 ?>
   </div>
@@ -518,7 +576,7 @@ $rss_app->showItems($items, $mark_read_and_next . $reload_button);
       <button <?php if (! $prev_page) { echo 'style="display:none;"'; } ?> type="button" class="btn btn-light" onclick="goToPage('', -1);">
           <i class="fas fa-chevron-left"></i>
         </button>
-        
+
           <?php
             if ($pages_range && count($pages_range) == 1) {
               echo '<button type="button" class="btn btn-light" disabled>1</button>';

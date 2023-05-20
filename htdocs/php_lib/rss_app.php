@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.7.0k';
+$APP_VERSION = '2.0.1.7.0l';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -1779,7 +1779,7 @@ WHERE `user_id` = :user_id
   /**
    * Retrieve watch items from DB
    * @param $watch_id: watch ID (builtin or user-defined filter tag)
-   * @return: watch title and list of watch items according to "show" filter
+   * @return: watch title, description and list of watch items according to "show" filter
   **/
   public function retrieveWatchItems($watch_id) {
     list($show_articles, $order_articles) = $this->settingsForRetrieve();
@@ -1789,13 +1789,18 @@ WHERE `user_id` = :user_id
     # check built-in watches
     if ($watch_id == 'all' || $watch_id == 'trash') {
       # do nothing - take all
+      $watch_description = 'all articles from all feeds';
     } elseif ($watch_id == 'today') {
       $where[] = "`timestamp` >= $this->NOW - INTERVAL 1 DAY";
+      $watch_description = 'articles received today';
     } elseif ($watch_id == 'older') {
       $where[] = "`timestamp` < $this->NOW - INTERVAL 1 DAY";
+      $watch_description = 'articles received yesterday and older';
     } elseif ($watch_id == 'bookmarked') {
       $where[] = "`flagged` != 0";
+      $watch_description = 'bookmarked articles';
     } elseif ($watch_id == 'unfiltered') {
+      $watch_description = 'articles not belonging to any watch';
       $where[] = "`gr_original_id` = ''";
     } elseif (strpos($watch_id, 'tag_' ) === 0) {
       $where[] = "`gr_original_id` = '$watch_id'";
@@ -1804,6 +1809,7 @@ WHERE `user_id` = :user_id
         '`user_id`=:user_id AND `fd_watchid`=:fd_watchid';
       $w_bindings = array('user_id'=>$this->user_id, 'fd_watchid'=>$watch_id);
       $watch_title = $this->db->fetchSingleResult($w_query, $w_bindings);
+      $watch_description = 'articles matching watch (filter) condition';
     }
     if ('read'   === $show_articles) { $bindings['read'] = 1; }
     if ('unread' === $show_articles) { $bindings['read'] = 0; }
@@ -1820,7 +1826,7 @@ WHERE `user_id` = :user_id
     $result = $this->addFeedInfo($items);
     $result = $this->markKeywordsInItems($result);
 
-    return array($watch_title, $result);
+    return array($watch_title, $watch_description, $result);
   }
 
   /**
