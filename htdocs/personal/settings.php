@@ -211,19 +211,25 @@
              <i class="fa fa-plus col-2 col-xs-1 settings-icon"></i>
              <span class="col-10 col-sm-9">Add new RSS</span>
            </div>
-         </a> <br>
+         </a>
+         <i class="far fa-question-circle inline-help" title="Here you can add a site RSS feed subscription. The subscription could be defined in three possible ways: by specifiying site URL (when RSS is built-in on main page), by setting RSS direct link or by site-to-feed rules definition."></i>
+         <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/edit_filter.php" style="min-width:18em;">
            <div class="row">
              <i class="fa fa-filter col-2 col-xs-1 settings-icon"></i>
              <span class="col-10 col-sm-9">Content Filters (Watches)</span>
            </div>
-         </a> <br>
+         </a>
+         <i class="far fa-question-circle inline-help" title="Content filters (watches) allows to group articles, related to the same topic. You can define quite complicated rules based on article title, content, url and categories. The same way could be defined a 'trash' rule - matching articles will be automatically marked as 'read'."></i>
+         <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/edit_highlight.php" style="min-width:18em;">
            <div class="row">
              <i class="fas fa-highlighter col-2 col-xs-1 settings-icon"></i>
              <span class="col-10 col-sm-9">Keyword Highlights</span>
            </div>
-         </a> <br>
+         </a>
+         <i class="far fa-question-circle inline-help" title="Sometime it's not enough to group articles by content, but also important to see some keywords or phrases empasized. You can define any pattern and choose unique highlight style. Highlights could be cloned to get exactly the same style for similar keywords."></i>
+         <br>
          <!-- TODO: hide when no any RSS -->
          <button class="btn btn-primary dropdown-toggle mb-3" type="button" style="min-width:18em;"
            data-bs-toggle="dropdown" aria-expanded="false">
@@ -315,13 +321,17 @@
              <i class="fa fa-file-alt col-2 col-xs-1 settings-icon"></i>
              <span class="col-10 col-sm-9">Statistics</span>
            </div>
-         </a> <br>
+         </a>
+         <i class="far fa-question-circle inline-help" title="Statistics report shows different kinds of activity indicators per watch/group/feed. Disabled feeds are displayed with strikethrough."></i>
+         <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/report_events.php" style="min-width:18em;">
            <div class="row">
              <i class="fas fa-exclamation-circle col-2 col-xs-1 settings-icon"></i>
              <span class="col-10 col-sm-9">Events (update failures)</span>
            </div>
-         </a> <br>
+         </a>
+         <i class="far fa-question-circle inline-help" title="This report shows latest error events per feed. Such way could be indentified feeds with wrong/unavailable source."></i>
+         <br>
        </div>
      </div>
 
