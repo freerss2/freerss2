@@ -416,7 +416,7 @@ function openSiteToFeedEdit(feed_id, site_addr) {
 function extract_and_prepare(element_id) {
   var elm = document.getElementById(element_id);
   if ( ! elm ) { return ''; }
-  return encodeURIComponent(elm.value);
+  return encodeURIComponent(encodeHTMLEntities(elm.value));
 }
 
 // site-to-feed dialog: reload site code
