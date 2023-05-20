@@ -84,8 +84,8 @@ if($req_type == 'watch') {
   $curr_watch_id = '';
   $curr_group_id = '';
   if ($req_id == 'search') {
-    $watch_title = $req_id;
-    $watch_description = "results of search for \"$req_id\"";
+    $watch_title = ucfirst($req_id);
+    $watch_description = "results of pattern search in articles titles and content";
     $pattern = $_GET['pattern'];
     $items = $rss_app->findItems($pattern);
   } else {
@@ -443,6 +443,11 @@ if ($req_type == 'subscr') {
       <div class="mb-3">
         <p>This is a site "<a href="'.$html_url.'" target="_blank">'.$rss_title.'</a>" feed.
         It\'s collected from site <a href="'.$xmlUrl.'" target="_blank">RSS</a>.</p>
+       <div>
+         <a role="button" data-bs-toggle="collapse" href="#feedSettings" aria-expanded="false" aria-controls="feedSettings">
+           <i class="fas fa-chevron-up"></i>
+         </a>
+       </div>
       </div>
       <div class="btn-toolbar mb-3" role="toolbar" aria-label="Enable feed">
         <div class="btn-group me-2" role="group" aria-label="Enable/disable">
@@ -541,12 +546,22 @@ echo
      <div class="card-body mb-3">
        <p class="mb-3"><b>'.$req_id.'</b> is a group of feeds. Here you can browse articles, collected from similar sites.</p>
        '.$group_edit_button.'
+       <div>
+         <a role="button" data-bs-toggle="collapse" href="#groupSettings" aria-expanded="false" aria-controls="groupSettings">
+           <i class="fas fa-chevron-up"></i>
+         </a>
+       </div>
      </div>
    </div>';
 echo
   '<div class="collapse" id="watchSettings">
      <div class="card-body mb-3">
        '.$watch_edit_button.'
+       <div>
+         <a role="button" data-bs-toggle="collapse" href="#watchSettings" aria-expanded="false" aria-controls="watchSettings">
+           <i class="fas fa-chevron-up"></i>
+         </a>
+       </div>
      </div>
    </div>';
   
