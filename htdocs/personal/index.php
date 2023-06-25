@@ -156,27 +156,27 @@
            <span class="stat-title"> <i class="fa fa-rss"></i> Total subscriptions  </span>
            <b><?php echo $statistics['total_subscriptions']; ?></b>
            <i class="far fa-question-circle stat-help inline-help" 
-             title="Here counted all subcsriptions, including temporary disabled. The motivation for disabling some subscription is to avoid errors about feed unavailability. So, if the feed is under maintenance or reached end-of-life, but you still want to see some old articles received from it, - just mark it as 'disabled'."></i>
+             title="Subscriptions statistics&#10;Here counted all subcsriptions, including temporary disabled. The motivation for disabling some subscription is to avoid errors about feed unavailability. So, if the feed is under maintenance or reached end-of-life, but you still want to see some old articles received from it, - just mark it as 'disabled'."></i>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span class="stat-title"> <i class="fas fa-rss"></i> Active subscriptions </span>
            <b><?php echo $statistics['active_subscriptions']; ?></b>
-           <i class="far fa-question-circle stat-help inline-help" title="Active subcsriptions are subscriptions that participate in content updates"></i>
+           <i class="far fa-question-circle stat-help inline-help" title="Active subscriptions&#10;Active subcsriptions are subscriptions that participate in content updates"></i>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span class="stat-title"> <i class="fas fa-envelope"></i> Unread articles      </span>
            <b><?php echo $statistics['unread_articles']; ?></b>
-           <i class="far fa-question-circle stat-help inline-help" title="Counted articles that not marked as 'read' (including bookmarked)"></i>
+           <i class="far fa-question-circle stat-help inline-help" title="Unread articles&#10;Counted articles that not marked as 'read' (including bookmarked)"></i>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span class="stat-title"> <i class="far fa-star"></i> Bookmarked articles  </span>
            <b><?php echo $statistics['bookmarked_articles']; ?></b>
-           <i class="far fa-question-circle stat-help inline-help" title="Bookmarked articles are protected from accidential marking as 'read'"></i>
+           <i class="far fa-question-circle stat-help inline-help" title="Bookmarked articles&#10;Bookmarked articles are protected from accidential marking as 'read'"></i>
          </div>
          <div class="alert alert-secondary main-screen-stat" role="alert">
            <span style="width: 6em; display: inline-block;"> <i class="far fa-clock"></i> Updated </span>
            <b><?php echo $statistics['updated_at']; ?></b>
-           <i class="far fa-question-circle stat-help inline-help" title="Here displayed the timestamp from last updated article"></i>
+           <i class="far fa-question-circle stat-help inline-help" title="Updated&#10;Here displayed the timestamp from last updated article"></i>
          </div>
 
          <div>

@@ -233,6 +233,10 @@
   right: 0.9rem;
 }
 
+.inline-help {
+  cursor: pointer;
+}
+
 .low-action-button {
   margin-bottom: 0.3em;
   margin-right: 0.3em;

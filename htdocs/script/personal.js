@@ -75,7 +75,17 @@ function openInlineHelp(event) {
      var inlineHelpDialog = new bootstrap.Modal(elm_d, {focus: true});
      var help_msg = context_elm.title;
      var help_for_elm = document.getElementById('inlineHelpContent');
-     if (help_for_elm) { help_for_elm.textContent = help_msg; }
+     if (help_for_elm) {
+       var elm_t = document.getElementById('context-help-title');
+       console.log(help_msg);
+       var full_msg = help_msg.split('\n');
+       if ( full_msg.length >= 2 ) {
+         help_for_elm.textContent = full_msg[1];
+         elm_t.textContent = full_msg[0];
+       } else {
+         help_for_elm.textContent = help_msg;
+       }
+     }
      inlineHelpDialog.show();
 }
 

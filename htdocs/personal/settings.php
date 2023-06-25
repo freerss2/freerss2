@@ -114,7 +114,7 @@
        <div class="card-body">
          <h5 class="card-title">
            <i class="far fa-question-circle inline-help"
-            title="The refresh process is not automatic - it require interaction with user. FreeRSS will prompt for refresh by displaying red indicator on 'refresh' button. It's possible to define frequency of such updates (in hours)"></i>&nbsp;
+            title="Reminder for articles refresh&#10;The refresh process is not automatic - it require interaction with user. FreeRSS will prompt for refresh by displaying red indicator on 'refresh' button. It's possible to define frequency of such updates (in hours)"></i>&nbsp;
            Reminder for articles refresh after...
          </h5>
          <div class="input-group mb-3 short-input">
@@ -130,7 +130,7 @@
          </div>
          <h5 class="card-title">
            <i class="far fa-question-circle inline-help"
-            title="For browser version (desktop or mobile) it is possible to get system-level popup reminders for articles refresh. Such popup will appear in addition to main reminder on application toolbar. If such reminder is not relevant, you can disable it. Note, that push messages are not available for mobile application."></i>&nbsp;
+            title="Popup reminder for articles refresh&#10;For browser version (desktop or mobile) it is possible to get system-level popup reminders for articles refresh. Such popup will appear in addition to main reminder on application toolbar. If such reminder is not relevant, you can disable it. Note, that push messages are not available for mobile application."></i>&nbsp;
            Popup (push) reminder for articles refresh
          </h5>
          <div class="input-group mb-3 short-input">
@@ -144,7 +144,7 @@
          </div>
          <h5 class="card-title">
            <i class="far fa-question-circle inline-help"
-            title="FreeRSS allows to define retension policy for articles, marked as 'read'. You can ensure that at least this amount of latest read articles remain in system and available for global search."></i>&nbsp;
+            title="How many articles to leave on cleanup&#10;FreeRSS allows to define retension policy for articles, marked as 'read'. You can ensure that at least this amount of latest read articles remain in system and available for global search."></i>&nbsp;
            How many articles to leave on cleanup
          </h5>
          <div class="input-group mb-3 short-input">
@@ -161,7 +161,7 @@
 
          <h5 class="card-title">
            <i class="far fa-question-circle inline-help"
-            title="To simplify on-screen management the articles view is splitted into pages. It is possible to define size of such page, depending on currently used screen (like desktop or smartphone)"></i>&nbsp;
+            title="Page size&#10;To simplify on-screen management the articles view is splitted into pages. It is possible to define size of such page, depending on currently used screen (like desktop or smartphone)"></i>&nbsp;
            Page size
          </h5>
          <div class="input-group mb-3 short-input">
@@ -173,7 +173,7 @@
          </div>
          <h5 class="card-title">
            <i class="far fa-question-circle inline-help"
-            title="After refresh it's possible to jump into any page: group of feeds, specific feed, filtered 'watch'. Just select an option from available pages."></i>&nbsp;
+            title="Start reading from page&#10;After refresh it's possible to jump into any page: group of feeds, specific feed, filtered 'watch'. Just select an option from available pages."></i>&nbsp;
            Start reading from page
          </h5>
          <select class="form-select short-input" id="start-page" onchange="updateSettings('start_page', this.value)">
@@ -212,7 +212,7 @@
              <span class="col-10 col-sm-9">Add new RSS</span>
            </div>
          </a>
-         <i class="far fa-question-circle inline-help" title="Here you can add a site RSS feed subscription. The subscription could be defined in three possible ways: by specifiying site URL (when RSS is built-in on main page), by setting RSS direct link or by site-to-feed rules definition."></i>
+         <i class="far fa-question-circle inline-help" title="Add new RSS&#10;Here you can add a site RSS feed subscription. The subscription could be defined in three possible ways: by specifiying site URL (when RSS is built-in on main page), by setting RSS direct link or by site-to-feed rules definition."></i>
          <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/edit_filter.php" style="min-width:18em;">
            <div class="row">
@@ -220,7 +220,7 @@
              <span class="col-10 col-sm-9">Content Filters (Watches)</span>
            </div>
          </a>
-         <i class="far fa-question-circle inline-help" title="Content filters (watches) allows to group articles, related to the same topic. You can define quite complicated rules based on article title, content, url and categories. The same way could be defined a 'trash' rule - matching articles will be automatically marked as 'read'."></i>
+         <i class="far fa-question-circle inline-help" title="Content filters (Watches)&#10;Content filters (watches) allows to group articles, related to the same topic. You can define quite complicated rules based on article title, content, url and categories. The same way could be defined a 'trash' rule - matching articles will be automatically marked as 'read'."></i>
          <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/edit_highlight.php" style="min-width:18em;">
            <div class="row">
@@ -228,7 +228,7 @@
              <span class="col-10 col-sm-9">Keyword Highlights</span>
            </div>
          </a>
-         <i class="far fa-question-circle inline-help" title="Sometime it's not enough to group articles by content, but also important to see some keywords or phrases empasized. You can define any pattern and choose unique highlight style. Highlights could be cloned to get exactly the same style for similar keywords."></i>
+         <i class="far fa-question-circle inline-help" title="Keyword Highlights&#10;Sometime it's not enough to group articles by content, but also important to see some keywords or phrases empasized. You can define any pattern and choose unique highlight style. Highlights could be cloned to get exactly the same style for similar keywords."></i>
          <br>
          <!-- TODO: hide when no any RSS -->
          <button class="btn btn-primary dropdown-toggle mb-3" type="button" style="min-width:18em;"
@@ -322,7 +322,7 @@
              <span class="col-10 col-sm-9">Statistics</span>
            </div>
          </a>
-         <i class="far fa-question-circle inline-help" title="Statistics report shows different kinds of activity indicators per watch/group/feed. Disabled feeds are displayed with strikethrough."></i>
+         <i class="far fa-question-circle inline-help" title="Statistics&#10;Statistics report shows different kinds of activity indicators per watch/group/feed. Disabled feeds are displayed with strikethrough."></i>
          <br>
          <a type="button" class="btn btn-primary mb-3" href="/personal/report_events.php" style="min-width:18em;">
            <div class="row">
@@ -330,7 +330,7 @@
              <span class="col-10 col-sm-9">Events (update failures)</span>
            </div>
          </a>
-         <i class="far fa-question-circle inline-help" title="This report shows latest error events per feed. Such way could be indentified feeds with wrong/unavailable source."></i>
+         <i class="far fa-question-circle inline-help" title="Events (update failures)&#10;This report shows latest error events per feed. Such way could be indentified feeds with wrong/unavailable source."></i>
          <br>
        </div>
      </div>
