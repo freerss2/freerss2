@@ -23,14 +23,14 @@
   // TODO: develop API args parser
 
   $original_keyword     = $_GET['original_keyword'];
-  if (! $original_keyword) { echo "missing original_keyword arg"; exit(1); }
-
   $keyword     = $_GET['keyword'];
   $fg_color    = $_GET['fg_color'];
   $bg_color    = $_GET['bg_color'];
   $bold        = $_GET['bold'];
   $italic      = $_GET['italic'];
   $underscore  = $_GET['underscore'];
+
+  if (! $keyword) { echo "missing keyword arg"; exit(1); }
 
   $err = $rss_app->saveHighlight($original_keyword, $keyword, $fg_color, $bg_color, $bold, $italic, $underscore);
   echo "$err";
