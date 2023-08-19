@@ -2343,43 +2343,75 @@ WHERE `user_id` = :user_id
   // @param $action: 'read', 'bookmark', 'unread', 'unbookmark',
   //                 'toggleread', 'togglebookmark'
   public function changeItemsState($item_ids, $action) {
-    // TODO: implement all actions
-    if ($action == 'read' || $action == 'unread') {
-      $new_value = $action == 'read' ? 1 : 0;
-      $this->updateItemsState($item_ids, 'read', $new_value);
-      return "";
-    }
-    if ($action == 'bookmark' || $action == 'unbookmark') {
-      $new_value = $action == 'bookmark' ? 1 : 0;
-      $this->updateItemsState($item_ids, 'bookmark', $new_value);
-      return "";
+    switch ($action) {
+      case 'read':
+        $this->updateItemsState($item_ids, 'read',     1); break;
+      case 'unread':
+        $this->updateItemsState($item_ids, 'read',     0); break;
+      case 'bookmark':
+        $this->updateItemsState($item_ids, 'bookmark', 1); break;
+      case 'unbookmark':
+        $this->updateItemsState($item_ids, 'bookmark', 0); break;
+      case 'toggleread':
+        $this->updateItemsState($item_ids, 'read',     2); break;
+      case 'togglebookmark':
+        $this->updateItemsState($item_ids, 'bookmark', 2); break;
+      default:
+        return "Error: unsupported action '$action'";
     }
     return "";
   }
 
   // udpdate items (articles) state by IDs
+  // @param $item_ids: list of article IDs
+  // @param $change_type: which parameter to change ('read' or 'bookmark')
+  // @param $new_value: the value 0/1 to assign for parameter ('2' means 'toggle')
   public function updateItemsState($item_ids, $change_type, $new_value) {
     $bindings = array(
         'user_id'   => $this->user_id
     );
 
-    if ($change_type == 'read') {
+    // Toggle value
+    if ($new_value != 0 && $new_value != 1) {
+
+      // for togle 'read' state - avoid flagged modification
+      if ($change_type == 'read') {
+        $field = 'read';
+        $extra_set = '';
+        $extra_cond = "AND `flagged`=0";
+      } else {
+      // for toggle flagged state - always force 'unread'
+        $field = 'flagged';
+        $extra_set = ', `read`=0 ';
+        $extra_cond = '';
+      }
+
       $query = "UPDATE `tbl_posts` ".
-        "SET `read`=:new_read ".
-        "WHERE `user_id`=:user_id ".
-        "AND `fd_postid` IN ('".implode("','", $item_ids)."') ".
-        "AND `flagged`=0";
-      $bindings['new_read'] = $new_value;
-    } else {
-      // do similar for "flagged"
-      // mark (when relevant) "flagged" also as "unread"
-      $extra_set = '';
-      if ( $new_value ) { $extra_set = ', `read`=0 '; }
-      $query = "UPDATE `tbl_posts` ".
-        "SET `flagged`=:new_flagged $extra_set ".
-        "WHERE `user_id`=:user_id ".
-        "AND `fd_postid` IN ('".implode("','", $item_ids)."') ";
-      $bindings['new_flagged'] = $new_value;
+          "SET `$field` = IF (`$field`, 0, 1) $extra_set".
+          "WHERE `user_id`=:user_id ".
+          "AND `fd_postid` IN ('".implode("','", $item_ids)."') $extra_cond";
+
+    } else { // Set value
+
+      if ($change_type == 'read') {
+        $query = "UPDATE `tbl_posts` ".
+          "SET `read`=:new_read ".
+          "WHERE `user_id`=:user_id ".
+          "AND `fd_postid` IN ('".implode("','", $item_ids)."') ".
+          "AND `flagged`=0";
+        $bindings['new_read'] = $new_value;
+      } else {
+        // do similar for "flagged"
+        // mark (when relevant) "flagged" also as "unread"
+        $extra_set = '';
+        if ( $new_value ) { $extra_set = ', `read`=0 '; }
+        $query = "UPDATE `tbl_posts` ".
+          "SET `flagged`=:new_flagged $extra_set ".
+          "WHERE `user_id`=:user_id ".
+          "AND `fd_postid` IN ('".implode("','", $item_ids)."') ";
+        $bindings['new_flagged'] = $new_value;
+      }
+
     }
 
     $this->db->execQuery($query, $bindings);
