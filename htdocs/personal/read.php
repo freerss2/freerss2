@@ -350,10 +350,18 @@ echo '<H3 class="vertical-middle '.$overflow_class.'">';
 $group_edit_button = '';
 $watch_edit_button = '';
 $mark_read_and_next =
-  '<button type="button"
-      class="btn btn-light btn-sm big-icon-button"
+  '<span class="btn-group">
+   <button type="button"
+      class="btn btn-light btn-sm big-icon-button" style="margin-right: 0;"
       title="Mark all articles on this page as \'read\', excluding bookmarked ones"
-      onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>';
+      onclick="markReadAndNext();"> <i class="far fa-check-square"></i> </button>
+  <button type="button"
+      class="btn btn-light btn-sm"
+      onclick="startMarkAllDialog();"
+  >
+    <i class="fas fa-ellipsis-v"></i>
+  </button>
+  </span>';
 $reload_button =
   '<button id="reload_button" type="button"
       class="btn btn-light btn-sm big-icon-button"
@@ -618,6 +626,8 @@ $rss_app->showItems($items, $mark_read_and_next . $reload_button);
 
     <?php html_include('confirmation_dialog.html'); ?>
 
+    <?php html_include('error_dialog.html'); ?>
+
     <div class="modal" id="promptForInit" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -714,6 +724,60 @@ $rss_app->showItems($items, $mark_read_and_next . $reload_button);
             <img style="display: block; margin-left: auto; margin-right: auto;" src="../img/processing_bar.gif" >
           </div>
           <div class="modal-footer">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="markAllDialog" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Massive mark operations</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="container">
+              <div class="row">
+                <div class="col">
+                  <i class="far fa-envelope-open me-2 mb-3"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('read');">
+                    Mark as read
+                  </button></div>
+                <div class="col">
+                  <i class="fa fa-star me-2 mb-3" style="color:blue;"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('bookmark');">
+                    Bookmark articles
+                  </button></div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <i class="fas fa-envelope me-2 mb-3"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('unread');">
+                    Mark as unread
+                  </button></div>
+                <div class="col">
+                  <i class="far fa-star me-2 mb-3" style="color:gray;"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('unbookmark');">
+                    Remove bookmarks
+                  </button></div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <i class="fas fa-envelope me-2 mb-3"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('toggleread');">
+                    Toggle read
+                  </button></div>
+                <div class="col">
+                  <i class="far fa-star me-2 mb-3" style="color:gray;"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('togglebookmark');">
+                    Toggle bookmarks
+                  </button></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
           </div>
         </div>
       </div>

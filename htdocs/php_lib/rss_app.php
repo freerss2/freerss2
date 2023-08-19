@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.7.0m';
+$APP_VERSION = '2.0.1.7.0n';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -2338,16 +2338,49 @@ WHERE `user_id` = :user_id
     return $result;
   } // prepareForDisplay
 
+  // change items (articles) state/bookmark by IDs
+  // @param $item_ids: list of IDs
+  // @param $action: 'read', 'bookmark', 'unread', 'unbookmark',
+  //                 'toggleread', 'togglebookmark'
+  public function changeItemsState($item_ids, $action) {
+    // TODO: implement all actions
+    if ($action == 'read' || $action == 'unread') {
+      $new_value = $action == 'read' ? 1 : 0;
+      $this->updateItemsState($item_ids, 'read', $new_value);
+      return "";
+    }
+    if ($action == 'bookmark' || $action == 'unbookmark') {
+      $new_value = $action == 'bookmark' ? 1 : 0;
+      $this->updateItemsState($item_ids, 'bookmark', $new_value);
+      return "";
+    }
+    return "";
+  }
+
   // udpdate items (articles) state by IDs
   public function updateItemsState($item_ids, $change_type, $new_value) {
-    $query = "UPDATE `tbl_posts` SET `read`=:new_read WHERE ".
-      "`user_id`=:user_id AND ".
-      "`fd_postid` IN ('".implode("','", $item_ids)."') AND ".
-      "`flagged`=0";
     $bindings = array(
-        'new_read'  => $new_value,
         'user_id'   => $this->user_id
     );
+
+    if ($change_type == 'read') {
+      $query = "UPDATE `tbl_posts` ".
+        "SET `read`=:new_read ".
+        "WHERE `user_id`=:user_id ".
+        "AND `fd_postid` IN ('".implode("','", $item_ids)."') ".
+        "AND `flagged`=0";
+      $bindings['new_read'] = $new_value;
+    } else {
+      // do similar for "flagged"
+      // mark (when relevant) "flagged" also as "unread"
+      $extra_set = '';
+      if ( $new_value ) { $extra_set = ', `read`=0 '; }
+      $query = "UPDATE `tbl_posts` ".
+        "SET `flagged`=:new_flagged $extra_set ".
+        "WHERE `user_id`=:user_id ".
+        "AND `fd_postid` IN ('".implode("','", $item_ids)."') ";
+      $bindings['new_flagged'] = $new_value;
+    }
 
     $this->db->execQuery($query, $bindings);
   }

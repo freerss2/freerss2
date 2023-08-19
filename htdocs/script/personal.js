@@ -760,6 +760,42 @@ function startSearch() {
   searchModal.show();
 }
 
+// open "Mark all" dialog
+function startMarkAllDialog() {
+  var markAllDialog = document.getElementById('markAllDialog');
+  var markAllModal = new bootstrap.Modal(markAllDialog, {focus: false});
+  // markAllDialog
+  // disable keyboard shortcuts relevant in "articles view" mode
+  setArticlesContext(0);
+  // enable "articles view" mode on exit event
+  markAllDialog.addEventListener(
+      'hidden.bs.modal', function (event) { setArticlesContext(1); });
+  markAllModal.show();
+}
+
+// Change current articles read/bookmark state
+// @param action: 'read', 'bookmark', 'unread', 'unbookmark',
+//                'toggleread', 'togglebookmark'
+function markAll(action) {
+  var refreshModal = showUpdatingDialog();
+  // get IDs of all articles on page
+  var ids = getDisplayedArticleIds();
+  // send "mark read" for those IDs
+  var url = '/api/articles/change_state/?action='+action+'&ids='+ids.join(",");
+  httpGetAsync(url, function(reply){
+    reply = filterResponse(reply);
+    refreshModal.hide();
+    console.log(reply);
+    // if API fails - display error and exit
+    if ( reply.startsWith('Error') ) {
+        showError(reply);
+        return;
+    }
+    // reload page on success
+    window.location.reload();
+  });
+}
+
 // trigger search in back-end
 function triggerSearch() {
   var elm = document.getElementById('text-to-find');
@@ -906,6 +942,7 @@ function showUpdatingDialog() {
   if (! elm) { return; }
   var refreshModal = new bootstrap.Modal(elm, {focus: true});
   refreshModal.show();
+  return refreshModal;
 }
 
 // change article details (move to specific watch, edit labels)

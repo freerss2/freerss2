@@ -49,7 +49,7 @@ function httpPost(theUrl, postData)
 
 // fixing encoding of response
 function filterResponse(reply) {
-  return reply.replace(/^\uFEFF/gm, "").replace(/^\u00EF?\u00BB\u00BF/gm,"");
+  return reply.replace(/^\uFEFF/gm, "").replace(/^\u00EF?\u00BB\u00BF/gm,"").replace(/^\uFEFF/gm, "");
 }
 
 // ---------------------( HTML entitles encode/decode )--------------------------
