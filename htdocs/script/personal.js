@@ -218,24 +218,30 @@ function build_api_url(url) {
   return base_url + '..' + url;
 }
 
+// Check time_last_notification cookie
+// @param minutes: how many minutes repeat notification
+// @return: true if already notified during this time period
+function isRecentlyNotified(minutes) {
+  var time_now = Math.floor(Date.now() / 1000);
+  var time_last_notification = getCookie('time_last_notification');
+  if (time_last_notification) {
+    if ( (time_now - time_last_notification) < (minutes * 60) ) {
+      console.log("Notification skipped");
+      return 1;
+    }
+  }
+  // store last notification timestamp in cookies
+  setCookie('time_last_notification', time_now);
+  console.log('set cookie');
+  return 0;
+}
+
 // Show system popup notification
 // @param n_title: notification title text
 // @param n_message: content text
 // @param n_action: action function on popup click/touch
 // @param n_hide_timeout: when specified - hide timeout in milliseconds
 function systemPopupNotification(n_title, n_message, n_action, n_hide_timeout=0) {
-  // skip notification if it was already sent during last 3 minuts
-  var time_now = Math.floor(Date.now() / 1000);
-  var time_last_notification = getCookie('time_last_notification');
-  if (time_last_notification) {
-    if ( (time_now - time_last_notification) < (3 * 60) ) {
-      console.log("Notification skipped");
-      return;
-    }
-  }
-  // store last notification timestamp in cookies
-  setCookie('time_last_notification', time_now);
-  console.log('set cookie');
 
   // show notification (if supported and permitted)
   if ('Notification' in window) {
@@ -257,6 +263,33 @@ function systemPopupNotification(n_title, n_message, n_action, n_hide_timeout=0)
         }
       }
     });
+  }
+
+}
+
+// show refresh reminder(s) when needed
+// @param update_required: flag - is update required
+// @param enable_push_reminders: flag - push reminders enabled
+// @param enable_popup_reminders: flag - popup reminders enabled
+function showRefreshReminder(update_required, enable_push_reminders, enable_popup_reminders) {
+
+  if ( ! update_required ) { return; }
+  if ( isRecentlyNotified(3) ) { return; }
+
+  var mobile_client = localStorage['mobileClient'];
+
+  if ( enable_push_reminders && mobile_client == 0 ) {
+      systemPopupNotification(
+        'FreeRSS2 notification', 
+        'Feeds update required', function(n,c) { refreshRss(); }, 30000);
+  }
+
+  // same for enable_popup_reminders (with popup dialog window)
+  if ( enable_popup_reminders && mobile_client == 1 ) {
+      setTimeout(
+        function() { startRefreshReminderDialog(); },
+        500
+      );
   }
 
 }
@@ -764,13 +797,24 @@ function startSearch() {
 function startMarkAllDialog() {
   var markAllDialog = document.getElementById('markAllDialog');
   var markAllModal = new bootstrap.Modal(markAllDialog, {focus: false});
-  // markAllDialog
   // disable keyboard shortcuts relevant in "articles view" mode
   setArticlesContext(0);
   // enable "articles view" mode on exit event
   markAllDialog.addEventListener(
       'hidden.bs.modal', function (event) { setArticlesContext(1); });
   markAllModal.show();
+}
+
+// open "Refresh reminder" popup
+function startRefreshReminderDialog() {
+  var refreshReminderDialog = document.getElementById('refreshReminderDialog');
+  var refreshReminderModal = new bootstrap.Modal(refreshReminderDialog, {focus: false});
+  // disable keyboard shortcuts relevant in "articles view" mode
+  setArticlesContext(0);
+  // enable "articles view" mode on exit event
+  refreshReminderDialog.addEventListener(
+      'hidden.bs.modal', function (event) { setArticlesContext(1); });
+  refreshReminderModal.show();
 }
 
 // Change current articles read/bookmark state

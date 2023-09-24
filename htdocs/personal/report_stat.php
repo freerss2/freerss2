@@ -88,7 +88,7 @@
             $flagged = $flagged ? "<B>$flagged</B>" : '-';
             $ref = 'read.php?type='.$rec[2].'&id='.$rec[3];
             $last_upd = _date_to_passed_time($last_upd);
-            if (strstr($last_upd, '-') !== false) {
+            if (strstr($last_upd || '', '-') !== false) {
               $last_upd_style = "font-weight: bold;";
               $last_upd_class = "bg-danger";
             } else {

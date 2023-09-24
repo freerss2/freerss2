@@ -59,13 +59,16 @@ $order_active = array(
   'name' => $order_articles == 'name' ? 'active' : '',
 );
 
+$_GET['type'] = $_GET['type'] ?? null;
+$_GET['id'] = $_GET['id'] ?? null;
+
 $req_type = $_GET['type'] ? $_GET['type'] : 'group';
 $req_id = $_GET['id'] ? $_GET['id'] : 'all';
 
 // "feed edit" / "group edit" popup trigger
 $edit_feed = '';
 $edit_group = '';
-if ($_GET['open'] == 'edit') {
+if ($_GET['open'] ?? null == 'edit') {
   $edit_feed = $req_type == 'subscr' ? 'show' : '';
   $edit_group = $req_type == 'group' ? 'editGroup(\''.$req_id.'\');' : '';
 }
@@ -76,6 +79,14 @@ if ( $promptForInit ) {
 if ($req_type == 'group' && $req_id == 'all') {
   $req_type = 'watch';
 }
+
+$download_enabled = '';
+$html_url = '';
+$rss_title = '';
+$rss_group = '';
+$xmlUrl = '';
+$fts = '';
+$curr_feed_id = '';
 
 $no_subscr_msg = "";
 $feed_rtl = false;
@@ -141,7 +152,7 @@ if ($articles_count >= 100) { $articles_count = '99+'; }
 
 // if specified page N - get specific page
 // else - take page 1
-$page_num = $_GET['page'];
+$page_num = $_GET['page'] ?? null;
 if (! $page_num) { $page_num = 1; }
 else             { $page_num = intval($page_num); }
 
@@ -210,12 +221,9 @@ $prev_page = $displayed_page > 1;
           "<?php echo $statistics['update_required'] ?$statistics['update_required'] : '' ?>" ;
       var enable_push_reminders =
           <?php echo $statistics['enable_push_reminders'] ?> ;
-      if ( update_required && enable_push_reminders ) {
-        systemPopupNotification(
-          'FreeRSS2 notification',
-          'Feeds update required', function(n,c) { refreshRss(); },
-          30000);
-      }
+      var enable_popup_reminders =
+          <?php echo $statistics['enable_popup_reminders'] ?> ;
+      showRefreshReminder(update_required, enable_push_reminders, enable_popup_reminders);
     </script>
     <script> setArticlesContext(1); bindKeysForFeeds(); </script>
 
@@ -325,7 +333,7 @@ if (! $prev_feed_id) { $prev_feed_id = $last_feed_id; }
 if (! $next_feed_id) { $next_feed_id = $first_feed_id; }
 if (! $prev_watch_id) { $prev_watch_id = $last_watch_id; }
 if (! $next_watch_id) { $next_watch_id = $first_watch_id; }
-if ($download_enabled ) {
+if ( $download_enabled ) {
   $enabled_class = ''; $disabled_class = ' class="hidden-element"';
 } else {
   $disabled_class = ''; $enabled_class = ' class="hidden-element"';
@@ -624,6 +632,8 @@ $rss_app->showItems($items, $mark_read_and_next . $reload_button);
 
     <!-- -- -- -- -- -- -- ( Modal windows ) -- -- -- -- -- -- -->
 
+    <?php html_include('refresh_reminder_dialog.html'); ?>
+
     <?php html_include('confirmation_dialog.html'); ?>
 
     <?php html_include('error_dialog.html'); ?>
@@ -819,24 +829,7 @@ $rss_app->showItems($items, $mark_read_and_next . $reload_button);
       </div>
     </div>
 
-    <div class="modal fade" id="searchDialog" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Search</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <label class="mb-3">Find in article title or body</label>
-            <input type="text" class="form-control" id="text-to-find">
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick="triggerSearch();">Start search</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <?php html_include('search_articles_dialog.html'); ?>
 
     <div class="modal fade" id="searchTitleDialog" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog">

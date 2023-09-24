@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.7.0n';
+$APP_VERSION = '2.0.1.7.1a';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -329,6 +329,7 @@ class RssApp {
   **/
   public function readRssUpdate($rss_url, $rss_title, $site_to_feed=null) {
 
+    $rss_link = '';
     try {
 
       // Disable any errors reporting
@@ -1553,7 +1554,7 @@ WHERE `user_id` = :user_id
       if ( ! $this->isReservedWatch($watch['fd_watchid']) ) {
         $count += 1;
       }
-      if ($watch['queries']) {
+      if ($watch['queries'] ?? null) {
         $set = ($watch['title'] == 'trash') ?
           array('read' => 1) :
           array('gr_original_id' => $watch['fd_watchid']);
@@ -1598,7 +1599,7 @@ WHERE `user_id` = :user_id
     $bindings = array('user_id' => $this->user_id, 'feed_id' => $feed_id);
     $last_timestamp = $this->db->fetchSingleRow($query, $bindings);
     if ($last_timestamp) {
-      $last_timestamp = $last_timestamp[0];
+      $last_timestamp = strtotime($last_timestamp[0]);
     }
 
     $inserted_count = 0;
@@ -2220,12 +2221,12 @@ WHERE `user_id` = :user_id
         # build tooltip text:
         $tooltip = array( '[published: '.$item['dateStr'].']');
         if($item['feed_info']  ) { $tooltip []= '[feed: '.$item['feed_info']['title'].']'; }
-        if($item['watch_title']) { $tooltip []= '[watch: '.$item['watch_title'].']';}
+        if($item['watch_title'] ?? null) { $tooltip []= '[watch: '.$item['watch_title'].']';}
         if($item['author']     ) { $tooltip []= '[author: '.$item['author'].']';}
         $tooltip = implode('; ', $tooltip);
 
         $origin = array();
-        if($item['watch_title']) { $origin []= $item['watch_title']; }
+        if($item['watch_title'] ?? null) { $origin []= $item['watch_title']; }
         if($item['feed_info']  ) { $origin []= $item['feed_info']['title']; }
         if($item['author']     ) { $origin []= $item['author']; }
         $origin = implode('&nbsp;*&nbsp;', $origin);
@@ -2279,7 +2280,7 @@ WHERE `user_id` = :user_id
         $feed_title = $item['feed_info']['title'];
         echo '<a href="read.php?type=subscr&id='.$feed_id.'" class="badge rounded-pill bg-info text-dark">'.$feed_title.'</a>&nbsp;';
       }
-      if($item['watch_title']) {
+      if($item['watch_title'] ?? null) {
         echo '<a href="read.php?type=watch&id='.$item['gr_original_id'].'" class="badge rounded-pill bg-info text-dark">'.$item['watch_title'].'</a>&nbsp;';
       }
       if($item['author']) {
@@ -2646,6 +2647,7 @@ WHERE `user_id` = :user_id
     $delta = _date_to_passed_seconds($last_update);
     $statistics['update_required' ] = $delta > ($_S['hour'] * $reminder_hours);
     $statistics['enable_push_reminders'] = $personal_settings['enable_push_reminders'] == 'true' ? 1 : 0;
+    $statistics['enable_popup_reminders'] = $personal_settings['enable_popup_reminders'] == 'true' ? 1 : 0;
     $statistics['last_page'           ] =
       $this->db->fetchSingleResult($query6, $bindings);
     return $statistics;

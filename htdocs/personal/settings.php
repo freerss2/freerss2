@@ -30,9 +30,10 @@
   $reminder_hours = $personal_settings['reminder_hours'] ? max($personal_settings['reminder_hours'], 1) : 2;
   $retention_leave_articles = $personal_settings['retention_leave_articles'] ? max($personal_settings['retention_leave_articles'], 10) : 100;
   $enable_push_reminders = $personal_settings['enable_push_reminders'] == 'true' ? 'checked' : '';
+  $enable_popup_reminders = $personal_settings['enable_popup_reminders'] == 'true' ? 'checked' : '';
   $start_page = $personal_settings['start_page'] ? $personal_settings['start_page'] : 'group:All';
 
-  $open_feature = $_GET['open'];  # supported: ?open=ImportModal
+  $open_feature = $_GET['open'] ?? null;  # supported: ?open=ImportModal
   if ( $open_feature == 'ImportModal' ) {
     $onload = "openImportModal();";
   } else {
@@ -142,6 +143,17 @@
            </span>
            </span>
          </div>
+
+         <div class="input-group mb-3 short-input">
+           <span class="input-group-text" style="width: 100%;">
+           <span class="form-check form-switch">
+           <input class="form-check-input" type="checkbox" role="switch" onchange="updateSettings('enable_popup_reminders', this.checked)" id="enable-popup-reminders" <?php echo $enable_popup_reminders; ?>>
+             &nbsp;
+             <label class="form-check-label" for="enable-popup-reminders">display reminders as popup window</label>
+           </span>
+           </span>
+         </div>
+
          <h5 class="card-title">
            <i class="far fa-question-circle inline-help"
             title="How many articles to leave on cleanup&#10;FreeRSS allows to define retension policy for articles, marked as 'read'. You can ensure that at least this amount of latest read articles remain in system and available for global search."></i>&nbsp;
@@ -338,7 +350,10 @@
      <div class="card mb-3" id="support">
        <h1>&nbsp;<i class="far fa-question-circle"></i>&nbsp;Support</h1>
        <div class="card-body">
-         <h5 class="card-title">Version: <?php echo $APP_VERSION; ?> </h5>
+         <h5 class="card-title">App Version: <?php echo $APP_VERSION; ?> </h5>
+         <h5 class="card-title">PHP Version: <?php echo phpversion(); ?> </h5>
+         <h5 class="card-title">SQL Client: <?php echo mysqli_get_client_info(); ?> </h5>
+         <h5 class="card-title">PHP Time: <?php echo date('Y/m/d H:i:s', time()); ?> </h5>
        </div>
        <div class="card-body">
          <h5 class="card-title">Android app: <?php echo generate_qr_code("https://freerss2.freecluster.eu/android/FreeRSS2.apk"); ?> </h5>

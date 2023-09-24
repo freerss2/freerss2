@@ -21,8 +21,8 @@
   $user_id = $_SESSION['user_id'];  # take from login info
   $rss_app->setUserId($user_id);
 
-  $event_type = $_GET['type'];
-  $id = $_GET['id'];
+  $event_type = $_GET['type'] ?? null;
+  $id = $_GET['id'] ?? null;
   if ( $event_type ) {
     $query_type = ( $event_type == 'all' ) ? null : $event_type;
   } else {

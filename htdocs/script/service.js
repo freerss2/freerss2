@@ -3,6 +3,29 @@
     JavaScript code
 \* ----------------- */
 
+// -------------------------( date formatting )-------------------------
+
+// zero-padding for a number
+function pad2(n) { return n < 10 ? '0' + n : n }
+
+// format JS date object as "YYYY-MM-DD hh:mm:ss"
+function dateFormatStd(date) {
+  return date.getFullYear().toString() + '-' +
+         pad2(date.getMonth() + 1) + '-' +
+         pad2( date.getDate()) + ' ' +
+         pad2( date.getHours() ) + ':' +
+         pad2( date.getMinutes() ) + ':' +
+         pad2( date.getSeconds() );
+}
+/* Usage example:
+
+
+
+function debugDate() {
+  var date = new Date();
+  window.alert(dateFormatStd(date));
+}
+*/
 
 // ---------------------( commuincation with server )-------------------
 
@@ -186,6 +209,8 @@ function bindKeyForElement(elm_id, expected_key_name, fn) {
 
 // If URL contains auth_token=NNNN, save it in localStorage as "authToken"
 function setLoginAuthToken() {
+  var mobile_client = getCookie('mobile_client') ? '1' : '0';
+  window.localStorage.setItem('mobileClient', mobile_client);
   var url = new URL(window.location.href);
   var auth_token = url.searchParams.get("auth_token");
   if (! auth_token) { return; }

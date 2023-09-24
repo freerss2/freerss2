@@ -1,21 +1,21 @@
 package com.felixsoft.freerss2;
 
-import static android.support.v4.content.ContextCompat.startActivity;
-
 import android.annotation.SuppressLint;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.webkit.JsResult;
+import android.webkit.PermissionRequest;
 import android.webkit.URLUtil;
+import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -27,24 +27,45 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     SwipeRefreshLayout swipeRefreshLayout;
 
+    String appBaseUrl = "https://freerss2.freecluster.eu/";
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //CustomWebViewClient client = new CustomWebViewClient( this );
+        CustomWebViewClient client = new CustomWebViewClient( this );
         webView = findViewById(R.id.webview);
         swipeRefreshLayout  = findViewById(R.id.reload);
-        //webView.setWebViewClient(client);
+        webView.setWebViewClient(client);
+
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setSaveFormData(true);
-        // webSettings.setSupportMultipleWindows(true);
-        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        webView.loadUrl("https://freerss2.freecluster.eu/");
+        // webSettings.setSavePassword(true);
+        webView.loadUrl(String.join("/", appBaseUrl, "mobile_client.php"));
+
+
+        webView.setWebChromeClient(new WebChromeClient() {
+                                       @Override
+                                       public void onPermissionRequest(final PermissionRequest request) {
+                                           runOnUiThread(new Runnable() {
+                                               @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                                               @Override
+                                               public void run() {
+                                                   // request permission for notifications
+                                                   if (request.getOrigin().toString().equals(appBaseUrl)) {
+                                                       request.grant(request.getResources());
+                                                   } else {
+                                                       request.deny();
+                                                   }
+                                               }
+                                           });
+                                       }
+                                   });
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -122,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
                 return false;
             }
-
         });
 
     }
@@ -144,6 +164,25 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
 }
 
+class CustomWebViewClient extends WebViewClient {
+    private Activity activity;
+
+    public CustomWebViewClient(Activity activity){
+        this.activity = activity;
+    }
+
+    // for API Level less than 24
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView webView, String url){
+        // TODO: customize according to URL - return true for open in browser app
+        return false;
+    }
+
+    // for API Level >= 24
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView webView, WebResourceRequest request) {
+        return false;
+    }
+}

@@ -6,6 +6,7 @@ include "db_sql.php";
 #   Application-specific DB functionality
 # \*                                      */
 
+#[AllowDynamicProperties]
 class DbApp extends DbSql {
 
   private $DB_SCHEMA = array( # database structure

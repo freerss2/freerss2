@@ -87,6 +87,7 @@ $_S['week'] = $_S['day']*7;
 function _date_to_passed_time($timestamp) {
   global $_S;   # seconds in time periods
 
+  if ( ! $timestamp ) { return '???'; }
   $delta = _date_to_passed_seconds($timestamp);
   # check seconds / minutes / hours / days / weeks
   # return the same date if difference is more than 3 weeks
@@ -107,6 +108,7 @@ function _date_to_passed_time($timestamp) {
 **/
 function my_sleep($seconds) {
 
+  $fp = null;
   $ch = curl_init("http://8.8.8.8/down/time");
   curl_setopt($ch, CURLOPT_FILE, $fp);
   curl_setopt($ch, CURLOPT_HEADER, 0);

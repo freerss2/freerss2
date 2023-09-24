@@ -13,7 +13,7 @@
   include "$INCLUDE_PATH/rss_app.php";
 
 
-if ($_GET['logout']) {
+if ($_GET['logout'] ?? null) {
     $_SESSION = array();
 }
 

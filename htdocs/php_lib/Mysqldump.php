@@ -826,7 +826,7 @@ class Mysqldump
     {
         if (!$this->dumpSettings['skip-comments']) {
             $ret = "--".PHP_EOL.
-                "-- Stand-In structure for view `${viewName}`".PHP_EOL.
+                "-- Stand-In structure for view `".${viewName}."`".PHP_EOL.
                 "--".PHP_EOL.PHP_EOL;
             $this->compressManager->write($ret);
         }
@@ -858,7 +858,7 @@ class Mysqldump
     {
         $ret = array();
         foreach ($this->tableColumnTypes[$viewName] as $k => $v) {
-            $ret[] = "`${k}` ${v['type_sql']}";
+            $ret[] = "`".${k}."` ".${v['type_sql']};
         }
         $ret = implode(PHP_EOL.",", $ret);
 
@@ -879,7 +879,7 @@ class Mysqldump
     {
         if (!$this->dumpSettings['skip-comments']) {
             $ret = "--".PHP_EOL.
-                "-- View structure for view `${viewName}`".PHP_EOL.
+                "-- View structure for view `".${viewName}."`".PHP_EOL.
                 "--".PHP_EOL.PHP_EOL;
             $this->compressManager->write($ret);
         }
@@ -1033,7 +1033,7 @@ class Mysqldump
             return "NULL";
         } elseif ($this->dumpSettings['hex-blob'] && $colType['is_blob']) {
             if ($colType['type'] == 'bit' || !empty($colValue)) {
-                return "0x${colValue}";
+                return "0x".${colValue};
             } else {
                 return "''";
             }
@@ -1271,14 +1271,14 @@ class Mysqldump
         $colStmt = array();
         foreach ($this->tableColumnTypes[$tableName] as $colName => $colType) {
             if ($colType['type'] == 'bit' && $this->dumpSettings['hex-blob']) {
-                $colStmt[] = "LPAD(HEX(`${colName}`),2,'0') AS `${colName}`";
+                $colStmt[] = "LPAD(HEX(`".${colName}."`),2,'0') AS `".${colName}."`";
             } elseif ($colType['is_blob'] && $this->dumpSettings['hex-blob']) {
-                $colStmt[] = "HEX(`${colName}`) AS `${colName}`";
+                $colStmt[] = "HEX(`".${colName}."`) AS `".${colName}."`";
             } elseif ($colType['is_virtual']) {
                 $this->dumpSettings['complete-insert'] = true;
                 continue;
             } else {
-                $colStmt[] = "`${colName}`";
+                $colStmt[] = "`".${colName}."`";
             }
         }
 
@@ -1300,7 +1300,7 @@ class Mysqldump
                 $this->dumpSettings['complete-insert'] = true;
                 continue;
             } else {
-                $colNames[] = "`${colName}`";
+                $colNames[] = "`".${colName}."`";
             }
         }
         return $colNames;
@@ -1674,7 +1674,7 @@ abstract class TypeAdapterFactory
 
         $args = func_get_args();
 
-        return "pragma table_info(${args[0]})";
+        return "pragma table_info(".${args[0]}.")";
     }
 
     public function show_procedures()
@@ -1857,17 +1857,17 @@ class TypeAdapterMysql extends TypeAdapterFactory
         $resultSet->closeCursor();
         $ret = "";
 
-        $ret .= "CREATE DATABASE /*!32312 IF NOT EXISTS*/ `${databaseName}`".
-            " /*!40100 DEFAULT CHARACTER SET ${characterSet} ".
-            " COLLATE ${collationDb} */;".PHP_EOL.PHP_EOL.
-            "USE `${databaseName}`;".PHP_EOL.PHP_EOL;
+        $ret .= "CREATE DATABASE /*!32312 IF NOT EXISTS*/ `".${databaseName}."`".
+            " /*!40100 DEFAULT CHARACTER SET ".${characterSet}." ".
+            " COLLATE ".${collationDb}." */;".PHP_EOL.PHP_EOL.
+            "USE `".${databaseName}."`;".PHP_EOL.PHP_EOL;
 
         return $ret;
     }
 
     public function show_create_table($tableName)
     {
-        return "SHOW CREATE TABLE `$tableName`";
+        return "SHOW CREATE TABLE `".$tableName."`";
     }
 
     public function show_create_view($viewName)
@@ -2101,7 +2101,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
         $args = func_get_args();
         return "SELECT TABLE_NAME AS tbl_name ".
             "FROM INFORMATION_SCHEMA.TABLES ".
-            "WHERE TABLE_TYPE='BASE TABLE' AND TABLE_SCHEMA='${args[0]}'";
+            "WHERE TABLE_TYPE='BASE TABLE' AND TABLE_SCHEMA='".${args[0]}."'";
     }
 
     public function show_views()
@@ -2110,21 +2110,21 @@ class TypeAdapterMysql extends TypeAdapterFactory
         $args = func_get_args();
         return "SELECT TABLE_NAME AS tbl_name ".
             "FROM INFORMATION_SCHEMA.TABLES ".
-            "WHERE TABLE_TYPE='VIEW' AND TABLE_SCHEMA='${args[0]}'";
+            "WHERE TABLE_TYPE='VIEW' AND TABLE_SCHEMA='".${args[0]}."'";
     }
 
     public function show_triggers()
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "SHOW TRIGGERS FROM `${args[0]}`;";
+        return "SHOW TRIGGERS FROM `".${args[0]}."`;";
     }
 
     public function show_columns()
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "SHOW COLUMNS FROM `${args[0]}`;";
+        return "SHOW COLUMNS FROM `".${args[0]}."`;";
     }
 
     public function show_procedures()
@@ -2133,7 +2133,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
         $args = func_get_args();
         return "SELECT SPECIFIC_NAME AS procedure_name ".
             "FROM INFORMATION_SCHEMA.ROUTINES ".
-            "WHERE ROUTINE_TYPE='PROCEDURE' AND ROUTINE_SCHEMA='${args[0]}'";
+            "WHERE ROUTINE_TYPE='PROCEDURE' AND ROUTINE_SCHEMA='".${args[0]}."'";
     }
 
     public function show_functions()
@@ -2142,7 +2142,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
         $args = func_get_args();
         return "SELECT SPECIFIC_NAME AS function_name ".
             "FROM INFORMATION_SCHEMA.ROUTINES ".
-            "WHERE ROUTINE_TYPE='FUNCTION' AND ROUTINE_SCHEMA='${args[0]}'";
+            "WHERE ROUTINE_TYPE='FUNCTION' AND ROUTINE_SCHEMA='".${args[0]}."'";
     }
 
     /**
@@ -2157,7 +2157,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
         $args = func_get_args();
         return "SELECT EVENT_NAME AS event_name ".
             "FROM INFORMATION_SCHEMA.EVENTS ".
-            "WHERE EVENT_SCHEMA='${args[0]}'";
+            "WHERE EVENT_SCHEMA='".${args[0]}."'";
     }
 
     public function setup_transaction()
@@ -2181,7 +2181,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return $this->dbHandler->exec("LOCK TABLES `${args[0]}` READ LOCAL");
+        return $this->dbHandler->exec("LOCK TABLES `".${args[0]}."` READ LOCAL");
     }
 
     public function unlock_table()
@@ -2193,7 +2193,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "LOCK TABLES `${args[0]}` WRITE;".PHP_EOL;
+        return "LOCK TABLES `".${args[0]}."` WRITE;".PHP_EOL;
     }
 
     public function end_add_lock_table()
@@ -2205,7 +2205,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "/*!40000 ALTER TABLE `${args[0]}` DISABLE KEYS */;".
+        return "/*!40000 ALTER TABLE `".${args[0]}."` DISABLE KEYS */;".
             PHP_EOL;
     }
 
@@ -2213,7 +2213,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "/*!40000 ALTER TABLE `${args[0]}` ENABLE KEYS */;".
+        return "/*!40000 ALTER TABLE `".${args[0]}."` ENABLE KEYS */;".
             PHP_EOL;
     }
 
@@ -2231,7 +2231,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "/*!40000 DROP DATABASE IF EXISTS `${args[0]}`*/;".
+        return "/*!40000 DROP DATABASE IF EXISTS `".${args[0]}."`*/;".
             PHP_EOL.PHP_EOL;
     }
 
@@ -2239,22 +2239,22 @@ class TypeAdapterMysql extends TypeAdapterFactory
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "DROP TRIGGER IF EXISTS `${args[0]}`;".PHP_EOL;
+        return "DROP TRIGGER IF EXISTS `".${args[0]}."`;".PHP_EOL;
     }
 
     public function drop_table()
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "DROP TABLE IF EXISTS `${args[0]}`;".PHP_EOL;
+        return "DROP TABLE IF EXISTS `".${args[0]}."`;".PHP_EOL;
     }
 
     public function drop_view()
     {
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
-        return "DROP TABLE IF EXISTS `${args[0]}`;".PHP_EOL.
-                "/*!50001 DROP VIEW IF EXISTS `${args[0]}`*/;".PHP_EOL;
+        return "DROP TABLE IF EXISTS `".${args[0]}."`;".PHP_EOL.
+                "/*!50001 DROP VIEW IF EXISTS `".${args[0]}."`*/;".PHP_EOL;
     }
 
     public function getDatabaseHeader()
@@ -2262,7 +2262,7 @@ class TypeAdapterMysql extends TypeAdapterFactory
         $this->check_parameters(func_num_args(), $expected_num_args = 1, __METHOD__);
         $args = func_get_args();
         return "--".PHP_EOL.
-            "-- Current Database: `${args[0]}`".PHP_EOL.
+            "-- Current Database: `".${args[0]}."`".PHP_EOL.
             "--".PHP_EOL.PHP_EOL;
     }
 

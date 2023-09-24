@@ -84,13 +84,10 @@
           "<?php echo $statistics['update_required'] ?$statistics['update_required'] : '' ?>" ;
       var enable_push_reminders = 
           <?php echo $statistics['enable_push_reminders'] ?> ;
-      if ( update_required && enable_push_reminders) {
-        systemPopupNotification(
-          'FreeRSS2 notification', 
-          'Feeds update required', function(n,c) { refreshRss(); }, 30000);
-      }
+      var enable_popup_reminders =
+          <?php echo $statistics['enable_popup_reminders'] ?> ;
+      showRefreshReminder(update_required, enable_push_reminders, enable_popup_reminders);
     </script>
-
     <script> refreshMainPage(1); </script>
 
     <div id="mySidebar" class="sidebar">
@@ -257,24 +254,9 @@
       </div>
     </div>
 
-    <div class="modal fade" id="searchDialog" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Search</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <label>Find in article title or body</label>
-            <input type="text" class="form-control" id="text-to-find">
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" onclick="triggerSearch();">Start search</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <?php html_include('refresh_reminder_dialog.html'); ?>
+
+    <?php html_include('search_articles_dialog.html'); ?>
 
     <?php html_include('inline_help_dialog.html'); ?>
 

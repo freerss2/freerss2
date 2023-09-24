@@ -8,6 +8,7 @@ include "movie_rating_conf.php";
 
 
 # Get movie rating using some online service
+#[AllowDynamicProperties]
 class MovieRatingProvider {
 
     public function __construct($name) {
@@ -114,7 +115,8 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
             $film = $films[$i];
             if ( ! $year) { $found = true; break; } # no comparison criteria - use first match
             # compare film year and exit on match
-            if ( $year == $film->year && $info[0] == $film->nameRu) {
+            $film_nameRu = $film->nameRu ?? null;
+            if ( $year == $film->year && $info[0] == $film_nameRu) {
               $found = true; break;
             }
         }

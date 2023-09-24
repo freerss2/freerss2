@@ -1,0 +1,24 @@
+﻿    <div class="modal fade" id="refreshReminderDialog" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title alert"><i class="fa fa-exclamation-triangle"></i>&nbsp;Articles Refresh Reminder</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="reminder-body">
+            <div class="text-center align-items-center">
+              <label class="mb-2">
+                According to <a href="settings.php#preferences">your settings</a>, it's time to refresh RSS articles
+              </label>
+              <button type="button" class="btn btn-primary px-3 py-4 mb-2" data-bs-dismiss="modal" onclick="refreshRss();">
+                <i class="fa fa-sync-alt"></i>&nbsp;
+                Start articles refresh
+              </button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>
+          </div>
+        </div>
+      </div>
+    </div>

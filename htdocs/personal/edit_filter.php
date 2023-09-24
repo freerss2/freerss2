@@ -21,14 +21,14 @@
   $user_id = $_SESSION['user_id'];  # take from login info
   $rss_app->setUserId($user_id);
 
-  $watch_req = $_GET['watch_id'];
+  $watch_req = $_GET['watch_id'] ?? null;
 
   $watches_info = $rss_app->getWatchesList();
   $watches = array();
   $active_watch = Null;
   foreach ($watches_info as $watch) {
     $title = $watch['title'];
-    if ($watch['user_id'] || $title == 'trash') {
+    if ($watch['user_id'] ?? null || $title == 'trash') {
       $watches[] = $watch;
       if ($watch_req && $watch['fd_watchid'] == $watch_req) {
         $active_watch = $watch;
@@ -117,7 +117,9 @@
               echo "<a class=\"nav-link $active\" href=\"edit_filter.php\">= New =</a>\n";
               echo "</li>\n";
               foreach ($watches as $watch) {
-                  $active = $watch['fd_watchid'] === $active_watch['fd_watchid'] ? 'active' : '';
+                  $active = (
+                    $active_watch &&
+                    $watch['fd_watchid'] === $active_watch['fd_watchid']) ? 'active' : '';
                   $watch_id = $watch['fd_watchid'];
                   $title = $watch['title'];
                   echo "<li class=\"nav-item btn-group\">\n";
@@ -128,14 +130,14 @@
                   }
                   echo "</li>\n";
               }
-            ?>            
+            ?>
           </ul>
         </span>
         <span style="display:inline-block; vertical-align: top; max-width: 800px;">
 
           <div class="input-group mb-3">
             <span class="input-group-text">Watch</span>
-            <input type="text" class="form-control" value="<?php echo $active_watch['title'] ?>" id="watch_name" style="min-width: 8rem;" placeholder="Watch name">
+            <input type="text" class="form-control" value="<?php echo $active_watch['title'] ?? '' ?>" id="watch_name" style="min-width: 8rem;" placeholder="Watch name">
             <button type="button" class="btn btn-outline-secondary <?php echo $show_save_delete; ?>" onclick="saveWatchName('<?php echo $active_watch['fd_watchid']; ?>')">
                 Save
             </button>

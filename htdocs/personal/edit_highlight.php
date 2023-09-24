@@ -21,7 +21,7 @@
   $user_id = $_SESSION['user_id'];  # take from login info
   $rss_app->setUserId($user_id);
 
-  $keyword_req = $_GET['keyword_id'];
+  $keyword_req = $_GET['keyword_id'] ?? null;
 
   $keywords_info = $rss_app->getKeywords();
   $active_keyword = Null;
