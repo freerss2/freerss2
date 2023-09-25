@@ -116,6 +116,7 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
             if ( ! $year) { $found = true; break; } # no comparison criteria - use first match
             # compare film year and exit on match
             $film_nameRu = $film->nameRu ?? null;
+            $film_nameEn = $film->nameEn ?? null;
             if ( $year == $film->year && $info[0] == $film_nameRu) {
               $found = true; break;
             }
@@ -125,7 +126,7 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
             # when $info contains alternative names - try to find full match
             $found = false;
             for ($i=1; $i < count($info); $i++ ) {
-                if ( $info[0] == $film->nameRu && $this->decode_html($info[$i]) == $film->nameEn ) {
+                if ( $info[0] == $film_nameRu && $this->decode_html($info[$i]) == $film_nameEn ) {
                     $found = true;
                     break;
                 }
@@ -133,7 +134,7 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
             if ( ! $found ) { return ''; }
         }
         $kp_id = $film->filmId;
-        $title = $film->nameRu . ' / ' . $film->nameEn .
+        $title = $film_nameRu . ' / ' . $film_nameEn .
           ' ('.$film->year.')';
         $result = "<a target=\"_blank\" title=\"$title\" href=\"https://www.kinopoisk.ru/film/$kp_id/\"> ".
           "<img loading=\"lazy\" src=\"http://www.kinopoisk.ru/rating/$kp_id.gif\"></a>";
