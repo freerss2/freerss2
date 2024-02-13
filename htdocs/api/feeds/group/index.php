@@ -17,19 +17,14 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (feed_id=STR, enable=1/0, xml_url=STR, title=STR, action=delete)
   // TODO: develop API args parser
 
-  $group_id     = $_GET['group_id'];
-  if (! $group_id) {
-    echo "missing group_id arg";
-    exit(1);
-  }
-
-  $action = $_GET['action'];
+  $group_id = $_GET['group_id'] ?? Null; if (! $group_id) { echo "missing group_id arg"; exit(1); }
+  $action   = $_GET['action']   ?? Null;
 
   // For 'action' == 'edit'
   // return HTML code for feeds group editing

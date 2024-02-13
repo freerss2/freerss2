@@ -18,16 +18,14 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (watch_id=STR, delta=INT)
   // TODO: develop API args parser
 
-  $watch_id = $_GET['watch_id'];
-  if (! $watch_id) { echo "missing watch_id arg"; exit(1); }
-  $delta     = $_GET['delta'];
-  if (! $delta) { echo "missing delta arg"; exit(1); }
+  $watch_id = $_GET['watch_id'] ?? Null; if (! $watch_id) { echo "missing watch_id arg"; exit(1); }
+  $delta    = $_GET['delta']    ?? Null; if (! $delta)    { echo "missing delta arg"; exit(1); }
 
   $err = $rss_app->moveWatch($watch_id, $delta);
   echo $err;

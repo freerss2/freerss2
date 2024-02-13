@@ -16,21 +16,22 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (keyword)
   // TODO: develop API args parser
 
-  $feed_id          = $_GET['feed_id'];  // when feed_id is empty - create new (with ID according to site_address)
-  $site_address     = $_GET['site_address'];
-  $global_pattern   = $_GET['global_pattern'];
-  $item_pattern     = $_GET['item_pattern'];
-  $item_title       = $_GET['item_title'];
-  $item_link        = $_GET['item_link'];
-  $item_content     = $_GET['item_content'];
-  $rss_title        = $_GET['rss_title'];
-  $rss_group        = $_GET['rss_group'];
+  $feed_id          = $_GET['feed_id']        ?? Null;
+  // when feed_id is empty - create new (with ID according to site_address)
+  $site_address     = $_GET['site_address']   ?? Null;
+  $global_pattern   = $_GET['global_pattern'] ?? Null;
+  $item_pattern     = $_GET['item_pattern']   ?? Null;
+  $item_title       = $_GET['item_title']     ?? Null;
+  $item_link        = $_GET['item_link']      ?? Null;
+  $item_content     = $_GET['item_content']   ?? Null;
+  $rss_title        = $_GET['rss_title']      ?? Null;
+  $rss_group        = $_GET['rss_group']      ?? Null;
 
   if ($site_address && $item_pattern && $item_title && $item_link && $item_content) {
     $content = $rss_app->saveSiteToFeed($feed_id, $site_address, $global_pattern, $item_pattern,

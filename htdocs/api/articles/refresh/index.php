@@ -30,7 +30,7 @@
   //  exit();
   //}
   $rss_app = new RssApp();
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   $feed_id = null;

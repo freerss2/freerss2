@@ -22,22 +22,17 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (item_id=STR, change_read=on/off/toggle, change_flagged=on/off, labels=str, watch_id=str)
   // TODO: develop API args parser
 
-  $item_id     = $_GET['item_id'];
-  if (! $item_id) {
-    echo "missing item_id arg";
-    exit(1);
-  }
-
-  $change_read = $_GET['change_read'];
-  $change_flagged = $_GET['change_flagged'];
-  $labels = $_GET['labels'];
-  $watch_id = $_GET['watch_id'];
+  $item_id        = $_GET['item_id']        ?? Null; if (! $item_id) { echo "missing item_id arg"; exit(1); }
+  $change_read    = $_GET['change_read']    ?? Null;
+  $change_flagged = $_GET['change_flagged'] ?? Null;
+  $labels         = $_GET['labels']         ?? Null;
+  $watch_id       = $_GET['watch_id']       ?? Null;
 
   if (! $change_read && ! $change_flagged && is_null($labels) && is_null($watch_id)) {
     echo "missing change args";

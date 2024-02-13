@@ -16,14 +16,13 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (keyword)
   // TODO: develop API args parser
 
-  $keyword     = $_GET['keyword'];
-  if (! $keyword) { echo "missing keyword arg"; exit(1); }
+  $keyword = $_GET['keyword'] ?? Null; if (! $keyword) { echo "missing keyword arg"; exit(1); }
 
   $err = $rss_app->deleteHighlight($keyword);
   echo "$err";

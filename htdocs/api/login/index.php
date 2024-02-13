@@ -15,14 +15,10 @@
 
   $rss_app = new RssApp();
 
-  $function = $_GET['function'];
-  if (! $function) {
-    echo "Error: missing function argument";
-    exit(1);
-  }
+  $function = $_GET['function'] ?? Null; if (! $function) { echo "Error: missing function argument"; exit(1); }
 
   if ($function == 'check_auth_token') {
-    $err = $rss_app->check_auth_token($_GET['auth_token'], $_SERVER['REMOTE_ADDR']);
+    $err = $rss_app->check_auth_token($_GET['auth_token'] ?? Null, $_SERVER['REMOTE_ADDR']);
     if  ( $err ) {
       echo "Error: $err";
       exit(1);
@@ -35,7 +31,7 @@
     exit(0);
   }
   // get login, fetch record (if exist)
-  $login = $_GET['login'];
+  $login = $_GET['login'] ?? Null;
   if (! $login) {
     echo "Error: missing login argument";
     exit(1);
@@ -52,7 +48,7 @@
 
   if ($function == 'second_stage') {
     // get salted password
-    $gui_password = $_GET['password'];
+    $gui_password = $_GET['password'] ?? Null;
     if (! $gui_password) {
       echo "Error: missing password argument";
       exit(1);
@@ -67,7 +63,7 @@
       exit(1);
     }
     // get auth token
-    $auth_token = $rss_app->get_auth_token($_SESSION['user_id'], '');
+    $auth_token = $rss_app->get_auth_token($_SESSION['user_id'] ?? Null, '');
     // return redirect URL with this token
     echo "Location: /personal/?auth_token=$auth_token";
     exit(0);

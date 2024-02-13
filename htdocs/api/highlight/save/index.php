@@ -16,19 +16,19 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (keyword)
   // TODO: develop API args parser
 
-  $original_keyword     = $_GET['original_keyword'];
-  $keyword     = $_GET['keyword'];
-  $fg_color    = $_GET['fg_color'];
-  $bg_color    = $_GET['bg_color'];
-  $bold        = $_GET['bold'];
-  $italic      = $_GET['italic'];
-  $underscore  = $_GET['underscore'];
+  $original_keyword = $_GET['original_keyword'] ?? Null;
+  $keyword          = $_GET['keyword']          ?? Null;
+  $fg_color         = $_GET['fg_color']         ?? Null;
+  $bg_color         = $_GET['bg_color']         ?? Null;
+  $bold             = $_GET['bold']             ?? Null;
+  $italic           = $_GET['italic']           ?? Null;
+  $underscore       = $_GET['underscore']       ?? Null;
 
   if (! $keyword) { echo "missing keyword arg"; exit(1); }
 

@@ -17,20 +17,19 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get argument (xml_url=STR)
   // TODO: develop API args parser
 
-  $xml_url = $_GET['xml_url'];
-  if (! $xml_url) { echo "missing xml_url arg"; exit(1); }
-  $title = $_GET['title'];
-  if (! $title) { echo "missing title arg"; exit(1); }
-  $group = $_GET['group'];
-  if (! $group) { echo "missing group arg"; exit(1); }
-  $input_type_rss = $_GET['input_type_rss'] == 'true' || $_GET['input_type_rss'] == 1;
-  $source_type = $_GET['source_type'];
+  $xml_url = $_GET['xml_url'] ?? Null; if (! $xml_url) { echo "missing xml_url arg"; exit(1); }
+  $title   = $_GET['title']   ?? Null; if (! $title)   { echo "missing title arg"; exit(1); }
+  $group   = $_GET['group']   ?? Null; if (! $group)   { echo "missing group arg"; exit(1); }
+
+  $input_type_rss = $_GET['input_type_rss'] ?? Null;
+  $input_type_rss = $input_type_rss = 'true' || $input_type_rss = 1;
+  $source_type    = $_GET['source_type'] ?? Null;
 
   if (! $input_type_rss) {
     $result = $rss_app->findRssForSite($xml_url);

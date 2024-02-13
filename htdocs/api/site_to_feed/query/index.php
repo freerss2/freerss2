@@ -24,13 +24,12 @@
   // 2. Get arguments (keyword)
   // TODO: develop API args parser
 
-  $site_address     = $_GET['site_address'];
-
-  $global_pattern   = $_GET['global_pattern'];
-  $item_pattern     = $_GET['item_pattern'];
-  $item_title       = $_GET['item_title'];
-  $item_link        = $_GET['item_link'];
-  $item_content     = $_GET['item_content'];
+  $site_address     = $_GET['site_address']   ?? Null;
+  $global_pattern   = $_GET['global_pattern'] ?? '';
+  $item_pattern     = $_GET['item_pattern']   ?? '';
+  $item_title       = $_GET['item_title']     ?? '';
+  $item_link        = $_GET['item_link']      ?? '';
+  $item_content     = $_GET['item_content']   ?? '';
 
   if ($site_address && $item_pattern && $item_title && $item_link && $item_content) {
     $content = $rss_app->extractSiteToFeedPreview($site_address, $global_pattern, $item_pattern,

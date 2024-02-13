@@ -13,12 +13,8 @@
 
   $rss_app = new RssApp();
 
-  $email = $_GET['email'];
-  if (! $email) {
-    echo "Error: missing email argument";
-    exit(1);
-  }
-  $name = $_GET['name'];
+  $email = $_GET['email'] ?? Null; if (! $email) { echo "Error: missing email argument"; exit(1); }
+  $name  = $_GET['name']  ?? Null;
 
   $result = $rss_app->registerNewUser($email, $name);
 

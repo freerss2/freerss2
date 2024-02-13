@@ -31,19 +31,12 @@
   //  exit();
   //}
   $rss_app = new RssApp();
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
-  $item_id     = $_GET['item_id'];
-  if (! $item_id) {
-    echo "missing item_id arg";
-    exit(1);
-  }
-  $plugin     = $_GET['plugin'];
-  if (! $plugin) {
-    echo "missing plugin arg";
-    exit(1);
-  }
+  $item_id = $_GET['item_id'] ?? Null; if (! $item_id) { echo "missing item_id arg"; exit(1); }
+  $plugin  = $_GET['plugin']  ?? Null; if (! $plugin)  { echo "missing plugin arg"; exit(1); }
+
   if ($plugin != 'kinopoisk') {
     echo "unsupported plugin name";
     exit(1);

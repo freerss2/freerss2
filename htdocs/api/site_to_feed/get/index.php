@@ -16,14 +16,13 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (keyword)
   // TODO: develop API args parser
 
-  $feed_id     = $_GET['feed_id'];
-  if (! $feed_id) { echo "missing feed_id arg"; exit(1); }
+  $feed_id = $_GET['feed_id'] ?? Null; if (! $feed_id) { echo "missing feed_id arg"; exit(1); }
 
   $rec = $rss_app->getSiteToFeed($feed_id);
   echo json_encode($rec);

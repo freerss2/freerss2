@@ -16,13 +16,13 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (keyword)
   // TODO: develop API args parser
 
-  $original_keyword     = $_GET['original_keyword'];
+  $original_keyword = $_GET['original_keyword'] ?? Null;
   if (! $original_keyword) { echo "missing original_keyword arg"; exit(1); }
 
   $err = $rss_app->cloneHighlight($original_keyword);

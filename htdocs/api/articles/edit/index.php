@@ -7,7 +7,7 @@
 
   session_start();
 
-  if ( ! $_SESSION['user_id'] ) {
+  if ( ! ($_SESSION['user_id'] ?? Null) ) {
     echo "Error: not logged-in";
     exit(1);
   }
@@ -23,17 +23,13 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get argument (item_id=STR)
   // TODO: develop API args parser
 
-  $item_id     = $_GET['item_id'];
-  if (! $item_id) {
-    echo "missing item_id arg";
-    exit(1);
-  }
+  $item_id     = $_GET['item_id'] ?? Null; if (! $item_id) { echo "missing item_id arg"; exit(1); }
 
   $code = $rss_app->itemEditCode($item_id);
   echo $code;

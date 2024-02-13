@@ -16,13 +16,13 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get argument (format=opml)
   // TODO: develop API args parser
 
-  $formal = $_GET['formal'];
+  $formal = $_GET['formal'] ?? Null;
   if (! $format) { $format='opml'; }
   if ($format != 'opml') { echo "unsupported format: $format"; exit(1); }
 

@@ -16,14 +16,13 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (feed_id=STR, enable=1/0, xml_url=STR, title=STR, action=delete)
   // TODO: develop API args parser
 
-  $watch_id     = $_GET['watch_id'];
-  if (! $watch_id) { echo "missing watch_id arg"; exit(1); }
+  $watch_id = $_GET['watch_id'] ?? Null; if (! $watch_id) { echo "missing watch_id arg"; exit(1); }
 
   $err = $rss_app->deleteWatch($watch_id);
   echo $err;

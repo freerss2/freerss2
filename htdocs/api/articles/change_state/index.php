@@ -17,22 +17,14 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (action=NNN&ids=id1,id2,...)
   // TODO: develop API args parser
 
-  $ids = $_GET['ids'];
-  if (! $ids) {
-    echo "missing ids arg";
-    exit(1);
-  }
-
-  $action = $_GET['action'];
-  if (! $action) {
-    echo "missing action arg";
-    exit(1);
+  $ids    = $_GET['ids'];    if (! $ids)    { echo "missing ids arg"; exit(1); }
+  $action = $_GET['action']; if (! $action) { echo "missing action arg"; exit(1);
   }
 
   $item_ids = explode(',', $ids);

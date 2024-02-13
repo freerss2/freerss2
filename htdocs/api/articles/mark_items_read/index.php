@@ -17,17 +17,13 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get arguments (ids=id1,id2,...)
   // TODO: develop API args parser
 
-  $ids = $_GET['ids'];
-  if (! $ids) {
-    echo "missing ids arg";
-    exit(1);
-  }
+  $ids = $_GET['ids'] ?? Null; if (! $ids) { echo "missing ids arg"; exit(1); }
 
   // 3. Update `tbl_posts` for user_id=$user_id and fd_postid=item_id
   // update field `read`

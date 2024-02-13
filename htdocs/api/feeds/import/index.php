@@ -16,7 +16,7 @@
   // 1.1. Return message on error
   // TODO
 
-  $user_id = $_SESSION['user_id'];
+  $user_id = $_SESSION['user_id'] ?? Null;
   $rss_app->setUserId($user_id);
 
   // 2. Get argument (format=opml)
@@ -26,7 +26,7 @@
     echo "Error: missing 'opmlFile'";
     exit(1);
   }
-  if($_FILES['opmlFile']['error'] !== UPLOAD_ERR_OK) {
+  if ($_FILES['opmlFile']['error'] !== UPLOAD_ERR_OK) {
     echo "Error: ".$_FILES['opmlFile']['error'];
     exit(1);
   }
