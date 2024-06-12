@@ -161,15 +161,17 @@ function debug_log($msg) {
   file_put_contents($log_file, $log_msg.PHP_EOL , FILE_APPEND | LOCK_EX);
 }
 
-define("QR_CODE_API", 'https://chart.googleapis.com/chart?');
+# define("QR_CODE_API", 'https://chart.googleapis.com/chart?chs=155x155&cht=qr&chl=');
+define("QR_CODE_API", 'https://api.qrserver.com/v1/create-qr-code/?size=155x155&data=');
+
 /**
  * Generate QR-code from URL
  * @param $url: text to be encoded
  * @return: code for HTML IMAGE
 **/
 function generate_qr_code($url) {
-  return '<img src="'.
-    QR_CODE_API.'chs=155x155&cht=qr&chl='.rawurlencode($url).
+  return '<img src="' .
+    QR_CODE_API . rawurlencode($url).
     '" />';
 }
 
