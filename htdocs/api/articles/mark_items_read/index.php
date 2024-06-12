@@ -23,12 +23,22 @@
   // 2. Get arguments (ids=id1,id2,...)
   // TODO: develop API args parser
 
-  $ids = $_GET['ids'] ?? Null; if (! $ids) { echo "missing ids arg"; exit(1); }
+  $type = $_GET['type'] ?? Null;
+  if ($type) {
+    // alternative "mark all read" for all pages
+    // type=group/subscr/watch id=STRING
+    $id = $_GET['id'] ?? Null; if (! $id) { echo "missing id arg"; exit(1); }
+    $item_ids = $rss_app->getUnreadNonmarked($type, $id);
+  } else {
+    $ids = $_GET['ids'] ?? Null; if (! $ids) { echo "missing ids arg"; exit(1); }
+    $item_ids = explode(',', $ids);
+  }
 
   // 3. Update `tbl_posts` for user_id=$user_id and fd_postid=item_id
   // update field `read`
-  $item_ids = explode(',', $ids);
-  $rss_app->updateItemsState($item_ids, 'read', 1);
+  if ( $item_ids ) {
+    $rss_app->updateItemsState($item_ids, 'read', 1);
+  }
   echo "updated 'read' state for ".count($item_ids)." items<BR>\n";
 
 ?>

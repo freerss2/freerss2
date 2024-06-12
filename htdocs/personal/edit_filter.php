@@ -95,7 +95,7 @@
     </nav>
 
       <div class="container-fluid">
-        <span style="display:inline-block; max-width:70%; margin-right:1em;"> 
+        <span style="display:inline-block; max-width:70%; margin-right:1em;">
           <h3>Watches (filters)</h3>
           <div class="btn-group mb-3" style="width: 100%;">
                 <a class="btn btn-outline-secondary btn-md"
@@ -107,7 +107,7 @@
                     <i class="fas fa-cloud-upload-alt"></i>
                 </a>
           </div>
-          
+
           <ul class="nav nav-pills flex-column">
             <?php
               $active = is_null($active_watch) ? 'active' : '';
@@ -130,6 +130,13 @@
                   }
                   echo "</li>\n";
               }
+              if ( is_null($active_watch) ) {
+                $active_watch_title = '';
+                $active_watch_fd_watchid = '';
+              } else {
+                $active_watch_title = $active_watch['title'];
+                $active_watch_fd_watchid = $active_watch['fd_watchid'];
+              }
             ?>
           </ul>
         </span>
@@ -137,11 +144,11 @@
 
           <div class="input-group mb-3">
             <span class="input-group-text">Watch</span>
-            <input type="text" class="form-control" value="<?php echo $active_watch['title'] ?? '' ?>" id="watch_name" style="min-width: 8rem;" placeholder="Watch name">
-            <button type="button" class="btn btn-outline-secondary <?php echo $show_save_delete; ?>" onclick="saveWatchName('<?php echo $active_watch['fd_watchid']; ?>')">
+            <input type="text" class="form-control" value="<?php echo $active_watch_title ?? '' ?>" id="watch_name" style="min-width: 8rem;" placeholder="Watch name">
+            <button type="button" class="btn btn-outline-secondary <?php echo $show_save_delete ?? ''; ?>" onclick="saveWatchName('<?php echo $active_watch_fd_watchid; ?>')">
                 Save
             </button>
-            <button type="button" class="btn btn-outline-secondary <?php echo $show_save_delete; ?> <?php echo $show_all_edit; ?>" onclick="deleteWatch('<?php echo $active_watch['fd_watchid']; ?>')">
+            <button type="button" class="btn btn-outline-secondary <?php echo $show_save_delete; ?> <?php echo $show_all_edit; ?>" onclick="deleteWatch('<?php echo $active_watch_fd_watchid; ?>')">
                 Delete
             </button>
           </div>
@@ -179,7 +186,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body" id="rule-edit">
-            
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>

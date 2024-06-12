@@ -140,6 +140,9 @@
         <tr><td>Ctrl/ArrowRight</td><td>Go to next RSS</td></tr>
         <tr><td>Ctrl/ArrowLeft</td><td>Go to previous RSS</td></tr>
         <tr><td>Ctrl/ArrowDown</td><td>Mark current article as "read" and move to next one</td></tr>
+        <tr><td>Alt/PgUp</td><td>Go to previous page of current view</td></tr>
+        <tr><td>Alt/PgDn</td><td>Go to next page of current view</td></tr>
+        <tr><td>Alt/A</td><td>Mark all articles on all pages of current view as "read"</td></tr>
         <tr><td>Alt/H</td><td>Return to app homepage</td></tr>
         <tr><td>Alt/R</td><td>Refresh articles from RSS sources</td></tr>
         <tr><td>Ctrl/Z</td><td>Mark all articles on current page as "read"</td></tr>

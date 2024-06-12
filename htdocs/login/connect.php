@@ -26,6 +26,9 @@
     <!-- App styles -->
     <link rel="stylesheet" href="../style/login.css<?php echo $VER_SUFFIX;?>">
 
+    <!-- Cookie consent banner -->
+    <script type="text/javascript" charset="UTF-8" src="//cdn.cookie-script.com/s/af99dbcd51e96a347a5d1074b38f5553.js"></script>
+
     <title>Free RSS</title>
 
   <style>

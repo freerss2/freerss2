@@ -85,6 +85,13 @@ function decodeHTMLEntities(rawStr) {
   return rawStr.replace(/&#(\d+);/g, ((match, dec) => `${String.fromCharCode(dec)}`));
 }
 
+// ---------------------( HTML entitle tags decode )--------------------------
+
+function htmlDecode(input) {
+  var doc = new DOMParser().parseFromString(input, "text/html");
+  return doc.documentElement.textContent;
+}
+
 // ---------------------( building URL from form data )--------------------------
 
 // re-build form submit URL

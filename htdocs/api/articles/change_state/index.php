@@ -1,7 +1,6 @@
 ﻿<?php
   /* - - - - - - - - - - - - *\
      Change articles list state
-     to "read"
   \* - - - - - - - - - - - - */
 
   session_start();
@@ -23,12 +22,24 @@
   // 2. Get arguments (action=NNN&ids=id1,id2,...)
   // TODO: develop API args parser
 
-  $ids    = $_GET['ids'];    if (! $ids)    { echo "missing ids arg"; exit(1); }
-  $action = $_GET['action']; if (! $action) { echo "missing action arg"; exit(1);
-  }
+  $action = $_GET['action'] ?? Null; if (! $action) { echo "missing action arg"; exit(1); }
 
-  $item_ids = explode(',', $ids);
-  $result = $rss_app->changeItemsState($item_ids, $action);
+  $type = $_GET['type'] ?? Null;
+  if ($type) {
+    // alternative "mark all read" for all pages
+    // - type=group/subscr/watch
+    // - id=STRING
+    $id = $_GET['id'] ?? Null; if (! $id) { echo "missing id arg"; exit(1); }
+    $item_ids = $rss_app->getUnreadNonmarked($type, $id);
+    // update field `read`
+    if ( $item_ids ) {
+      $rss_app->updateItemsState($item_ids, 'read', 1);
+    }
+  } else {
+    $ids = $_GET['ids'] ?? Null; if (! $ids) { echo "missing ids arg"; exit(1); }
+    $item_ids = explode(',', $ids);
+    $result = $rss_app->changeItemsState($item_ids, $action);
+  }
 
   echo "updated 'read' state for ".count($item_ids)." items<BR>\n";
 

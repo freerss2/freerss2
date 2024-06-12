@@ -210,12 +210,18 @@
   max-width: 80vw;
   width: auto;
   height: auto;
+  float: none;
 }
 
-.accordion-body > img {
-  max-width: 80vw;
+.accordion-body > * img {
+  max-width: 80vw !important;
   width: auto;
   height: auto;
+  float: none;
+}
+
+.accordion-body video {
+  max-width: 80vw !important;
 }
 
 .vertical-middle {
@@ -356,6 +362,8 @@
 
 .settings-icon {padding-top: 3px;}
 
+.icon-before-button { vertical-align: middle; }
+
 .short-input {
   max-width:30em;
 }
@@ -377,3 +385,4 @@
   .hide-on-cellular { display: none; }
 
 }
+

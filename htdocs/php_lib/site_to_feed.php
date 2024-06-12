@@ -13,7 +13,7 @@
   }
  */
 
-/* Substitute in given string 
+/* Substitute in given string
  * placeholders {i} with parameters from array 1..n
  */
 function apply_parameters($str, $parameters) {
@@ -53,10 +53,12 @@ class SiteToFeed {
            $link = apply_parameters($this->result_mapping->link, $item);
            $fd_postid = $link;
            $pubDate = date("Y-m-d G:i");
+           $content_mapping = html_entity_decode($this->result_mapping->content);
+
            array_push($result['items'], array(
              'title' => apply_parameters($this->result_mapping->title, $item),
              'link' => $link,
-             'description' => apply_parameters($this->result_mapping->content, $item),
+             'description' => apply_parameters($content_mapping, $item),
              'author' => '',
              'categories' => '',
              'dateStr'    => $pubDate,
@@ -81,7 +83,7 @@ class SiteToFeed {
           $global_pattern = $this->convert_pattern_to_regex($this->global_pattern, 1);
           preg_match($global_pattern, $content, $matches);
           if ($matches) {
-            $content = $matches[1];
+            $content = $matches[1] ?? '';
           }
         }
         # Search for articles

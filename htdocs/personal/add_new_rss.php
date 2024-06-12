@@ -148,5 +148,7 @@
 
     <?php html_include('edit_site_to_feed_dialog.html'); ?>
 
+    <?php html_include('error_dialog.html'); ?>
+
   </body>
 </html>

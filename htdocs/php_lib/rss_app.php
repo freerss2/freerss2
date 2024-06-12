@@ -8,7 +8,7 @@ include "site_to_feed.php";
 require_once "Spyc.php";
 
 
-$APP_VERSION = '2.0.1.7.1a';
+$APP_VERSION = '2.0.1.7.3b';
 
 $VER_SUFFIX = "?v=$APP_VERSION";
 
@@ -84,7 +84,7 @@ class RssApp {
    * Is this watch in reserved list?
   **/
   public function isReservedWatch($watch_id) {
-    return in_array($watch_id, $this->reserved_watches);
+    return in_array(strtolower($watch_id), $this->reserved_watches);
   }
 
   /**
@@ -149,6 +149,9 @@ class RssApp {
     $bindings['name'] = $name;
     $bindings['checksum'] = $checksum;
     $this->db->execQuery($query3, $bindings);
+    # TODO: query back the new user ID
+    # TODO: add subscription "FreeRSS2 updates" under "Announcements"
+    # with address http://felixl.coolpage.biz/free_rss2/rss.xml (take from conf-file)
     $message = "Hello $name,<BR>\n".
       "This is automatic message from FreeRSS application.<BR>\n".
       "If you never submit account request - just ignore it.<BR>\n".
@@ -339,12 +342,13 @@ class RssApp {
       // Enable errors and warnings
 
       if (! $rss_buffer) {
-          return array("Nothing read from $rss_url", null, $rss_title);
+          return array("Nothing read from $rss_url", null, $rss_title, '');
       }
       # if $site_to_feed - convert $rss_buffer to $items
       if ( $site_to_feed &&  $site_to_feed['item_pattern'] ) {
         $global_pattern = $site_to_feed['global_pattern'];
         $item_pattern = $site_to_feed['item_pattern'];
+        $item_pattern = html_entity_decode($item_pattern);
         $mapping = $site_to_feed['mapping'];
         $encoding = $site_to_feed['encoding'];
         if ($encoding) {
@@ -357,7 +361,7 @@ class RssApp {
       } else {
         if ( strpos($rss_buffer, '<?xml') === false &&
              strpos($rss_buffer, '<rss') === false) {
-            return array($rss_buffer, null, $rss_title);
+            return array($rss_buffer, null, $rss_title, '');
         }
         # echo "read-in ".strlen($rss_buffer)." bytes<BR>\n";
 
@@ -369,7 +373,7 @@ class RssApp {
 
         if (! $rss) {
           $rss_buffer = substr($rss_buffer, 0, 16);
-          return array("Failed parsing of content from $rss_url<BR>///$rss_buffer///\n", null, $rss_title);
+          return array("Failed parsing of content from $rss_url<BR>///$rss_buffer///\n", null, $rss_title, '');
         }
         $items = array();
         $rss_title = $rss->channel->title;
@@ -494,7 +498,8 @@ class RssApp {
     $query = "SELECT a.* FROM (
 SELECT s1.`type`, s1.`id`, f.`title`, s1.`timestamp`, s1.`upd_status`, s1.`upd_log`
 FROM `tbl_subscr_state`AS s1, `tbl_subscr` AS f
-WHERE s1.`user_id`=:user_id AND s1.`id` = f.`fd_feedid` AND s1.`type`='subscr'
+WHERE s1.`user_id`=:user_id AND s1.`id` = f.`fd_feedid`
+  AND s1.`type`='subscr' AND f.`user_id` = :user_id
 UNION
 SELECT s2.`type`, s2.`id`, s2.`id`, s2.`timestamp`, s2.`upd_status`, s2.`upd_log`
 FROM `tbl_subscr_state`AS s2
@@ -578,6 +583,7 @@ ORDER BY a.`timestamp` DESC";
    * @return: parsed site content or error message
   **/
   public function extractSiteToFeedContent($site_address, $global_pattern, $item_pattern) {
+    $item_pattern = html_entity_decode($item_pattern);
     $content = $this->querySiteToFeedContent($site_address);
     $mapping = array();
     $s = new SiteToFeed($site_address, $item_pattern, $mapping, $global_pattern);
@@ -608,6 +614,7 @@ ORDER BY a.`timestamp` DESC";
   **/
   public function extractSiteToFeedPreview(
     $site_address, $global_pattern, $item_pattern, $item_title, $item_link, $item_content) {
+    $item_pattern = html_entity_decode($item_pattern);
     // 1. get site content
     $content = $this->querySiteToFeedContent($site_address);
     // 2. extract records
@@ -619,9 +626,9 @@ ORDER BY a.`timestamp` DESC";
     // 3. return joined records as single HTML buffer
     $result = array();
     foreach ($items as $article) {
-      $link = $article['link'];
-      $title = $article['title'];
-      $content = $article['content'];
+      $link = $article['link'] ?? '';
+      $title = $article['title'] ?? '';
+      $content = $article['content'] ?? '';
       $result []= "<h3><a href='$link'>$title</a></h3>$content";
     }
     return implode("<BR>--------<BR>\n", $result);
@@ -644,8 +651,13 @@ ORDER BY a.`timestamp` DESC";
       $feed_id, $site_address, $global_pattern,
       $item_pattern, $item_title, $item_link, $item_content,
       $rss_title, $rss_group) {
+    // if no feed_id - create new feed
     if (! $feed_id || strval($feed_id) == 'null') {
-      // if no feed_id - create new feed
+      // check rss_title for validity
+      $error = $this->checkNameValidity($rss_title, 'subscr');
+      if ( $error ) { return "Error: " . $error; }
+      $error = $this->checkNameValidity($rss_group, 'group');
+      if ( $error ) { return "Error: " . $error; }
       $this->insertNewFeed($rss_group, $rss_title, $rss_title, $site_address, $site_address, 0);
       $feed_id = _digest_hex($site_address);
     }
@@ -1257,7 +1269,8 @@ WHERE `user_id` = :user_id
   **/
   public function createWatch($name) {
     if ( $this->isReservedWatch(strtolower($name)) ) { return "Error: reserved name"; }
-
+    $error = $this->checkNameValidity($name, 'watch');
+    if ( $error ) { return "Error: " . $error; }
     // Check that such name is not in use
     $query0 = "SELECT COUNT(1) FROM `tbl_watches` WHERE LOWER(`title`)=LOWER(:name) AND `user_id`=:user_id";
     $bindings0 = array('name'=>$name, 'user_id'=>$this->user_id);
@@ -1610,7 +1623,7 @@ WHERE `user_id` = :user_id
         $rec['timestamp'] = $time_now;
       }
       if ($last_timestamp && $rec['timestamp'] < $last_timestamp) {
-        // echo "skip ".$rec['timestamp']." is older than $last_timestamp<BR>\n";
+        // echo "skip ".$rec['timestamp']." is older than $last_timestamp<BR>\n"; ### DEBUG @@@
         continue;
       }
       /*
@@ -1664,8 +1677,8 @@ WHERE `user_id` = :user_id
   **/
   public function settingsForRetrieve() {
     $personal_settings = $this->getAllPersonalSettings();
-    $show_articles = $personal_settings['show_articles'] ? $personal_settings['show_articles'] : 'unread';
-    $order_articles = $personal_settings['order_articles'] ? $personal_settings['order_articles'] : 'time';
+    $show_articles = ($personal_settings['show_articles'] ?? '') ? $personal_settings['show_articles'] : 'unread';
+    $order_articles = ($personal_settings['order_articles'] ?? '') ? $personal_settings['order_articles'] : 'time';
     return array($show_articles, $order_articles);
   }
 
@@ -1685,6 +1698,52 @@ WHERE `user_id` = :user_id
     $result = $this->addWatchesInfo($items);
     $result = $this->addFeedInfo($result);
     $result = $this->markKeywordsInItems($result);
+    return $result;
+  }
+
+  /**
+   * Get a list of IDs for articles in state "unread" and not "bookmarked"
+   * @param $type: group/subscr/watch
+   * @param $id: slice ID (string)
+  **/
+  public function getUnreadNonmarked($type, $id) {
+    $result = array();
+    $bindings = array(
+      'user_id'    => $this->user_id);
+    $query = "SELECT `fd_postid` FROM `tbl_posts` p ".
+          "WHERE p.`user_id` = :user_id ".
+          "AND   p.`flagged` = 0 ".
+          "AND   p.`read` = 0";
+    if ($type == 'subscr') {
+      # similar to retrieveRssItems($id)
+      $query .=
+        " AND p.`fd_feedid` = :fd_feedid";
+      $bindings['fd_feedid'] = $id;
+    } elseif ($type == 'group') {
+      # similar to retrieveGroupItems($id)
+      if (strtolower($id) == 'all') {
+        $specific_group = '';
+      } else {
+        $specific_group = "AND `group` = :group";
+        $bindings['group'] = $id;
+      }
+      $query .=
+        " AND p.`fd_feedid` IN (SELECT `fd_feedid` FROM `tbl_subscr` WHERE ".
+        "`user_id` = :user_id $specific_group)";
+    } elseif ($type == 'watch') {
+      # similar to retrieveWatchItems($id)
+      list($watch_title, $watch_description, $where) = $this->getWatchDescrAndFilter($id);
+      if ($where) {
+        $query .=
+         ' AND ' . implode(' AND ', $where);
+      }
+    } else { # search
+      # similar to findItems($id) - TODO
+    }
+    $items = $this->db->fetchQueryRows($query, $bindings);
+    foreach ($items as $rec) {
+      $result []= $rec['fd_postid'];
+    }
     return $result;
   }
 
@@ -1778,15 +1837,13 @@ WHERE `user_id` = :user_id
   }
 
   /**
-   * Retrieve watch items from DB
-   * @param $watch_id: watch ID (builtin or user-defined filter tag)
-   * @return: watch title, description and list of watch items according to "show" filter
+   * Get watch human-readable description and SQL filter
+   * @param $watch_id: watch ID (string)
+   * @return: array with title, textual description and SQL WHERE condition
   **/
-  public function retrieveWatchItems($watch_id) {
-    list($show_articles, $order_articles) = $this->settingsForRetrieve();
-    $watch_title = ucfirst($watch_id);
+  function getWatchDescrAndFilter($watch_id) {
     $where = array();
-    $bindings = array('user_id' => $this->user_id);
+    $watch_title = ucfirst($watch_id);
     # check built-in watches
     if ($watch_id == 'all' || $watch_id == 'trash') {
       # do nothing - take all
@@ -1812,6 +1869,19 @@ WHERE `user_id` = :user_id
       $watch_title = $this->db->fetchSingleResult($w_query, $w_bindings);
       $watch_description = 'articles matching watch (filter) condition';
     }
+    return array($watch_title, $watch_description, $where);
+  }
+
+  /**
+   * Retrieve watch items from DB
+   * @param $watch_id: watch ID (builtin or user-defined filter tag)
+   * @return: watch title, description and list of watch items according to "show" filter
+  **/
+  public function retrieveWatchItems($watch_id) {
+    list($show_articles, $order_articles) = $this->settingsForRetrieve();
+    $bindings = array('user_id' => $this->user_id);
+
+    list($watch_title, $watch_description, $where) = $this->getWatchDescrAndFilter($watch_id);
     if ('read'   === $show_articles) { $bindings['read'] = 1; }
     if ('unread' === $show_articles) { $bindings['read'] = 0; }
     if (array_key_exists('read', $bindings)) {
@@ -2540,7 +2610,15 @@ WHERE `user_id` = :user_id
   **/
   public function feedsGroupSave($group_id, $data) {
     // if new group id differs from original - make sure it's not already in use
-    $new_group_id = $data->new_group_id;
+    $new_group_id = trim($data->new_group_id);
+    # Make sure the new name complies general rules:
+    # * length (minimal/maximal)
+    # * valid characters inside
+    # * not used as filter (watch) name
+    $error = $this->checkNameValidity($new_group_id, 'group');
+    if ( $error ) {
+      return "Error: " . $error;
+    }
     if ($group_id != $new_group_id) {
       $query1 = "SELECT COUNT(*) FROM `tbl_subscr`
         WHERE `user_id`=:user_id AND `group`=:new_group_id";
@@ -2548,6 +2626,7 @@ WHERE `user_id` = :user_id
       $count = $this->db->fetchSingleResult($query1, $bindings1);
       if ($count != 0) { return "Error: '$new_group_id' already in use"; }
     }
+    # TODO: make sure there is no filter (watch) with such name
     $query2 = "UPDATE `tbl_subscr` SET `group`=:new_group_id, `index_in_gr`=:i
       WHERE `user_id`=:user_id AND `group`=:group_id AND `fd_feedid`=:feed_id";
     $bindings2 = array('user_id'=>$this->user_id, 'new_group_id'=>$new_group_id, 'group_id'=>$group_id);
@@ -2559,6 +2638,26 @@ WHERE `user_id` = :user_id
       $this->db->execQuery($query2, $bindings2);
     }
     return "";
+  }
+
+  /**
+   * Check name of group/view for length/content rules
+   * @param $name: name to check
+   * @param $type: object type (group, subscr, watch)
+   * @return: Error text (if any)
+  **/
+  public function checkNameValidity($name, $type) {
+    $name = strtolower($name);
+    if ( strlen($name) > 40 ) { return "name is too long"; }
+    if ( strlen($name) < 3 ) { return "name is too short"; }
+    $pattern = '/^[\p{L}\p{N}\-_\s]+$/u';
+    if (! preg_match($pattern, $name)) {
+      return "name contains incorrect characters";
+    }
+    # check against reserved names
+    if ( $this->isReservedWatch($name) ) {
+      return "name reserved for built-in watches";
+    }
   }
 
   /**
@@ -2760,7 +2859,7 @@ WHERE `user_id` = :user_id
   public function createFeed($xml_url, $title, $group, $source_type) {
     // if inputs are wrong or duplicated - return error
     if (!$xml_url) {
-      return array("Empty input", null, '');
+      return array("Error: empty input", null, '');
     }
     $feed_id = _digest_hex($xml_url);
 
@@ -2772,10 +2871,20 @@ WHERE `user_id` = :user_id
       # Make sure associated site-to-feed setting already saved
       $exist = $this->db->queryTableRecords('tbl_site_to_feed', $where);
       if (!$exist || !$exist[0]) {
-          return "Error: missing site-to-feed settings for this site";
+        return array("Error: missing site-to-feed settings for this site", null, '');
       }
     }
 
+    // Check title for validity
+    $error = $this->checkNameValidity($title, 'subscr');
+    if ( $error ) {
+      return array("Error: " . $error, null, '');
+    }
+    // Check group for validity
+    $error = $this->checkNameValidity($group, 'group');
+    if ( $error ) {
+      return array("Error: " . $error, null, '');
+    }
     $query1 = "SELECT COUNT(1) FROM `tbl_subscr` WHERE ".
       "`user_id`=:user_id AND ".
       " (`xmlUrl`=:xml_url OR `title`=:title OR `fd_feedid`=:feed_id)";
@@ -2818,6 +2927,7 @@ WHERE `user_id` = :user_id
    * @param $set_xml_url: set feed XML URL
    * @param $set_title: set feed title
    * @param $delete: when non-empty - delete articles and feed itself
+   * @return: error message (if any)
   **/
   public function updateFeed($feed_id, $set_enable=null, $set_xml_url=null, $set_title=null, $set_group=null, $delete=null, $rtl=null) {
     $bindings = array(
@@ -2843,12 +2953,18 @@ WHERE `user_id` = :user_id
       $this->db->execQuery($query, $bindings);
     }
     if ($set_title) {
+      # 1. TODO: make sure this name is unique (not used in other contexts)
+      # 2. check for validity (length, content)
+      $error = $this->checkNameValidity($set_title, 'subscr');
+      if ( $error ) { return "Error: " . $error; }
       $query = "UPDATE `tbl_subscr` SET `title`=:set_title ".
           "WHERE `user_id`=:user_id AND `fd_feedid`=:feed_id";
       $bindings['set_title'] = $set_title;
       $this->db->execQuery($query, $bindings);
     }
     if ($set_group) {
+      $error = $this->checkNameValidity($set_group, 'group');
+      if ( $error ) { return "Error: " . $error; }
       $query = "UPDATE `tbl_subscr` SET `group`=:set_group ".
           "WHERE `user_id`=:user_id AND `fd_feedid`=:feed_id";
       $bindings['set_group'] = $set_group;

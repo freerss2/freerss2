@@ -61,6 +61,8 @@
     <!-- App styles -->
     <link rel="stylesheet" href="../style/main_screen.css<?php echo $VER_SUFFIX;?>">
 
+    <!-- Cookie consent banner -->
+
     <title>Free RSS <?php if ( $statistics['update_required'] ) { echo " (*)"; } ?> </title>
   </head>
   <body onload="setArticlesContext(0); initInlineHelp(); initFocus(); setLoginAuthToken(); <?php echo $promptForInit; ?>">

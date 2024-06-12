@@ -280,8 +280,8 @@ function showRefreshReminder(update_required, enable_push_reminders, enable_popu
 
   if ( enable_push_reminders && mobile_client == 0 ) {
       systemPopupNotification(
-        'FreeRSS2 notification', 
-        'Feeds update required', function(n,c) { refreshRss(); }, 30000);
+        'FreeRSS2 notification',
+        'Feeds update recommended', function(n,c) { refreshRss(); }, 30000);
   }
 
   // same for enable_popup_reminders (with popup dialog window)
@@ -423,9 +423,26 @@ function promptForInit() {
 
 // edit SiteToFeed configuration
 function openSiteToFeedEdit(feed_id, site_addr) {
-  var siteToFeedEditModal = new bootstrap.Modal(document.getElementById('editSiteToFeedDialog'), {focus: true});
+  // Before opening edit window, make sure the title and group are non-empty
+  var rss_title = extract_and_prepare('new-rss-title');
+  if (! rss_title ) {
+    rss_title = extract_and_prepare('rss_title');
+  }
+  var rss_group = extract_and_prepare('new-rss-group');
+  var error_msg = '';
+  if (! rss_title ) { error_msg += 'Missing RSS title<BR>\n'; }
+  if (! rss_group ) { error_msg += 'RSS group not selected<BR>\n'; }
+  if ( error_msg ) {
+    showError(error_msg);
+    return;
+  }
+  var editSiteToFeedDialogElm = document.getElementById('editSiteToFeedDialog');
+  var siteToFeedEditModal = new bootstrap.Modal(editSiteToFeedDialogElm, {focus: true});
   var addr_elm = document.getElementById('site-address');
   addr_elm.value = site_addr;
+  setArticlesContext(0);
+  editSiteToFeedDialogElm.addEventListener(
+      'hidden.bs.modal', function (event) { setArticlesContext(1); });
   siteToFeedEditModal.show();
   setTimeout(function() { addr_elm.focus(); }, 500);
   if (feed_id) {
@@ -446,7 +463,10 @@ function openSiteToFeedEdit(feed_id, site_addr) {
           ['content', 'item-content-template']
         ];
         for (var i=0; i<db2web.length; i++) {
-          document.getElementById(db2web[i][1]).value = reply[db2web[i][0]];
+          var val = reply[db2web[i][0]];
+          if ( ! val ) { val = ''; }
+          val = htmlDecode(val);
+          document.getElementById(db2web[i][1]).value = val;
         }
       }
     });
@@ -820,12 +840,21 @@ function startRefreshReminderDialog() {
 // Change current articles read/bookmark state
 // @param action: 'read', 'bookmark', 'unread', 'unbookmark',
 //                'toggleread', 'togglebookmark'
-function markAll(action) {
+// @param scope: 'page', 'all'
+function markAll(action, scope) {
   var refreshModal = showUpdatingDialog();
-  // get IDs of all articles on page
-  var ids = getDisplayedArticleIds();
-  // send "mark read" for those IDs
-  var url = '/api/articles/change_state/?action='+action+'&ids='+ids.join(",");
+  var url = '/api/articles/change_state/?action='+action;
+  if (scope == 'all') {
+    // get page parameters
+    var url_args = new URLSearchParams(window.location.search);
+    // send "change_state" for all matching articles
+    url += '&type='+url_args.get('type')+'&id='+url_args.get('id');
+  } else {
+    // get IDs of all articles on this page
+    var ids = getDisplayedArticleIds();
+    // send "change_state" for those IDs
+    url += '&ids='+ids.join(",");
+  }
   httpGetAsync(url, function(reply){
     reply = filterResponse(reply);
     refreshModal.hide();
@@ -1511,6 +1540,12 @@ function setFeedParam(dom_id, db_field, feed_id) {
     '&'+db_field+'='+encodeURIComponent(new_value);
     console.log(url);
   httpGetAsync(url, function(buf){
+    var reply = filterResponse(buf);
+    if ( reply.startsWith('Error') ) {
+      console.log(reply);
+      showError(reply);
+      return;
+    }
     window.location.reload();
   });
 }
@@ -1583,7 +1618,11 @@ function goToPage(page_select, delta=0) {
 
 // start group editing - open dialog
 function editGroup(group_id) {
-  var editGroupModal = new bootstrap.Modal(document.getElementById('editGroupModal'), {focus: true});
+  var editGroupModalElm = document.getElementById('editGroupModal');
+  var editGroupModal = new bootstrap.Modal(editGroupModalElm, {focus: true});
+  setArticlesContext(0);
+  editGroupModalElm.addEventListener(
+      'hidden.bs.modal', function (event) { setArticlesContext(1); });
   editGroupModal.show();
   var elm_n = document.getElementById('group_id');
   elm_n.value = group_id;
@@ -1647,7 +1686,13 @@ function saveGroupChanges() {
   // check if new group is not exist (excluding case of same name)
   // save to 'tbl_subscr' with 'user_id', 'fd_feed_id', 'group', 'index_in_gr'
   // and reload page on api completion
-  // TODO: show error if returned
+  result = filterResponse(result);
+  if ( result.startsWith('Error:') ) {
+    console.log(result);
+    window.alert(result);
+    // TODO: show error in modal
+    return;
+  }
   window.location.reload();
 }
 
@@ -1758,13 +1803,28 @@ function bindKeysForFeeds() {
 
     var handled = false;
     var event_key = event.key;
+    // for international keyboard mode
     switch (event.keyCode) {
+      case 65: event_key = "a"; break;
       case 82: event_key = "r"; break;
       case 72: event_key = "h"; break;
       case 90: event_key = "z"; break;
       case 66: event_key = "b"; break;
     }
     switch (event_key) {
+      case "PageDown":
+        if (event.altKey) { goToPage('', 1); }
+        break;
+      case "PageUp":
+        if (event.altKey) { goToPage('', -1); }
+        break;
+      case "a":
+        if (event.ctrlKey) { return; }
+        if (event.altKey) {
+          markAll('read', 'all');
+          handled = true;
+        }
+        break;
       case "r":
         if (event.ctrlKey) { return; }
         if (event.altKey) {
