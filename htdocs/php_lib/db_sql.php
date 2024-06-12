@@ -80,9 +80,10 @@ class DbSql {
    * @param $bindings: (optional) query parameters mapping dictionary
   **/
   public function execQuery($query, $bindings=null) {
+    $success = '';
     try {
       $sth = $this->conn->prepare($query);
-      $sth->execute($bindings);
+      $success = $sth->execute($bindings);
     }
     catch (Exception $e) {
       echo "ERROR: ".$e."<BR>\n";
@@ -91,6 +92,7 @@ class DbSql {
         echo "bindings=".print_r($bindings, true)."<BR>\n";
       }
     }
+    return array($success, $sth);
   }
 
   /**
@@ -101,9 +103,8 @@ class DbSql {
   **/
   public function fetchSingleRow($query, $bindings=array()) {
     $ret = array();
-    $sth = $this->conn->prepare($query);
-    $result = $sth->execute($bindings);
-    if ( ! $result ) {
+    list($success, $sth) = $this->execQuery($query, $bindings);
+    if ( ! $success ) {
       return $ret;
     }
     return $sth->fetch();
@@ -129,9 +130,8 @@ class DbSql {
   **/
   public function fetchQueryRows($query, $bindings=array()) {
     $ret = array();
-    $sth = $this->conn->prepare($query);
-    $result = $sth->execute($bindings);
-    if ( ! $result ) {
+    list($success, $sth) = $this->execQuery($query, $bindings);
+    if ( ! $success ) {
       return $ret;
     }
     while ($row = $sth->fetch()) {
