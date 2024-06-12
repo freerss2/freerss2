@@ -46,9 +46,9 @@
 $maxpage = 1;
 
 $personal_settings = $rss_app->getAllPersonalSettings();
-$show_articles = $personal_settings['show_articles'] ? $personal_settings['show_articles'] : 'unread';
-$order_articles = $personal_settings['order_articles'] ? $personal_settings['order_articles'] : 'time';
-$page_size = $personal_settings['page_size'] ? max($personal_settings['page_size'], 5) : 20;
+$show_articles = ($personal_settings['show_articles'] ?? '') ? $personal_settings['show_articles'] : 'unread';
+$order_articles = ($personal_settings['order_articles'] ?? '') ? $personal_settings['order_articles'] : 'time';
+$page_size = ($personal_settings['page_size'] ?? '') ? max($personal_settings['page_size'], 5) : 20;
 $show_active = array(
   'unread' => $show_articles == 'unread' ? 'active' : '',
   'read'   => $show_articles == 'read'   ? 'active' : '',
@@ -197,6 +197,8 @@ $prev_page = $displayed_page > 1;
       }
     ?>
     </style>
+
+    <!-- Cookie consent banner -->
 
     <title>Free RSS</title>
   </head>
@@ -358,7 +360,7 @@ echo '<H3 class="vertical-middle '.$overflow_class.'">';
 $group_edit_button = '';
 $watch_edit_button = '';
 $mark_read_and_next =
-  '<span class="btn-group">
+  '<span class="btn-group me-3">
    <button type="button"
       class="btn btn-light btn-sm big-icon-button" style="margin-right: 0;"
       title="Mark all articles on this page as \'read\', excluding bookmarked ones"
@@ -748,40 +750,59 @@ $rss_app->showItems($items, $mark_read_and_next . $reload_button);
           </div>
           <div class="modal-body">
             <div class="container">
-              <div class="row">
+              <ul class="nav nav-tabs">
+                <li class="nav-item">
+                  <span class="nav-link active">On this page</span>
+                </li>
+              </ul>
+              <div class="row mt-3">
                 <div class="col">
-                  <i class="far fa-envelope-open me-2 mb-3"></i>
-                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('read');">
+                  <i class="far fa-envelope-open me-2 mb-3 icon-before-button"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('read', 'page');">
                     Mark as read
                   </button></div>
                 <div class="col">
-                  <i class="fa fa-star me-2 mb-3" style="color:blue;"></i>
-                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('bookmark');">
+                  <i class="fa fa-star me-2 mb-3 icon-before-button" style="color:blue;"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('bookmark', 'page');">
                     Bookmark articles
                   </button></div>
               </div>
               <div class="row">
                 <div class="col">
-                  <i class="fas fa-envelope me-2 mb-3"></i>
-                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('unread');">
+                  <i class="fas fa-envelope me-2 mb-3 icon-before-button"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('unread', 'page');">
                     Mark as unread
                   </button></div>
                 <div class="col">
-                  <i class="far fa-star me-2 mb-3" style="color:gray;"></i>
-                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('unbookmark');">
+                  <i class="far fa-star me-2 mb-3 icon-before-button" style="color:gray;"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('unbookmark', 'page');">
                     Remove bookmarks
                   </button></div>
               </div>
               <div class="row">
                 <div class="col">
-                  <i class="fas fa-envelope me-2 mb-3"></i>
-                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('toggleread');">
+                  <i class="fas fa-envelope me-2 mb-3 icon-before-button"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('toggleread', 'page');">
                     Toggle read
                   </button></div>
                 <div class="col">
-                  <i class="far fa-star me-2 mb-3" style="color:gray;"></i>
-                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('togglebookmark');">
+                  <i class="far fa-star me-2 mb-3 icon-before-button" style="color:gray;"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('togglebookmark', 'page');">
                     Toggle bookmarks
+                  </button></div>
+              </div>
+            </div>
+            <div class="container">
+              <ul class="nav nav-tabs">
+                <li class="nav-item">
+                  <span class="nav-link active">On all pages</span>
+                </li>
+              </ul>
+              <div class="row mt-3">
+                <div class="col">
+                  <i class="far fa-envelope-open me-2 mb-3 icon-before-button"></i>
+                  <button class="btn btn-outline-secondary mb-3" style="min-width: 11rem;" onclick="markAll('read', 'all');">
+                    Mark as read
                   </button></div>
               </div>
             </div>

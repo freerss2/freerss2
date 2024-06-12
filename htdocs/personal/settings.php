@@ -26,12 +26,12 @@
   $subscr_tree = $rss_app->getAllSubscrTree();
 
   $personal_settings = $rss_app->getAllPersonalSettings();
-  $page_size = $personal_settings['page_size'] ? max($personal_settings['page_size'], 5) : 20;
-  $reminder_hours = $personal_settings['reminder_hours'] ? max($personal_settings['reminder_hours'], 1) : 2;
-  $retention_leave_articles = $personal_settings['retention_leave_articles'] ? max($personal_settings['retention_leave_articles'], 10) : 100;
-  $enable_push_reminders = $personal_settings['enable_push_reminders'] == 'true' ? 'checked' : '';
-  $enable_popup_reminders = $personal_settings['enable_popup_reminders'] == 'true' ? 'checked' : '';
-  $start_page = $personal_settings['start_page'] ? $personal_settings['start_page'] : 'group:All';
+  $page_size = ($personal_settings['page_size'] ?? '') ? max($personal_settings['page_size'], 5) : 20;
+  $reminder_hours = ($personal_settings['reminder_hours'] ?? '') ? max($personal_settings['reminder_hours'], 1) : 2;
+  $retention_leave_articles = ($personal_settings['retention_leave_articles'] ?? '') ? max($personal_settings['retention_leave_articles'], 10) : 100;
+  $enable_push_reminders = ($personal_settings['enable_push_reminders'] ?? '') == 'true' ? 'checked' : '';
+  $enable_popup_reminders = ($personal_settings['enable_popup_reminders'] ?? '') == 'true' ? 'checked' : '';
+  $start_page = ($personal_settings['start_page'] ?? '') ? $personal_settings['start_page'] : 'group:All';
 
   $open_feature = $_GET['open'] ?? null;  # supported: ?open=ImportModal
   if ( $open_feature == 'ImportModal' ) {
