@@ -105,7 +105,11 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
         if (! $search_res) { return ''; }
 
         $search_data = json_decode($search_res);
-        $films = $search_data->films;
+        if ( property_exists($search_data, "films") ) {
+          $films = $search_data->films;
+        } else {
+          return '';
+        }
         if (! $films) { return ''; }
 
         # for all $films try to find better match
@@ -113,10 +117,10 @@ class MovieRatingKinopoiskUnoff extends MovieRatingProvider {
         # If $info contains more than 1 element - compare nameRu / nameEn (year)
         for ($i=0; $i < count($films); $i++) {
             $film = $films[$i];
-            if ( ! $year) { $found = true; break; } # no comparison criteria - use first match
-            # compare film year and exit on match
             $film_nameRu = $film->nameRu ?? null;
             $film_nameEn = $film->nameEn ?? null;
+            if ( ! $year) { $found = true; break; } # no comparison criteria - use first match
+            # compare film year and exit on match
             if ( $year == $film->year && $info[0] == $film_nameRu) {
               $found = true; break;
             }
