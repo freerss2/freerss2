@@ -2263,6 +2263,7 @@ WHERE `user_id` = :user_id
   public function showItems($items, $action_buttons) {
     echo '<div class="accordion accordion-flush" id="rss_items">';
     foreach ($items as $item) {
+        $item['description'] = htmlspecialchars_decode($item['description']);
         $fd_postid = $item['fd_postid'];
         $read = $item['read'];
         $read_state = array(
